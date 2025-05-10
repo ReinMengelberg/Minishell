@@ -13,13 +13,7 @@
 # include <errno.h>
 # include <signal.h>
 
-
-// Filedescriptor definitions
-# define STDIN 0
-# define STDOUT 1
-# define STDERR 2
-
-typedef enum t_tokentype {
+enum e_tokentype {
     EMPTY;
     CMD;
     ARG;
@@ -30,10 +24,21 @@ typedef enum t_tokentype {
     END;
 };
 
+enum e_fd {
+    STDIN = 0;
+    STDOUT = 1;
+    STDERR = 2;
+}
+
+enum e_exitstatus {
+    SUCCESS = 0;
+    FAILURE = 1;
+}
+
 // Token Linked List
 typedef struct s_token {
     char	        *str;
-    t_tokentype	    type;
+    e_tokentype	    type;
     struct s_token	*next;
     struct s_token	*prev;
 } t_token
@@ -46,15 +51,23 @@ typedef struct s_env {
 
 // Signals
 typedef struct s_sig {
-    int      sigint;
-    int      sigquit;
-    pid_t    pid;
+    int          sigint;
+    int          sigquit;
+    e_exitstatus exitstatus;
+    pid_t        pid;
 } t_sig;
 
+// Expansion voor env variables
+typedef struct t_expansion {
+    char    *arg; // New Argument
+    int     oi; // Old index
+    int     ni; // New index
+} t_expansion;
+
+// The Shell Struct
 typedef struct t_shell {
     t_token    *tokens;
     t_env      *env
 } s_shell;
-
 
 #endif
