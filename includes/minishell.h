@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        ::::::::            */
+/*   minishell.h                                        :+:    :+:            */
+/*                                                     +:+                    */
+/*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
+/*                                                   +#+                      */
+/*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
+/*   Updated: 2025/05/10 15:00:03 by rbagin        ########   odam.nl         */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef MINISHELL_H
 # define MINISHELL_H
 
@@ -13,61 +25,69 @@
 # include <errno.h>
 # include <signal.h>
 
-enum e_tokentype {
-    EMPTY;
-    CMD;
-    ARG;
-    TRUNC;
-    APPEND;
-    INPUT;
-    PIPE;
-    END;
-};
+typedef enum e_tokentype
+{
+	EMPTY,
+	CMD,
+	ARG,
+	TRUNC,
+	APPEND,
+	INPUT,
+	PIPE,
+	END
+}	t_tokentype;
 
-enum e_fd {
-    STDIN = 0;
-    STDOUT = 1;
-    STDERR = 2;
-}
+typedef enum e_fd
+{
+	STDIN = 0,
+	STDOUT = 1,
+	STDERR = 2
+}	t_fd;
 
-enum e_exitstatus {
-    SUCCESS = 0;
-    FAILURE = 1;
-}
+typedef enum e_exitstatus
+{
+	SUCCESS = 0,
+	FAILURE = 1
+}	t_exitstatus;
 
 // Token Linked List
-typedef struct s_token {
-    char	        *str;
-    e_tokentype	    type;
-    struct s_token	*next;
-    struct s_token	*prev;
-} t_token
+typedef struct s_token
+{
+	char			*str;
+	t_tokentype		type;
+	struct s_token	*next;
+	struct s_token	*prev;
+}	t_token;
 
 // Environment Variables
-typedef struct s_env {
-    char	*key;
-    char	*value;
-} t_env
+typedef struct s_env
+{
+	char	*key;
+	char	*value;
+}	t_env;
 
 // Signals
-typedef struct s_sig {
-    int          sigint;
-    int          sigquit;
-    e_exitstatus exitstatus;
-    pid_t        pid;
-} t_sig;
+typedef struct s_sig
+{
+	int				sigint;
+	int				sigquit;
+	t_exitstatus	exitstatus;
+	pid_t			pid;
+}	t_sig;
 
 // Expansion voor env variables
-typedef struct t_expansion {
-    char    *arg; // New Argument
-    int     oi; // Old index
-    int     ni; // New index
-} t_expansion;
+typedef struct s_expansion
+{
+	char	*arg; // New Argument
+	int		oi; // Old index
+	int		ni; // New index
+}	t_expansion;
 
 // The Shell Struct
-typedef struct t_shell {
-    t_token    *tokens;
-    t_env      *env
-} s_shell;
+typedef struct s_shell
+{
+	t_token	*tokens;
+	t_env	*env;
+}	t_shell;
 
 #endif
