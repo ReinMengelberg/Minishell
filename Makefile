@@ -4,13 +4,23 @@ NAME = minishell
 INCLUDES = -I./libft/includes
 LIBFT = libft/libft.a
 
-SRCS = ./src/main/main.c
+SRCS =	./src/main/main.c \
+		./src/builtin/cd.c \
+		./src/builtin/echo.c \
+		./src/builtin/exit.c \
+		./src/builtin/export.c \
+		./src/builtin/pwd.c \
+		./src/builtin/unset.c \
 
-OBJS = $(SRCS:.c=.o)
+OBJ_DIR = objs
+OBJS = $(patsubst ./src/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 
 all: $(NAME)
 
-$(NAME): $(OBJS) $(LIBFT)
+$(OBJ_DIR):
+	@mkdir -p $(OBJ_DIR)/main
+
+$(NAME): $(OBJ_DIR) $(OBJS) $(LIBFT)
 	$(CC) $(CFLAGS) $(OBJS) $(LIBFT) $(INCLUDES) -o $(NAME)
 
 	@echo " ______     ______     __    __     ______     _____     __     __         __         ______    "
@@ -57,11 +67,12 @@ $(NAME): $(OBJS) $(LIBFT)
 $(LIBFT):
 	make -C libft
 
-%.o: %.c
+$(OBJ_DIR)/%.o: ./src/%.c
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	rm -f $(OBJS)
+	rm -f $(OBJ_DIR)
 	make -C libft clean
 
 fclean: clean
