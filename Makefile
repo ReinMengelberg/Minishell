@@ -19,14 +19,14 @@ OBJS = $(patsubst ./src/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 
 # Configure readline library based on OS
 ifeq ($(shell uname), Darwin)
-    # Check if using Homebrew
-    BREW_PREFIX = $(shell brew --prefix 2>/dev/null || echo "/usr/local")
-    # Add readline include and lib paths
-    INCLUDES += -I$(BREW_PREFIX)/include
-    LIBS += -L$(BREW_PREFIX)/lib -lreadline
+	# Check if using Homebrew
+	BREW_PREFIX = $(shell brew --prefix 2>/dev/null || echo "/usr/local")
+	# Add readline include and lib paths
+	INCLUDES += -I$(BREW_PREFIX)/include
+	LIBS += -L$(BREW_PREFIX)/lib -lreadline
 else
-    # Linux case
-    LIBS += -lreadline
+	# Linux case
+	LIBS += -lreadline
 endif
 
 all: $(NAME)
