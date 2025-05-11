@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:11:17 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/11 15:34:19 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/11 15:39:56 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,17 +78,16 @@ t_token	*tokenize(char *input)
 	cmd_found = false;
 	while (split[i])
 	{
-        type = get_token_type(split[i]);
+		type = get_token_type(split[i]);
 		if (type == PIPE || type == TRUNC || type == APPEND || type == INPUT)
-            cmd_found = false;
+			cmd_found = false;
 		else if (type == CMD && cmd_found)
-            type = ARG;
+			type = ARG;
 		else if (type == CMD)
-            cmd_found = true;
-		add_token(&tokens, create_token(split[i], type));
-		i++;
+			cmd_found = true;
+		add_token(&tokens, create_token(split[i++], type));
 	}
-	i = 0;
-	while (split[i])
-		
+	ft_free_array(split); //still needs to be done
+	return(tokens);
 }
+

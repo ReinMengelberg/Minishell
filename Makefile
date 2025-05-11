@@ -6,26 +6,26 @@ LIBFT = $(LIBFT_DIR)/libft.a
 INCLUDES = -I./includes -I$(LIBFT_DIR)
 LIBS =
 
-SRCS =	./src/main/main.c \
-		./src/builtin/cd.c \
+SRCS =	./src/builtin/cd.c \
 		./src/builtin/echo.c \
 		./src/builtin/exit.c \
 		./src/builtin/export.c \
 		./src/builtin/pwd.c \
-		./src/builtin/unset.c
+		./src/builtin/unset.c \
+		./src/input/token_utils.c \
+		./src/input/tokenizer.c \
+		./src/main/test.c \
+		# ./src/main/main.c
 
 OBJ_DIR = objs
 OBJS = $(patsubst ./src/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 
 # Configure readline library based on OS
 ifeq ($(shell uname), Darwin)
-	# Check if using Homebrew
 	BREW_PREFIX = $(shell brew --prefix 2>/dev/null || echo "/usr/local")
-	# Add readline include and lib paths
 	INCLUDES += -I$(BREW_PREFIX)/include
 	LIBS += -L$(BREW_PREFIX)/lib -lreadline
 else
-	# Linux case
 	LIBS += -lreadline
 endif
 

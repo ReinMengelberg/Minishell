@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/05/11 15:07:14 by rein          ########   odam.nl         */
+/*   Updated: 2025/05/11 16:19:23 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,5 +91,18 @@ typedef struct s_shell
 	t_token	*tokens;
 	t_env	*env;
 }	t_shell;
+
+//INPUT
+//tokenizer.c
+t_token	*create_token(char *str, t_tokentype type);
+void	add_token(t_token **tokens, t_token *new);
+t_tokentype	get_token_type(char *str);
+t_token	*tokenize(char *input);
+//token_utils.c
+char	**ft_split_shell(char *input);
+void	ft_free_array(char **arr);
+void	free_tokens(t_token *tokens);
+//for testing
+void print_tokens(t_token *tokens);
 
 #endif
