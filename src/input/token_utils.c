@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:56:21 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/11 16:13:31 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/17 14:49:54 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ static int count_tokens(char *input)
     while (input[i])
     {
         // Skip whitespace between tokens
-        while (input[i] && input[i] == ' ')
+        while (input[i] && (input[i] == ' ' || input[i] == '\t'))
             i++;
         if (!input[i])
             break;
@@ -164,7 +164,7 @@ void	free_tokens(t_token *tokens)
 void print_tokens(t_token *tokens)
 {
 	t_token *current;
-	char *type_names[] = {"EMPTY", "CMD", "ARG", "TRUNC", "APPEND", "INPUT", "PIPE", "END"};
+	char *type_names[] = {"EMPTY", "CMD", "ARG", "OUTPUT", "APPEND", "INPUT", "PIPE", "END"};
 
 	current = tokens;
 	while (current)
