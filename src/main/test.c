@@ -6,19 +6,18 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 16:10:44 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/11 16:12:33 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/17 17:37:56 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 #include <stdbool.h>
-
 #define PROMPT "tokenizer test $ "
 
 int main() {
     char *input;
     int status = 1;
-    
+
     printf("Tokenizer Test - Enter commands to see tokenization\n");
     printf("Type 'exit' to quit\n\n");
     
