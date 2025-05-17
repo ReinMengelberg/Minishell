@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/05/17 14:35:01 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/17 17:44:58 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,8 +65,10 @@ typedef struct s_token
 // Environment Variables
 typedef struct s_env
 {
-	char	*key;
-	char	*value;
+	char			*key;
+	char			*value;
+	struct s_env	*next;
+	struct s_env	*prev;
 }	t_env;
 
 // Signals
@@ -103,7 +105,11 @@ t_token	*tokenize(char *input);
 char	**ft_split_shell(char *input);
 void	ft_free_array(char **arr);
 void	free_tokens(t_token *tokens);
+
+// env
+t_env	*create_env(char **environ);
+void	print_env(t_env *head);
+
 //for testing
 void print_tokens(t_token *tokens);
-
 #endif
