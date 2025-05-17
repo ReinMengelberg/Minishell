@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/05/11 15:09:51 by rein          ########   odam.nl         */
+/*   Updated: 2025/05/17 17:11:34 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,17 @@
 #define MAX_ARGS 64
 #define PROMPT "armadillo $ "
 
+extern char **environ;
+
 int main() {
     char *input;
     char *args[MAX_ARGS];
     int status = 1;
+    t_env *env;
+
+    env = create_env(**environ);
+    printf('Printing environment');
+    print_env(env);
     
     while (status) {
         // Display prompt and get input using readline
