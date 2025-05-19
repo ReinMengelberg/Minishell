@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:11:17 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/17 17:40:16 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/18 15:33:23 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ bool	check_input(char *input)
 	quote = 0;
 	while (input && input[i])
 	{
-		if (input[i] == ';' || input[i] == '#')
+		if (input[i] == ';' || input[i] == '#' || input[i] == '!' || input[i] == '=' || input[i] == '&')
 			return true;
 		if (input[i] == '\\')
 			return true;
@@ -88,6 +88,8 @@ t_tokentype	get_token_type(char *str)
 		return (INPUT);
 	if (ft_strcmp(str, "<<") == 0)
 		return (HEREDOC);
+	if (str[0] == '$' && str[1] != '\0')
+		return (EXPANSION);
 	return (CMD); // Default to CMD, will adjust in tokenize function
 }
 
@@ -134,4 +136,18 @@ t_token	*tokenize(char *input)
 	}
 	ft_free_array(split);
 	return(tokens);
+}
+
+void print_tokens(t_token *tokens)
+{
+	t_token *current;
+	char *type_names[] = {"EMPTY", "CMD", "ARG", "OUTPUT", "APPEND", "INPUT",
+							"PIPE", "HEREDOC", "END", "EXPANSION"};
+
+	current = tokens;
+	while (current)
+	{
+		printf("Token: '%s', Type: %s\n", current->str, type_names[current->type]);
+		current = current->next;
+	}
 }
