@@ -6,12 +6,39 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:56:21 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/18 13:26:55 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/19 20:01:09 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+static char *remove_quotes(char *str)
+{
+	int i, j;
+	int len = ft_strlen(str);
+	char *result = malloc(len + 1);
+	char quote = 0;
+
+	if (!result)
+		return NULL;
+	i = 0;
+	j = 0;
+	while (i < len)
+	{
+		if ((str[i] == '\'' || str[i] == '\"') && (!quote || quote == str[i]))
+		{
+			if (!quote)
+				quote = str[i];
+			else
+				quote = 0;
+		}
+		else
+			result[j++] = str[i];
+		i++;
+	}
+	result[j] = '\0';
+	return result;
+}
 
 static int count_tokens(char *input)
 {
@@ -28,31 +55,37 @@ static int count_tokens(char *input)
 			break;
 		// Found start of a token
 		count++;
-		// Process this token
-		while (input[i] && (quote || input[i] != ' '))
+		// Handle quoted strings as complete tokens
+		if (input[i] == '\'' || input[i] == '\"')
 		{
-			// Handle quotes
-			if ((input[i] == '\'' || input[i] == '\"') && (!quote || quote == input[i]))
-				quote = (quote == input[i]) ? 0 : input[i];
-			// Special character handling (if not in quotes)
-			else if (!quote && (input[i] == '|' || input[i] == '<' || input[i] == '>'))
-			{
-				// Handle >> as one token
-				if (input[i] == '>' && input[i + 1] == '>')
-					i++;
-				// If we're in the middle of a word, this special char starts a new token
-				if (i > 0 && input[i - 1] != ' ' && input[i - 1] != '|' &&
-					input[i - 1] != '<' && input[i - 1] != '>')
-					count++;
-				// If there's more text after this special char, it will be another token
-				if (input[i + 1] && input[i + 1] != ' ' && input[i + 1] != '|' &&
-					input[i + 1] != '<' && input[i + 1] != '>')
-					count++;
-			}
+			quote = input[i++];
+			while (input[i] && input[i] != quote)
+				i++;
+			if (input[i])
+				i++;  // Skip the closing quote
+		}
+		// Handle special characters
+		else if (input[i] == '|' || input[i] == '<' ||
+				(input[i] == '>' && input[i + 1] != '>'))
+		{
 			i++;
 		}
+		else if (input[i] == '>' && input[i + 1] == '>')
+		{
+			i += 2;
+		}
+		// Handle regular tokens
+		else
+		{
+			while (input[i] && input[i] != ' ' && input[i] != '|' &&
+					input[i] != '<' && input[i] != '>' &&
+					input[i] != '\'' && input[i] != '\"')
+			{
+				i++;
+			}
+		}
 	}
-	return (count);
+	return count;
 }
 
 static char *extract_token(char *input, int *pos)
@@ -61,37 +94,45 @@ static char *extract_token(char *input, int *pos)
 	int end = start;
 	char quote = 0;
 	char *token;
+	char *result;
 
 	// Handle special characters
 	if (input[start] == '|' || input[start] == '<' ||
 		(input[start] == '>' && input[start + 1] != '>'))
 	{
 		*pos = start + 1;
-		token = ft_substr(input, start, 1);
-		return token;
+		return ft_substr(input, start, 1);
 	}
 	else if (input[start] == '>' && input[start + 1] == '>')
 	{
 		*pos = start + 2;
-		token = ft_substr(input, start, 2);
-		return token;
+		return ft_substr(input, start, 2);
 	}
-	// Handle regular tokens and quoted strings
-	while (input[end] && (quote || (input[end] != ' ' &&
-			input[end] != '|' && input[end] != '<' && input[end] != '>')))
+	// Handle quoted strings specially
+	if (input[start] == '\'' || input[start] == '\"')
 	{
-		if (input[end] == '\'' || input[end] == '\"')
-		{
-			if (!quote)
-				quote = input[end];
-			else if (quote == input[end])
-				quote = 0;
-		}
+		quote = input[start];
+		end++;
+		while (input[end] && input[end] != quote)
+			end++;
+		if (input[end] == quote)
+			end++;  // Include the closing quote
+		*pos = end;
+		token = ft_substr(input, start, end - start);
+		result = remove_quotes(token);
+		free(token);
+		return result;
+	}
+	// Handle regular tokens
+	while (input[end] && input[end] != ' ' && input[end] != '|' &&
+			input[end] != '<' && input[end] != '>' &&
+			input[end] != '\'' && input[end] != '\"')
+	{
 		end++;
 	}
+
 	*pos = end;
-	token = ft_substr(input, start, end - start);
-	return token;
+	return ft_substr(input, start, end - start);
 }
 
 /*	This function needs special handling for:
@@ -150,18 +191,5 @@ void	free_tokens(t_token *tokens)
 		tokens = tokens->next;
 		free(tmp->str);
 		free(tmp);
-	}
-}
-/*	Testing only*/
-void print_tokens(t_token *tokens)
-{
-	t_token *current;
-	char *type_names[] = {"EMPTY", "CMD", "ARG", "OUTPUT", "APPEND", "INPUT", "PIPE", "END"};
-
-	current = tokens;
-	while (current)
-	{
-		printf("Token: '%s', Type: %s\n", current->str, type_names[current->type]);
-		current = current->next;
 	}
 }

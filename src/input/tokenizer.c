@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:11:17 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/19 18:00:47 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/05/19 19:18:43 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,36 +34,6 @@ bool check_input(char *input)
 	quote = 0;
 	while (input && input[i])
 	{
-		// Check basic characters that aren't supported
-		if (input[i] == ';' || input[i] == '#' || input[i] == '!' ||
-			input[i] == '=' || input[i] == '&')
-			return true;
-		// Check backslash escape
-		if (input[i] == '\\')
-			return true;
-		// Check special bracket combinations
-		if (input[i] == '[' && input[i+1] == '[')
-			return true;
-		if (input[i] == ']' && input[i+1] == ']')
-			return true;
-		if (input[i] == '{' || input[i] == '}')
-			return true;
-		if (input[i] == '(' || input[i] == ')')
-			return true;
-		// Check for arithmetic expressions
-		if (input[i] == '(' && input[i+1] == '(')
-			return true;
-		if (input[i] == ')' && input[i+1] == ')')
-			return true;
-		// Check for arithmetic expansion
-		if (input[i] == '$' && input[i+1] == '(' && input[i+2] == '(')
-			return true;
-		// Check glob characters
-		if ((input[i] == '*' || input[i] == '?') && quote == 0)
-			return true;
-		// Check tilde expansion
-		if (input[i] == '~' && (i == 0 || input[i-1] == ' '))
-			return true;
 		// Handle quote tracking
 		if ((input[i] == '\'' || input[i] == '"') && (!quote || quote == input[i]))
 		{
@@ -71,6 +41,39 @@ bool check_input(char *input)
 				quote = 0;
 			else
 				quote = input[i];
+		}
+		else if (quote == 0)
+		{
+			// Check basic characters that aren't supported
+			if (input[i] == ';' || input[i] == '#' || input[i] == '!' ||
+				input[i] == '=' || input[i] == '&')
+				return true;
+			// Check backslash escape
+			if (input[i] == '\\')
+				return true;
+			// Check special bracket combinations
+			if (input[i] == '[' && input[i+1] == '[')
+				return true;
+			if (input[i] == ']' && input[i+1] == ']')
+				return true;
+			if (input[i] == '{' || input[i] == '}')
+				return true;
+			if (input[i] == '(' || input[i] == ')')
+				return true;
+			// Check for arithmetic expressions
+			if (input[i] == '(' && input[i+1] == '(')
+				return true;
+			if (input[i] == ')' && input[i+1] == ')')
+				return true;
+			// Check for arithmetic expansion
+			if (input[i] == '$' && input[i+1] == '(' && input[i+2] == '(')
+				return true;
+			// Check glob characters
+			if ((input[i] == '*' || input[i] == '?') && quote == 0)
+				return true;
+			// Check tilde expansion
+			if (input[i] == '~' && (i == 0 || input[i-1] == ' '))
+				return true;
 		}
 		i++;
 	}
