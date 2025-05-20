@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 16:10:44 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/17 17:37:56 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/05/19 20:04:27 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,31 @@
 #include <stdbool.h>
 #define PROMPT "tokenizer test $ "
 
+/*	< infile.txt cat | grep "$HOME hello"'world' | wc -l >> output.txt
+	echo "quoted string"
+	echo 'single quoted string'
+	ls -la
+	cat file.txt
+	echo $PATH
+	echo $HOME
+	ls | grep a
+	cat file.txt | grep pattern | wc -l
+	echo hello > output.txt
+	cat < input.txt
+	echo hello >> append.txt
+	cat << EOF
+	ls | grep "test file"
+	echo "$USER is using $SHELL"
+	echo '$HOME is not expanded in single quotes'
+SYNTAX ERROR
+	echo hello\ world
+	echo \n
+	echo hello # this is a comment
+	# just a comment
+	ls -la | grep test && echo found
+	echo hello > output.txt; cat output.txt
+	find . -name "*.c" | grep main
+	VAR=value && echo $VAR*/
 int main() {
     char *input;
     int status = 1;

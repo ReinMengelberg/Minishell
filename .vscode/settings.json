@@ -1,6 +1,11 @@
 {
 	"files.associations": {
 		"minishell.h": "c",
-		"functional": "c"
+		"functional": "c",
+		"array": "c",
+		"compare": "c",
+		"tuple": "c",
+		"type_traits": "c",
+		"utility": "c"
 	}
 }

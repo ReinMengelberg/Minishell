@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/05/17 17:12:40 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/05/18 13:12:14 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,11 +32,13 @@ typedef enum e_tokentype
 	EMPTY,
 	CMD,
 	ARG,
-	TRUNC,
+	OUTPUT,
 	APPEND,
 	INPUT,
 	PIPE,
-	END
+	HEREDOC,
+	END,
+	EXPANSION
 }	t_tokentype;
 
 typedef enum e_fd
