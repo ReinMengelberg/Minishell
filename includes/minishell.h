@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/05/20 13:43:57 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/20 13:45:30 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,21 +90,21 @@ typedef struct s_expansion
 }	t_expansion;
 
 typedef struct s_command {
-	t_token *cmd;
-	t_token *args;
-	t_token *input;
-	t_token *output;
-	int in_fd;
-	int out_fd;
-	bool is_piped;
+	t_token	*cmd;
+	t_token	*args;
+	t_token	*input;
+	t_token	*output;
+	int		in_fd;
+	int		out_fd;
+	bool	is_piped;
 } t_command;
 
 // The Shell Struct
 typedef struct s_shell
 {
 	t_command	*commands;
-	t_token	*tokens;
-	t_env	*env;
+	t_token		*tokens;
+	t_env		*env;
 }	t_shell;
 
 //INPUT
