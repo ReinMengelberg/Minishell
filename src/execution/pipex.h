@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/04/29 14:01:51 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/05/20 15:16:04 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/21 12:36:14 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,26 +27,37 @@ typedef struct s_command
 	int					infile_fd;
 	int					outfile_fd;
 	char				*infile_path;
-}	t_pipex_command;
+}	t_command;
 
 typedef struct s_pipex
 {
 	int			*pipe_fd;
-	t_pipex_command	*cmds;
+	t_command	*cmds;
 	char		**envp;
 	int			count_cmds;
 	int			last_error;
 }	t_pipex;
+
+typedef struct s_command {
+	t_token				*cmd;
+	t_token				*args;
+	t_token				*input;
+	t_token				*output;
+	int					in_fd;
+	int					out_fd;
+	bool				is_piped;
+	struct s_command	*next;
+} t_command;
 
 //main.c
 void		init_pipex(t_pipex *pipex, char *argv[], int argc);
 // static int	wait_and_cleanup(t_pipex *pipex)
 
 //pipex_cmd.c
-// static t_pipex_command *create_cmd_node(void)
-t_pipex_command	*allocate_cmds(int count);
-// static void	free_cmd_list(t_pipex_command *head)
-void		execute_cmd(t_pipex_command *cmd, t_pipex *pipex);
+// static t_command *create_cmd_node(void)
+t_command	*allocate_cmds(int count);
+// static void	free_cmd_list(t_command *head)
+void		execute_cmd(t_command *cmd, t_pipex *pipex);
 void		execution(t_pipex *pipex);
 
 //pipex_error.c
@@ -58,8 +69,8 @@ void		free_array(char **array);
 void		create_pipes(int *fd, int count, t_pipex *pipex);
 void		check_file_fds(t_pipex *pipex);
 void		close_unused_pipes(t_pipex *pipex, int cmd_index);
-void		dup2_fds(t_pipex *pipex, t_pipex_command *cmd, int cmd_index);
-void		close_remaining_fds(t_pipex *pipex, t_pipex_command *cmd, int cmd_index);
+void		dup2_fds(t_pipex *pipex, t_command *cmd, int cmd_index);
+void		close_remaining_fds(t_pipex *pipex, t_command *cmd, int cmd_index);
 
 //pipex_heredoc.c
 bool		is_here_doc(char *arg);

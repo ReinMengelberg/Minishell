@@ -6,12 +6,11 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/20 14:28:09 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/20 15:21:14 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/22 16:25:33 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include "pipex.h"
 
 t_command	*extract_commands(t_token *tokens)
 {
@@ -24,10 +23,14 @@ t_command	*extract_commands(t_token *tokens)
 	current = tokens;
 	while (current)
 	{
-		if (current_cmd || current->type == PIPE)
+		if (!current_cmd || current->type == PIPE)
 		{
 			if (current->type == PIPE)
+			{
 				current = current->next;
+				if (!current)
+					break;
+			}
 			t_command *new_cmd = create_command();
 			if (!new_cmd)
 				return (NULL);
@@ -77,8 +80,6 @@ void add_to_args(t_command *cmd, t_token *arg_token)
 {
 	if (!cmd->args)
 		cmd->args = arg_token;
-	// else
-	// 	//concatinate with the current ARGS
 }
 
 bool	process_redirections(t_command *commands)
@@ -106,19 +107,20 @@ bool	process_redirections(t_command *commands)
 			}
 			else if (cmd->input->type == HEREDOC)
 			{
-				t_token *delimiter = cmd->input->next;
-				if (!delimiter)
-					return (false);
-				int	pipe_fd[2];
-				if (pipe(pipe_fd) == -1)
-				{
-					perror("HEREDOC pipe error");
-					return (false);
-				}
-				// setup_heredoc(pipe_fd, delimiter->str);
-				// need to REIMPLEMENT from pipex;
-				cmd->in_fd = pipe_fd[0];
-				close(pipe_fd[1]);
+				// t_token *delimiter = cmd->input->next;
+				// if (!delimiter)
+				// 	return (false);
+				// int	pipe_fd[2];
+				// if (pipe(pipe_fd) == -1)
+				// {
+				// 	perror("HEREDOC pipe error");
+				// 	return (false);
+				// }
+				// // setup_heredoc(pipe_fd, delimiter->str);
+				// // need to REIMPLEMENT from pipex;
+				// cmd->in_fd = pipe_fd[0];
+				// close(pipe_fd[1]);
+				ft_dprintf(2, "HEREDOC has not been implemented yet");
 			}
 		}
 		if (cmd->output)
@@ -174,73 +176,41 @@ bool	setup_pipes(t_command *commands)
 	return (true);
 }
 
-bool	commands_to_pipex(t_command *commands, t_pipex *pipex)
-{
-	int			count;
-	t_command	*cmd;
-	t_command	*current;
-	t_command	*pipex_cmd;
-	t_pipex_command	*new_cmd;
-
-	count = 0;
-	cmd = commands;
-	while (cmd)
-	{
-		count++;
-		cmd = cmd->next;
-	}
-	pipex->count_cmds = count;
-	pipex->cmds = NULL;
-	pipex->pipe_fd = malloc(sizeof(int) * (count - 1) * 2);
-	if (!pipex->pipe_fd)
-		return (false);
-	current = commands;
-	pipex_cmd = NULL;
-	while (current)
-	{
-		new_cmd = allocate_cmds(1);
-		if (!new_cmd)
-			return (false);
-		new_cmd->infile_fd = current->in_fd;
-		new_cmd->outfile_fd = current->out_fd;
-		new_cmd->args = tokens_to_args(current->cmd, current->args);
-		if (!pipex->cmds)
-			pipex->cmds = new_cmd;
-		else
-			pipex_cmd->next = new_cmd;
-		pipex_cmd = new_cmd;
-		current = current->next;
-	}
-	return (true);
-}
-
 char **tokens_to_args(t_token *cmd, t_token *args)
 {
-	int	i;
-	int	count;
-	t_token *current;
-	char **result;
+    int count = 0;
+    t_token *arg = args;
+    char **result;
+    int i = 0;
 
-	count = 1;
-	current = args;
-	while (current)
-	{
-		count++;
-		current = current->next;
-	}
-	result = malloc(sizeof(char *) * (count + 1));
-	if (!result)
-		return NULL;
-	// First argument is the command
-	result[0] = ft_strdup(cmd->str);
-	// Add remaining arguments
-	current = args;
-	i = 1;
-	while (current)
-	{
-		result[i++] = ft_strdup(current->str);
-		current = current->next;
-	}
-	result[i] = NULL;
-	return result;
+    // Count the number of arguments (including command)
+    if (cmd)
+        count++;
+    while (arg && arg->type == ARG)
+    {
+        count++;
+        arg = arg->next;
+    }
+
+    // Allocate space for arguments plus NULL terminator
+    result = malloc(sizeof(char *) * (count + 1));
+    if (!result)
+        return NULL;
+
+    // Add command as first argument
+    if (cmd)
+        result[i++] = ft_strdup(cmd->str);
+
+    // Add remaining arguments
+    arg = args;
+    while (arg && arg->type == ARG)
+    {
+        result[i++] = ft_strdup(arg->str);
+        arg = arg->next;
+    }
+    
+    // NULL-terminate the array
+    result[i] = NULL;
+    
+    return result;
 }

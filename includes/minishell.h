@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/05/20 14:43:26 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/22 16:27:09 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 # include <fcntl.h>
 # include <dirent.h>
 # include <sys/wait.h>
-# include <limits.h>
+# include <linux/limits.h>
 # include <errno.h>
 # include <signal.h>
 #include <readline/readline.h>
@@ -118,11 +118,34 @@ t_token	*tokenize(char *input);
 char	**ft_split_shell(char *input);
 void	ft_free_array(char **arr);
 void	free_tokens(t_token *tokens);
-
+//parser.c
+t_command	*extract_commands(t_token *tokens);
+t_command *create_command(void);
+void add_to_args(t_command *cmd, t_token *arg_token);
+bool	process_redirections(t_command *commands);
+bool	setup_pipes(t_command *commands);
+char **tokens_to_args(t_token *cmd, t_token *args);
+//path.c
+bool find_command_path(char *cmd, char **env, char *path_buffer);
+//execution.c
+int execute_commands(t_command *commands, t_shell *shell);
+int run_command_pipeline(t_command *commands, t_env *env_list);
+void setup_command_redirections(t_command *cmd);
+void execute_external_command(t_command *cmd, t_env *env_list);
+void cleanup_commands(t_command *commands);
+int wait_for_children(pid_t *pids, int count);
+int count_commands(t_command *commands);
+bool is_builtin(char *cmd);
+char **env_to_array(t_env *env_list);
+void free_commands(t_command *commands);
 // env
 t_env	*create_env(char **environ);
 void	print_env(t_env *head);
+void	free_env(t_env *head);
 
 //for testing
 void print_tokens(t_token *tokens);
 #endif
+
+
+// echo hello > temp1 > temp2 > temp3

@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:56:21 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/19 20:01:09 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/05/22 13:36:27 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,13 +97,15 @@ static char *extract_token(char *input, int *pos)
 	char *result;
 
 	// Handle special characters
-	if (input[start] == '|' || input[start] == '<' ||
-		(input[start] == '>' && input[start + 1] != '>'))
+	if (input[start] == '|' ||
+		(input[start] == '>' && input[start + 1] != '>') ||
+		(input[start] == '<' && input[start + 1] != '<'))
 	{
 		*pos = start + 1;
 		return ft_substr(input, start, 1);
 	}
-	else if (input[start] == '>' && input[start + 1] == '>')
+	else if ((input[start] == '>' && input[start + 1] == '>') ||
+			(input[start] == '<' && input[start + 1] == '<' ))
 	{
 		*pos = start + 2;
 		return ft_substr(input, start, 2);
