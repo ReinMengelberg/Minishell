@@ -14,10 +14,10 @@ SRCS =	./src/builtin/cd.c \
 		./src/builtin/unset.c \
 		./src/input/token_utils.c \
 		./src/input/tokenizer.c \
-		./src/main/test.c \
+		./src/input/expander.c \
 		./src/env/env_init.c \
 		./src/env/env_service.c \
-		# ./src/main/main.c
+		./src/main/main.c
 
 OBJ_DIR = objs
 OBJS = $(patsubst ./src/%.c,$(OBJ_DIR)/%.o,$(SRCS))
