@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/24 15:16:33 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/05/24 17:22:00 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/05/24 17:43:50 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,3 +47,5 @@ t_token *expand_tokens(t_token *token_head, t_env *env_head, t_exitstatus status
     }
     return (token_head);
 }
+
+char *validate_expansions(, t_env env_head);

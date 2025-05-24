@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/05/24 17:22:33 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/05/24 17:45:45 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,6 +100,11 @@ typedef struct s_command {
 	struct s_command	*next;
 } t_command;
 
+typedef struct s_validator {
+	bool valid;
+	char *msg;
+} t_validator;
+
 // The Shell Struct
 typedef struct s_shell
 {
@@ -107,6 +112,7 @@ typedef struct s_shell
 	t_token			*tokens;
 	t_env			*env;
 	t_exitstatus	exit_status;
+	int				status;
 }	t_shell;
 
 //INPUT
