@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/20 14:28:09 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/22 16:25:33 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/24 15:46:27 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,9 +86,19 @@ bool	process_redirections(t_command *commands)
 {
 	t_command	*cmd;
 	t_token *filename;
+	int		saved_fds[MAX_COMMANDS][2]; // Save original FDs
+	int		cmd_count;
 
+	cmd_count = 0;
 	filename = NULL;
 	cmd = commands;
+	while (cmd && cmd_count < MAX_COMMANDS)
+    {
+        saved_fds[cmd_count][0] = cmd->in_fd;
+        saved_fds[cmd_count][1] = cmd->out_fd;
+        cmd_count++;
+        cmd = cmd->next;
+    }
 	while(cmd)
 	{
 		if (cmd->input)
@@ -168,8 +178,14 @@ bool	setup_pipes(t_command *commands)
 			perror("setup_pipes: pipe creation failed");
 			return (false);
 		}
-		current->out_fd = pipe_fd[1];
-		current->next->in_fd = pipe_fd[0];
+		if (current->out_fd == STDOUT_FILENO)
+			current->out_fd = pipe_fd[1];
+		else
+			close(pipe_fd[1]);
+		if (current->in_fd == STDIN_FILENO)
+			current->next->in_fd = pipe_fd[0];
+		else
+			close(pipe_fd[0]);
 		current->is_piped = true;
 		current = current->next;
 	}
