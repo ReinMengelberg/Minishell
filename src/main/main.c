@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/05/17 17:11:34 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/05/24 17:26:08 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,12 +19,11 @@ extern char **environ;
 
 int main() {
     char *input;
-    char *args[MAX_ARGS];
     int status = 1;
-    t_env *env;
+    t_env   *env;
+    t_token *tokens;
 
-    env = create_env(**environ);
-    printf('Printing environment');
+    env = create_env(environ);
     print_env(env);
     
     while (status) {
@@ -45,45 +44,11 @@ int main() {
             continue;
         }
         
-        // Exit command
-        if (strcmp(input, "exit") == 0) {
-            free(input);
-            status = 0;
-            continue;
-        }
-        
-        // Parse input into arguments
-        int arg_count = 0;
-        char *token = strtok(input, " ");
-        
-        while (token != NULL && arg_count < MAX_ARGS - 1) {
-            args[arg_count++] = token;
-            token = strtok(NULL, " ");
-        }
-        args[arg_count] = NULL; // Null-terminate the argument list
-        
-        // Skip if empty command
-        if (arg_count == 0) {
-            free(input);
-            continue;
-        }
-        
-        // Fork and execute
-        pid_t pid = fork();
-        
-        if (pid < 0) {
-            // Fork error
-            perror("fork failed");
-        } else if (pid == 0) {
-            // Child process
-            if (execvp(args[0], args) == -1) {
-                perror("command execution failed");
-                exit(EXIT_FAILURE);
-            }
-        } else {
-            // Parent process
-            waitpid(pid, &status, 0);
-        }
+        tokens = tokenize(input);
+        print_tokens(tokens);
+        tokens = expand_tokens(tokens, env, SUCCESS); // TODO: replace SUCCESS with last exit command.
+        print_tokens(tokens);
+
         
         // Free the input string allocated by readline
         free(input);

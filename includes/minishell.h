@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/05/24 16:53:36 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/05/24 17:22:33 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,9 +103,10 @@ typedef struct s_command {
 // The Shell Struct
 typedef struct s_shell
 {
-	t_command	*command_head;
-	t_token		*token_head;
-	t_env		*env;
+	t_command		*commands;
+	t_token			*tokens;
+	t_env			*env;
+	t_exitstatus	exit_status;
 }	t_shell;
 
 //INPUT
@@ -119,6 +120,7 @@ t_token	*tokenize(char *input);
 char	**ft_split_shell(char *input);
 void	ft_free_array(char **arr);
 void	free_tokens(t_token *tokens);
+
 //parser.c
 t_command	*extract_commands(t_token *tokens);
 t_command *create_command(void);
@@ -126,8 +128,10 @@ void add_to_args(t_command *cmd, t_token *arg_token);
 bool	process_redirections(t_command *commands);
 bool	setup_pipes(t_command *commands);
 char **tokens_to_args(t_token *cmd, t_token *args);
+
 //path.c
 bool find_command_path(char *cmd, char **env, char *path_buffer);
+
 //execution.c
 int execute_commands(t_command *commands, t_shell *shell);
 int run_command_pipeline(t_command *commands, t_env *env_list);
@@ -139,6 +143,7 @@ int count_commands(t_command *commands);
 bool is_builtin(char *cmd);
 char **env_to_array(t_env *env_list);
 void free_commands(t_command *commands);
+
 // env
 t_env	*create_env(char **environ);
 char	*env_get(t_env *head, const char *key);
@@ -149,7 +154,7 @@ void	free_env(t_env *head);
 void print_tokens(t_token *tokens);
 
 // expander
-t_token *expand_tokens(t_token *token_head, t_env *env_head);
+t_token *expand_tokens(t_token *token_head, t_env *env_head, t_exitstatus status);
 #endif
 
 
