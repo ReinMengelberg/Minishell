@@ -6,6 +6,9 @@
 		"compare": "c",
 		"tuple": "c",
 		"type_traits": "c",
-		"utility": "c"
+		"utility": "c",
+		"algorithm": "c",
+		"history.h": "c",
+		"pipex.h": "c"
 	}
 }

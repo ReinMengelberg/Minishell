@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/04/29 14:01:51 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/05/14 15:08:53 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/05/21 12:36:14 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,17 @@ typedef struct s_pipex
 	int			count_cmds;
 	int			last_error;
 }	t_pipex;
+
+typedef struct s_command {
+	t_token				*cmd;
+	t_token				*args;
+	t_token				*input;
+	t_token				*output;
+	int					in_fd;
+	int					out_fd;
+	bool				is_piped;
+	struct s_command	*next;
+} t_command;
 
 //main.c
 void		init_pipex(t_pipex *pipex, char *argv[], int argc);

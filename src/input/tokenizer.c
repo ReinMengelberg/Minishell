@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:11:17 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/19 19:18:43 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/05/22 13:43:48 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,8 @@ bool check_input(char *input)
 			// Check tilde expansion
 			if (input[i] == '~' && (i == 0 || input[i-1] == ' '))
 				return true;
+			if (input[i] == '|' && input[i + 1] == '|')
+				return true;
 		}
 		i++;
 	}
@@ -140,19 +142,36 @@ t_tokentype	get_token_type(char *str)
 t_tokentype	set_token_type(char *token_str)
 {
 	t_tokentype	type;
-	static bool	next_arg = false;
+	static bool	cmd_found = false;
+	static bool	next_arg_is_redir_target = false;
 
-	type = get_token_type(token_str);
-	if (type == CMD && next_arg)
+	if (token_str == NULL)
 	{
-		type = ARG;
-		next_arg = false;
+		cmd_found = false;
+		next_arg_is_redir_target = false;
+		return (EMPTY);
 	}
-	if (type == CMD || type == INPUT || type == OUTPUT || type == HEREDOC || \
-		type == APPEND)
-		next_arg = true;
-	else if ( type == PIPE)
-		next_arg = false;
+	type = get_token_type(token_str);
+	if (next_arg_is_redir_target && type == CMD)
+	{
+		next_arg_is_redir_target = false;
+		return (ARG);
+	}
+	if (type == INPUT || type == OUTPUT || type == HEREDOC || type == APPEND)
+	{
+		next_arg_is_redir_target = true;
+		return (type);
+	}
+	if (type == PIPE)
+	{
+		cmd_found = false;
+		next_arg_is_redir_target = false;
+		return (type);
+	}
+	if (type == CMD && cmd_found)
+		return (ARG);
+	if (type == CMD)
+		cmd_found = true;
 	return (type);
 }
 
@@ -163,6 +182,7 @@ t_token	*tokenize(char *input)
 	int			i;
 	t_tokentype	type;
 
+	set_token_type(NULL);
 	if (check_input(input))
 	{
 		ft_putstr_fd("minishell: syntax error\n", 2);
