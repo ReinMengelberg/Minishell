@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/05/17 17:12:40 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/05/24 15:45:58 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,8 @@ typedef enum e_tokentype
 	APPEND,
 	INPUT,
 	PIPE,
-	END
+	EXPANSION,
+	END,
 }	t_tokentype;
 
 typedef enum e_fd
@@ -100,6 +101,7 @@ t_token	*create_token(char *str, t_tokentype type);
 void	add_token(t_token **tokens, t_token *new);
 t_tokentype	get_token_type(char *str);
 t_token	*tokenize(char *input);
+
 //token_utils.c
 char	**ft_split_shell(char *input);
 void	ft_free_array(char **arr);
@@ -107,8 +109,12 @@ void	free_tokens(t_token *tokens);
 
 // env
 t_env	*create_env(char **environ);
+char	*env_get(t_env *head, const char *key);
 void	print_env(t_env *head);
 
 //for testing
 void print_tokens(t_token *tokens);
+
+// expander
+t_token *expand_tokens(t_token *token_head, t_env *env_head);
 #endif
