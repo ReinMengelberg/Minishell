@@ -22,13 +22,13 @@ SRCS =	./src/builtin/cd.c \
 OBJ_DIR = objs
 OBJS = $(patsubst ./src/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 
-# TEST_SRCS = ./src/testing/test_tokenizer_to_cmd.c \
-# 			./src/input/tokenizer.c \
-# 			./src/input/token_utils.c \
-# 			./src/input/parser.c \
-# 			./src/env/env_init.c
+TEST_SRCS = ./src/testing/test_tokenizer_to_cmd.c \
+			./src/input/tokenizer.c \
+			./src/input/token_utils.c \
+			./src/input/parser.c \
+			./src/env/env_init.c
 
-# TEST_OBJS = $(patsubst ./src/%.c,$(OBJ_DIR)/%.o,$(TEST_SRCS))
+TEST_OBJS = $(patsubst ./src/%.c,$(OBJ_DIR)/%.o,$(TEST_SRCS))
 
 INTEGRATION_SRCS =	./src/testing/test_integration.c \
 					./src/input/tokenizer.c \

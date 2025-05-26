@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/20 14:28:09 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/24 15:46:27 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/24 17:16:48 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,7 @@ bool	process_redirections(t_command *commands)
 	t_token *filename;
 	int		saved_fds[MAX_COMMANDS][2]; // Save original FDs
 	int		cmd_count;
+	int		current_cmd;
 
 	cmd_count = 0;
 	filename = NULL;
@@ -99,7 +100,9 @@ bool	process_redirections(t_command *commands)
         cmd_count++;
         cmd = cmd->next;
     }
-	while(cmd)
+	cmd = commands;
+	current_cmd = 0;
+	while(cmd && current_cmd < cmd_count)
 	{
 		if (cmd->input)
 		{
@@ -107,11 +110,15 @@ bool	process_redirections(t_command *commands)
 			{
 				filename = cmd->input->next;
 				if (!filename)
-					return (false);
+                {
+                    cleanup_redirections(commands, saved_fds, current_cmd);
+                    return false;
+                }
 				cmd->in_fd = open(filename->str, O_RDONLY);
 				if (cmd->in_fd < 0)
 				{
 					perror("INPUT open error");
+                    cleanup_redirections(commands, saved_fds, current_cmd);
 					return (false);
 				}
 			}
@@ -139,30 +146,64 @@ bool	process_redirections(t_command *commands)
 			{
 				filename = cmd->output->next;
 				if (!filename)
-					return false;
+                {
+                    cleanup_redirections(commands, saved_fds, current_cmd);
+                    return false;
+                }
 				cmd->out_fd = open(filename->str, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 				if (cmd->out_fd < 0)
 				{
 					perror("OUTPUT open error");
-					return false;
+                    cleanup_redirections(commands, saved_fds, current_cmd);
+                    return false;
 				}
 			}
 			else if (cmd->output->type == APPEND)
 			{
 				filename = cmd->output->next;
-				if (!filename)
-					return false;
+                if (!filename)
+                {
+                    cleanup_redirections(commands, saved_fds, current_cmd);
+                    return false;
+                }
 				cmd->out_fd = open(filename->str, O_WRONLY | O_CREAT | O_APPEND, 0644);
 				if (cmd->out_fd < 0)
 				{
 					perror("APPEND open error");
-					return false;
+                    cleanup_redirections(commands, saved_fds, current_cmd);
+                    return false;
 				}
 			}
 		}
+		current_cmd++;
 		cmd = cmd->next;
 	}
 	return (true);
+}
+
+void cleanup_redirections(t_command *commands, int saved_fds[][2], int cmd_count)
+{
+    t_command *cmd = commands;
+    int i = 0;
+    
+    while (cmd && i < cmd_count)
+    {
+        // Close any new file descriptors that were opened
+        if (cmd->in_fd != saved_fds[i][0] && cmd->in_fd > 2)
+        {
+            close(cmd->in_fd);
+            cmd->in_fd = saved_fds[i][0];
+        }
+        
+        if (cmd->out_fd != saved_fds[i][1] && cmd->out_fd > 2)
+        {
+            close(cmd->out_fd);
+            cmd->out_fd = saved_fds[i][1];
+        }
+        
+        cmd = cmd->next;
+        i++;
+    }
 }
 
 bool	setup_pipes(t_command *commands)

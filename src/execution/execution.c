@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/22 16:13:16 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/26 16:27:55 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ int	run_command_pipeline(t_command *commands, t_env *env_list)
 	int		exit_status;
 	int		cmd_index;
 	t_command	*cmd;
+	t_command *temp;
 
 	cmd_count = count_commands(commands);
 	exit_status = 0;
@@ -57,6 +58,18 @@ int	run_command_pipeline(t_command *commands, t_env *env_list)
 			pids[cmd_index] = fork();
 			if (pids[cmd_index] == 0)
 			{
+                t_command *temp = commands;
+                while (temp)
+                {
+                    if (temp != cmd) // Skip current command's FDs
+                    {
+                        if (temp->in_fd > 2)
+                            close(temp->in_fd);
+                        if (temp->out_fd > 2)
+                            close(temp->out_fd);
+                    }
+                    temp = temp->next;
+                }
 				setup_command_redirections(cmd);
 				execute_external_command(cmd, env_list);
 				exit(127);
@@ -109,10 +122,11 @@ void	execute_external_command(t_command *cmd, t_env *env_list)
 	args = tokens_to_args(cmd->cmd, cmd->args);
 	envp = env_to_array(env_list);
 	printf("DEBUG: Executing command: %s\n", args[0]);
-	// printf("DEBUG: Environment initialized with %d variables\n", count_env_vars(env_list));
+    printf("DEBUG: FDs: in=%d, out=%d\n", cmd->in_fd, cmd->out_fd);
 	if (find_command_path(args[0], envp, path))
 	{
 		execve(path, args, envp);
+		perror("execve failed");
 	}
 	ft_dprintf(2, "minishell: %s: command not found\n", args[0]);
 	ft_free_array(args);

@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/22 16:30:02 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/22 16:36:52 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/24 17:22:29 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,12 +34,12 @@ int main(int argc, char **argv, char **envp)
 
 	// Simple commands
 	run_test("Simple command", "ls -la");
-	run_test("Simple command with arguments", "echo hello world");
+	run_test("Simple command with arguments", "cat hello world");
 
 	// Redirections
 	run_test("Output redirection", "ls -la > output.txt");
 	run_test("Input redirection", "cat < output.txt");
-	run_test("Append redirection", "echo appended >> output.txt");
+	run_test("Append redirection", "cat appended >> output.txt");
 
 	// Pipes
 	run_test("Simple pipe", "ls -la | grep a");
@@ -54,12 +54,12 @@ int main(int argc, char **argv, char **envp)
 	run_test("Delayed command", "< output.txt > processed.txt cat");
 
 	// Complex nested redirections
-	run_test("Multiple outputs", "echo hello > file1 > file2 > file3");
+	run_test("Multiple outputs", "cat hello > file1 > file2 > file3");
 	run_test("Pipeline with multiple redirections",
 			 "ls -la | grep a > grep_out.txt | wc -l > wc_out.txt");
 
 	// Clean up temporary files
-	sleep(120);
+	sleep(60);
 	cleanup_temp_files();
 
 	printf("\n\033[1;32mAll tests completed!\033[0m\n");
