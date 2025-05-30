@@ -1,5 +1,5 @@
 CC = cc
-CFLAGS = -Wall -Werror -Wextra
+CFLAGS = -Wall -Werror -Wextra -g3
 NAME = minishell
 LIBFT_DIR = ./includes/libft
 LIBFT = $(LIBFT_DIR)/libft.a
@@ -26,18 +26,20 @@ TEST_SRCS = ./src/testing/test_tokenizer_to_cmd.c \
 			./src/input/tokenizer.c \
 			./src/input/token_utils.c \
 			./src/input/parser.c \
+			./src/execution/redirections.c \
 			./src/env/env_init.c
 
 TEST_OBJS = $(patsubst ./src/%.c,$(OBJ_DIR)/%.o,$(TEST_SRCS))
 
-INTEGRATION_SRCS =	./src/testing/test_integration.c \
-					./src/input/tokenizer.c \
+INTEGRATION_SRCS =	./src/input/tokenizer.c \
 					./src/input/token_utils.c \
 					./src/input/parser.c \
 					./src/execution/execution.c \
+					./src/execution/redirections.c \
 					./src/execution/path.c \
 					./src/env/env_init.c \
-					./src/env/env_service.c
+					./src/env/env_service.c \
+					./src/testing/test_integration.c \
 
 INTEGRATION_OBJS = $(patsubst ./src/%.c,$(OBJ_DIR)/%.o,$(INTEGRATION_SRCS))
 

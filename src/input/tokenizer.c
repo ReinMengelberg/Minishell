@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:11:17 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/22 13:43:48 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/27 12:20:57 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -181,6 +181,7 @@ t_token	*tokenize(char *input)
 	char		**split;
 	int			i;
 	t_tokentype	type;
+	t_token		*token;
 
 	set_token_type(NULL);
 	if (check_input(input))
@@ -196,7 +197,15 @@ t_token	*tokenize(char *input)
 	while (split[i])
 	{
 		type = 	set_token_type(split[i]);
-		add_token(&tokens, create_token(split[i++], type));
+		token = create_token(split[i++], type);
+		printf("%p\n str: %s\n", token, token->str);
+		if (!token)
+		{
+			ft_free_array(split);
+			free_tokens(tokens);
+			return (NULL);
+		}
+		add_token(&tokens, token);
 	}
 	ft_free_array(split);
 	return(tokens);

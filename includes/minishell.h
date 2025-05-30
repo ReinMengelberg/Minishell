@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/05/24 17:20:13 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/27 11:20:16 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,6 +127,9 @@ bool	process_redirections(t_command *commands);
 void cleanup_redirections(t_command *commands, int saved_fds[][2], int cmd_count);
 bool	setup_pipes(t_command *commands);
 char **tokens_to_args(t_token *cmd, t_token *args);
+//redirections.c
+bool process_redirections(t_command *commands);
+void cleanup_redirections(t_command *commands, int saved_fds[][2], int cmd_count);
 //path.c
 bool find_command_path(char *cmd, char **env, char *path_buffer);
 //execution.c

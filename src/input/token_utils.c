@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:56:21 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/22 13:36:27 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/27 12:16:43 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,7 +160,12 @@ char	**ft_split_shell(char *input)
 
 		// Extract the next token
 		result[i] = extract_token(input, &pos);
-		i++;
+		if(!result[i])
+		{
+			ft_free_array(result);
+			return (NULL);
+		}
+			i++;
 	}
 
 	// NULL-terminate the array
@@ -190,6 +195,7 @@ void	free_tokens(t_token *tokens)
 	while (tokens)
 	{
 		tmp = tokens;
+		printf("%p\n str: %s\n", tokens, tokens->str);
 		tokens = tokens->next;
 		free(tmp->str);
 		free(tmp);

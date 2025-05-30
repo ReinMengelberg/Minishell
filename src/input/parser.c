@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/20 14:28:09 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/24 17:16:48 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/27 12:28:04 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,10 @@ t_command	*extract_commands(t_token *tokens)
 			}
 			t_command *new_cmd = create_command();
 			if (!new_cmd)
+			{
+				free_commands(cmd_head);
 				return (NULL);
+			}
 			if (!cmd_head)
 				cmd_head = new_cmd;
 			else
@@ -82,130 +85,6 @@ void add_to_args(t_command *cmd, t_token *arg_token)
 		cmd->args = arg_token;
 }
 
-bool	process_redirections(t_command *commands)
-{
-	t_command	*cmd;
-	t_token *filename;
-	int		saved_fds[MAX_COMMANDS][2]; // Save original FDs
-	int		cmd_count;
-	int		current_cmd;
-
-	cmd_count = 0;
-	filename = NULL;
-	cmd = commands;
-	while (cmd && cmd_count < MAX_COMMANDS)
-    {
-        saved_fds[cmd_count][0] = cmd->in_fd;
-        saved_fds[cmd_count][1] = cmd->out_fd;
-        cmd_count++;
-        cmd = cmd->next;
-    }
-	cmd = commands;
-	current_cmd = 0;
-	while(cmd && current_cmd < cmd_count)
-	{
-		if (cmd->input)
-		{
-			if (cmd->input->type == INPUT)
-			{
-				filename = cmd->input->next;
-				if (!filename)
-                {
-                    cleanup_redirections(commands, saved_fds, current_cmd);
-                    return false;
-                }
-				cmd->in_fd = open(filename->str, O_RDONLY);
-				if (cmd->in_fd < 0)
-				{
-					perror("INPUT open error");
-                    cleanup_redirections(commands, saved_fds, current_cmd);
-					return (false);
-				}
-			}
-			else if (cmd->input->type == HEREDOC)
-			{
-				// t_token *delimiter = cmd->input->next;
-				// if (!delimiter)
-				// 	return (false);
-				// int	pipe_fd[2];
-				// if (pipe(pipe_fd) == -1)
-				// {
-				// 	perror("HEREDOC pipe error");
-				// 	return (false);
-				// }
-				// // setup_heredoc(pipe_fd, delimiter->str);
-				// // need to REIMPLEMENT from pipex;
-				// cmd->in_fd = pipe_fd[0];
-				// close(pipe_fd[1]);
-				ft_dprintf(2, "HEREDOC has not been implemented yet");
-			}
-		}
-		if (cmd->output)
-		{
-			if (cmd->output->type == OUTPUT)
-			{
-				filename = cmd->output->next;
-				if (!filename)
-                {
-                    cleanup_redirections(commands, saved_fds, current_cmd);
-                    return false;
-                }
-				cmd->out_fd = open(filename->str, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-				if (cmd->out_fd < 0)
-				{
-					perror("OUTPUT open error");
-                    cleanup_redirections(commands, saved_fds, current_cmd);
-                    return false;
-				}
-			}
-			else if (cmd->output->type == APPEND)
-			{
-				filename = cmd->output->next;
-                if (!filename)
-                {
-                    cleanup_redirections(commands, saved_fds, current_cmd);
-                    return false;
-                }
-				cmd->out_fd = open(filename->str, O_WRONLY | O_CREAT | O_APPEND, 0644);
-				if (cmd->out_fd < 0)
-				{
-					perror("APPEND open error");
-                    cleanup_redirections(commands, saved_fds, current_cmd);
-                    return false;
-				}
-			}
-		}
-		current_cmd++;
-		cmd = cmd->next;
-	}
-	return (true);
-}
-
-void cleanup_redirections(t_command *commands, int saved_fds[][2], int cmd_count)
-{
-    t_command *cmd = commands;
-    int i = 0;
-    
-    while (cmd && i < cmd_count)
-    {
-        // Close any new file descriptors that were opened
-        if (cmd->in_fd != saved_fds[i][0] && cmd->in_fd > 2)
-        {
-            close(cmd->in_fd);
-            cmd->in_fd = saved_fds[i][0];
-        }
-        
-        if (cmd->out_fd != saved_fds[i][1] && cmd->out_fd > 2)
-        {
-            close(cmd->out_fd);
-            cmd->out_fd = saved_fds[i][1];
-        }
-        
-        cmd = cmd->next;
-        i++;
-    }
-}
-
 bool	setup_pipes(t_command *commands)
 {
 	t_command	*current;
@@ -223,7 +102,7 @@ bool	setup_pipes(t_command *commands)
 			current->out_fd = pipe_fd[1];
 		else
 			close(pipe_fd[1]);
-		if (current->in_fd == STDIN_FILENO)
+		if (current->next->in_fd == STDIN_FILENO)
 			current->next->in_fd = pipe_fd[0];
 		else
 			close(pipe_fd[0]);
@@ -235,39 +114,47 @@ bool	setup_pipes(t_command *commands)
 
 char **tokens_to_args(t_token *cmd, t_token *args)
 {
-    int count = 0;
-    t_token *arg = args;
-    char **result;
-    int i = 0;
+	int count = 0;
+	t_token *arg = args;
+	char **result;
+	int i = 0;
+	int j = 0;
 
-    // Count the number of arguments (including command)
-    if (cmd)
-        count++;
-    while (arg && arg->type == ARG)
-    {
-        count++;
-        arg = arg->next;
-    }
+	// Count the number of arguments (including command)
+	if (cmd)
+		count++;
+	while (arg && arg->type == ARG)
+	{
+		count++;
+		arg = arg->next;
+	}
 
-    // Allocate space for arguments plus NULL terminator
-    result = malloc(sizeof(char *) * (count + 1));
-    if (!result)
-        return NULL;
+	// Allocate space for arguments plus NULL terminator
+	result = malloc(sizeof(char *) * (count + 1));
+	if (!result)
+		return NULL;
 
-    // Add command as first argument
-    if (cmd)
-        result[i++] = ft_strdup(cmd->str);
+	// Add command as first argument
+	if (cmd)
+		result[i++] = ft_strdup(cmd->str); //
 
-    // Add remaining arguments
-    arg = args;
-    while (arg && arg->type == ARG)
-    {
-        result[i++] = ft_strdup(arg->str);
-        arg = arg->next;
-    }
-    
-    // NULL-terminate the array
-    result[i] = NULL;
-    
-    return result;
+	// Add remaining arguments
+	arg = args;
+	while (arg && arg->type == ARG)
+	{
+		result[i++] = ft_strdup(arg->str);
+		if (!result[i - 1])
+		{
+			while (j < i - 1)
+				free(result[j++]);
+			free(result);
+			return NULL;
+		}
+		arg = arg->next;
+	}
+	
+	// NULL-terminate the array
+	result[i] = NULL;
+	
+	return result;
 }

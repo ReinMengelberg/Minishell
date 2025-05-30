@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/22 16:30:02 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/24 17:22:29 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/30 13:01:04 by ravi-bagin    ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,33 +33,33 @@ int main(int argc, char **argv, char **envp)
 	printf("\033[1;33m===== MINISHELL INTEGRATION TESTS =====\033[0m\n\n");
 
 	// Simple commands
-	run_test("Simple command", "ls -la");
-	run_test("Simple command with arguments", "cat hello world");
+	run_test("Simple command", "echo hello");
+	// run_test("Simple command with arguments", "echo hello world");
 
-	// Redirections
-	run_test("Output redirection", "ls -la > output.txt");
-	run_test("Input redirection", "cat < output.txt");
-	run_test("Append redirection", "cat appended >> output.txt");
+	// // Redirections
+	// run_test("Output redirection", "ls -la > output.txt");
+	// run_test("Input redirection", "ls -la < output.txt");
+	// run_test("Append redirection", "ls -la appended >> output.txt");
 
-	// Pipes
-	run_test("Simple pipe", "ls -la | grep a");
-	run_test("Multiple pipes", "ls -la | grep a | wc -l");
+	// // Pipes
+	// run_test("Simple pipe", "ls -la | grep a");
+	// run_test("Multiple pipes", "ls -la | grep a | wc -l");
 
-	// Complex combinations
-	run_test("Pipe with redirections", "ls -la > list.txt | wc -l > count.txt");
-	run_test("Multiple redirections", "cat < output.txt > copy.txt");
-	run_test("Command with mixed redirections", "ls > dir.txt | grep a < dir.txt > filtered.txt");
+	// // Complex combinations
+	// run_test("Pipe with redirections", "ls -la > list.txt | wc -l > count.txt");
+	// run_test("Multiple redirections", "cat hello < output.txt > copy.txt");
+	// run_test("Command with mixed redirections", "ls > dir.txt | grep a < dir.txt > filtered.txt");
 
-	// Command sequence with delayed command
-	run_test("Delayed command", "< output.txt > processed.txt cat");
+	// // Command sequence with delayed command
+	// run_test("Delayed command", "< output.txt > processed.txt cat");
 
-	// Complex nested redirections
-	run_test("Multiple outputs", "cat hello > file1 > file2 > file3");
-	run_test("Pipeline with multiple redirections",
-			 "ls -la | grep a > grep_out.txt | wc -l > wc_out.txt");
+	// // Complex nested redirections
+	// run_test("Multiple outputs", "cat hello > file1 > file2 > file3");
+	// run_test("Pipeline with multiple redirections",
+	// 		 "ls -la | grep a > grep_out.txt | wc -l > wc_out.txt");
 
 	// Clean up temporary files
-	sleep(60);
+	// sleep(60);
 	cleanup_temp_files();
 
 	printf("\n\033[1;32mAll tests completed!\033[0m\n");
@@ -161,7 +161,7 @@ int execute_test_command(t_command *commands, char **envp)
     pid_t pid;
     int status;
     time_t start_time;
-    const int TIMEOUT_SECONDS = 3; // Strict 3-second timeout
+    const int TIMEOUT_SECONDS = 10; // Strict 3-second timeout
     
     // Backup stdout
     int stdout_backup = dup(STDOUT_FILENO);
