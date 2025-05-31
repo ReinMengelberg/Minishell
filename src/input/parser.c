@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/20 14:28:09 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/27 12:28:04 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/31 14:22:03 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,9 @@ t_command	*extract_commands(t_token *tokens)
 		}
 		if (current->type == CMD)
 			current_cmd->cmd = current;
-		else if (current->type == ARG)
+		else if (current->type == ARG && \
+			!(current->prev && (current->prev->type == INPUT || current->prev->type == OUTPUT || \
+            current->prev->type == APPEND || current->prev->type == HEREDOC)))
 			add_to_args(current_cmd, current);
 		else if (current->type == INPUT || current->type == HEREDOC)
 			current_cmd->input = current;
@@ -88,11 +90,11 @@ void add_to_args(t_command *cmd, t_token *arg_token)
 bool	setup_pipes(t_command *commands)
 {
 	t_command	*current;
+	int pipe_fd[2];
 
 	current = commands;
 	while (current && current->next)
 	{
-		int pipe_fd[2];
 		if (pipe(pipe_fd) == -1)
 		{
 			perror("setup_pipes: pipe creation failed");

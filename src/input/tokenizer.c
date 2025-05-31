@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:11:17 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/27 12:20:57 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/31 12:06:16 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,7 +198,6 @@ t_token	*tokenize(char *input)
 	{
 		type = 	set_token_type(split[i]);
 		token = create_token(split[i++], type);
-		printf("%p\n str: %s\n", token, token->str);
 		if (!token)
 		{
 			ft_free_array(split);

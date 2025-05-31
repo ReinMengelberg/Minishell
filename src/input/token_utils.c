@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:56:21 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/27 12:16:43 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/31 12:05:46 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,7 +195,6 @@ void	free_tokens(t_token *tokens)
 	while (tokens)
 	{
 		tmp = tokens;
-		printf("%p\n str: %s\n", tokens, tokens->str);
 		tokens = tokens->next;
 		free(tmp->str);
 		free(tmp);

@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/27 12:39:52 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/31 20:39:17 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,16 +24,15 @@ int	execute_commands(t_command *commands, t_shell *shell)
 		cleanup_commands(commands);
 		return (1);
 	}
-	// if (!setup_pipes(commands))
-	// {
-	// 	free_tokens(shell->token_head);
-	// 	cleanup_commands(commands);
-	// 	return (1);
-	// }
-	// exit_status = run_command_pipeline(commands, shell->env);
-	exit_status = 1;
+	if (!setup_pipes(commands))
+	{
+		free_tokens(shell->token_head);
+		cleanup_commands(commands);
+		return (1);
+	}
+	exit_status = run_command_pipeline(commands, shell->env);
 	free_tokens(shell->token_head);
-	cleanup_commands(commands);
+	free_commands(commands);
 	return (exit_status);
 }
 
@@ -85,6 +84,8 @@ int	run_command_pipeline(t_command *commands, t_env *env_list)
 		cmd_index++;
 		cmd = cmd->next;
 	}
+	exit_status = wait_for_children(pids, cmd_count);
+	free(pids);
 	cmd = commands;
 	while (cmd)
 	{
@@ -94,8 +95,6 @@ int	run_command_pipeline(t_command *commands, t_env *env_list)
 			close(cmd->out_fd);
 		cmd = cmd->next;
 	}
-	exit_status = wait_for_children(pids, cmd_count);
-	free(pids);
 	return (exit_status);
 }
 
@@ -149,19 +148,18 @@ void	execute_external_command(t_command *cmd, t_env *env_list)
 		free_env(env_list);
 		exit(127);
 	}
-	printf("DEBUG: Executing command: %s\n", args[0]);
-	printf("DEBUG: FDs: in=%d, out=%d\n", cmd->in_fd, cmd->out_fd);
 	if (find_command_path(args[0], envp, path))
 	{
 		execve(path, args, envp);
 		perror("execve failed");
 	}
-	ft_dprintf(2, "minishell: %s: command not found\n", args[0]);
+	else
+		ft_dprintf(2, "minishell: %s: command not found\n", args[0]);
 	ft_free_array(args);
 	ft_free_array(envp);
 	exit(127);
 }
-//still needs to be fixed
+
 int	wait_for_children(pid_t *pids, int count)
 {
 	int status;

@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/22 16:30:02 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/30 13:01:04 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/31 20:33:14 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ extern char **environ;
 // Function declarations
 void run_test(char *test_name, char *command);
 void print_commands(t_command *cmd);
-int execute_test_command(t_command *commands, char **envp);
 void cleanup_temp_files(void);
 void free_commands(t_command *commands);
 
@@ -33,8 +32,10 @@ int main(int argc, char **argv, char **envp)
 	printf("\033[1;33m===== MINISHELL INTEGRATION TESTS =====\033[0m\n\n");
 
 	// Simple commands
-	run_test("Simple command", "echo hello");
-	// run_test("Simple command with arguments", "echo hello world");
+	run_test("Simple command", "ls | cat output.txt");
+	// ABOVE COMMAND DOESNT WORK BECAUSE OF INPROPERLY SETTING UP in_fd of the 2nd command
+	// run_test("Simple command with arguments", "cat hello world | grep 'hello' | grep 'hello' | grep 'hello' > test_output.txt");
+	// run_test("das", "ls");
 
 	// // Redirections
 	// run_test("Output redirection", "ls -la > output.txt");
@@ -60,7 +61,7 @@ int main(int argc, char **argv, char **envp)
 
 	// Clean up temporary files
 	// sleep(60);
-	cleanup_temp_files();
+	// cleanup_temp_files();
 
 	printf("\n\033[1;32mAll tests completed!\033[0m\n");
 	return 0;
@@ -68,59 +69,73 @@ int main(int argc, char **argv, char **envp)
 
 void run_test(char *test_name, char *command)
 {
+	t_shell	*shell;
 	printf("\n\033[1;34m===== TEST: %s =====\033[0m\n", test_name);
 	printf("Command: '%s'\n\n", command);
 
+	shell = malloc(sizeof(t_shell));
 	// Tokenize the input
-	t_token *tokens = tokenize(command);
-	if (!tokens)
+	shell->token_head = tokenize(command);
+	if (!shell->token_head)
 	{
 		printf("\033[1;31mTokenization failed\033[0m\n");
 		return;
 	}
 
-	// Print tokens
+	// Print shell->token_head
 	printf("Tokenization Result:\n");
-	print_tokens(tokens);
+	print_tokens(shell->token_head);
 
 	// Extract commands
 	printf("\nCommand Extraction Result:\n");
-	t_command *commands = extract_commands(tokens);
-	if (!commands)
+	shell->command_head = extract_commands(shell->token_head);
+	if (!shell->command_head)
 	{
 		printf("\033[1;31mCommand extraction failed\033[0m\n");
-		free_tokens(tokens);
+		free_tokens(shell->token_head);
 		return;
 	}
 
+	shell->env = create_env(environ);
+	// printf("\nPrinting environment\n\n");
+	// print_env(shell->env);
+
 	// Print command structure
-	print_commands(commands);
+	// printf("\nBefore process_redirections and setup_pipes\n\n");
+	// print_commands(shell->command_head);
 
 	// Process redirections
 	printf("\nRedirection Processing Result: ");
-	if (process_redirections(commands))
+	if (process_redirections(shell->command_head))
 		printf("\033[1;32mSuccess\033[0m\n");
 	else
 		printf("\033[1;31mFailed\033[0m\n");
 
+	// printf("\nAfter process_redirections\n\n");
+	// print_commands(shell->command_head);
+
 	// Setup pipes
 	printf("Pipe Setup Result: ");
-	if (setup_pipes(commands))
+	if (setup_pipes(shell->command_head))
 		printf("\033[1;32mSuccess\033[0m\n");
 	else
 		printf("\033[1;31mFailed\033[0m\n");
+
+	printf("\nAfter process_redirections and setup_pipes\n\n");
+	print_commands(shell->command_head);
 
 	// Execute command
 	printf("\nExecution Output:\n");
 	printf("------------------------\n");
-	int status = execute_test_command(commands, environ);
+	int status = execute_commands(shell->command_head, shell);
 	printf("------------------------\n");
 	printf("Exit Status: %d\n", status);
 
-	// Cleanup
-	free_tokens(tokens);
-	free_commands(commands);
+	// // Cleanup
+	// // free_and_exit(shell);
 	printf("\033[1;32mTest completed\033[0m\n");
+	free_env(shell->env);
+	free(shell);
 }
 
 // Print command structure
@@ -142,11 +157,11 @@ void print_commands(t_command *cmd)
 		}
 		printf("\n");
 
-		printf("  Input: %s\n", cmd->input ? cmd->input->str : "STDIN");
+		printf("  Input: %s\n", cmd->input ? cmd->input->str : "No token(STDIN)");
 		if (cmd->input && cmd->input->next)
 			printf("  Input File: %s\n", cmd->input->next->str);
 
-		printf("  Output: %s\n", cmd->output ? cmd->output->str : "STDOUT");
+		printf("  Output: %s\n", cmd->output ? cmd->output->str : "No token(STDOUT)");
 		if (cmd->output && cmd->output->next)
 			printf("  Output File: %s\n", cmd->output->next->str);
 
@@ -155,156 +170,6 @@ void print_commands(t_command *cmd)
 
 		cmd = cmd->next;
 	}
-}
-int execute_test_command(t_command *commands, char **envp)
-{
-    pid_t pid;
-    int status;
-    time_t start_time;
-    const int TIMEOUT_SECONDS = 10; // Strict 3-second timeout
-    
-    // Backup stdout
-    int stdout_backup = dup(STDOUT_FILENO);
-    if (stdout_backup == -1) {
-        perror("dup");
-        return 1;
-    }
-    
-    // Create a pipe to capture output
-    int pipe_fd[2];
-    if (pipe(pipe_fd) == -1) {
-        perror("pipe");
-        close(stdout_backup);
-        return 1;
-    }
-    
-    // Fork a child process
-    pid = fork();
-    if (pid == -1) {
-        perror("fork");
-        close(pipe_fd[0]);
-        close(pipe_fd[1]);
-        close(stdout_backup);
-        return 1;
-    }
-    
-    if (pid == 0) {
-        // Child process
-        
-        // Redirect stdout to pipe
-        if (dup2(pipe_fd[1], STDOUT_FILENO) == -1) {
-            perror("dup2");
-            exit(1);
-        }
-        close(pipe_fd[0]); // Close read end in child
-        
-        // Set up shell structure
-        t_shell shell;
-        shell.command_head = commands;
-        shell.token_head = NULL;
-        shell.env = create_env(envp ? envp : environ);
-        
-        if (!shell.env) {
-            ft_dprintf(2, "Failed to create environment\n");
-            exit(1);
-        }
-        
-        // Execute commands
-        int result = execute_commands(commands, &shell);
-        
-        // Clean up
-        if (shell.env)
-            free_env(shell.env);
-            
-        // Make sure output is flushed
-        fflush(stdout);
-        close(pipe_fd[1]);
-        exit(result);
-    } 
-    else {
-        // Parent process
-        close(pipe_fd[1]); // Close write end in parent
-        
-        // Restore stdout
-        dup2(stdout_backup, STDOUT_FILENO);
-        close(stdout_backup);
-        
-        // Check if command has output redirection
-        bool has_redirection = false;
-        t_command *cmd_check = commands;
-        while (cmd_check) {
-            if (cmd_check->output != NULL) {
-                has_redirection = true;
-                break;
-            }
-            cmd_check = cmd_check->next;
-        }
-        
-        // If output is redirected, display a message and use a short timeout
-        if (has_redirection) {
-            printf("(Output redirected to file)\n");
-        }
-        
-        // Read output with strict timeout
-        char buffer[4096];
-        ssize_t bytes_read;
-        start_time = time(NULL);
-        
-        // Set non-blocking mode
-        int flags = fcntl(pipe_fd[0], F_GETFL, 0);
-        fcntl(pipe_fd[0], F_SETFL, flags | O_NONBLOCK);
-        
-        // Read with timeout
-        bool timeout_occurred = false;
-        while (!timeout_occurred) {
-            bytes_read = read(pipe_fd[0], buffer, sizeof(buffer) - 1);
-            
-            if (bytes_read > 0) {
-                buffer[bytes_read] = '\0';
-                printf("%s", buffer);
-                start_time = time(NULL); // Reset timeout on successful read
-            } 
-            else if (bytes_read == 0) {
-                // EOF reached
-                break;
-            }
-            else {
-                // Check if we've timed out
-                if (time(NULL) - start_time >= TIMEOUT_SECONDS) {
-                    timeout_occurred = true;
-                } else {
-                    usleep(50000); // 50ms sleep to prevent CPU spinning
-                }
-            }
-        }
-        
-        close(pipe_fd[0]);
-        
-        // Check if child is still running
-        int wait_result = waitpid(pid, &status, WNOHANG);
-        if (wait_result == 0) {
-            // Child still running, kill it
-            printf("Command execution timed out, terminating...\n");
-            kill(pid, SIGTERM);
-            usleep(100000); // Give it 100ms to terminate
-            
-            // Force kill if still running
-            wait_result = waitpid(pid, &status, WNOHANG);
-            if (wait_result == 0) {
-                kill(pid, SIGKILL);
-                waitpid(pid, &status, 0);
-            }
-            
-            return 1; // Return error for timeout
-        }
-        
-        if (WIFEXITED(status))
-            return WEXITSTATUS(status);
-        else if (WIFSIGNALED(status))
-            return 128 + WTERMSIG(status);
-        else
-            return 1;
-    }
 }
 
 // Clean up temporary files created during testing
