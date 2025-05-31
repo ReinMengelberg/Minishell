@@ -52,7 +52,7 @@ $(OBJ_DIR):
 
 $(NAME): $(OBJ_DIR) $(OBJS) $(LIBFT)
 	$(CC) $(CFLAGS) $(OBJS) $(LIBFT) $(INCLUDES) $(LIBS) -o $(NAME)
-	# @cat ./includes/armadillo.txt
+	@cat ./includes/armadillo.txt
 
 $(LIBFT):
 	@$(MAKE) -C $(LIBFT_DIR)

@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/05/31 12:50:08 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/05/31 13:35:52 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,8 @@
 #include <readline/history.h>
 
 #define MAX_COMMANDS 128
+#define MAX_ARGS 64
+#define PROMPT "armadillo $ "
 
 typedef enum e_tokentype
 {
