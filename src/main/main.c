@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/05/24 17:41:46 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/05/31 12:46:45 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,6 @@ int main()
         printf("Error initializing shell\n");
         return (1);
     }
-    print_env(shell->env);
     
     while (shell->status)
     {
@@ -76,8 +75,13 @@ int main()
         }
         
         shell->tokens = tokenize(input);
-        print_tokens(shell->tokens);
         shell->tokens = expand_tokens(shell->tokens, shell->env, shell->exit_status);
+        if (!shell->tokens)
+        {
+            shell->exit_status = ERROR_INVALID_INPUT;
+            continue;
+        }
+        shell->commands = extract_commands(shell->tokens);
         print_tokens(shell->tokens);
         
         // Free the input string allocated by readline
