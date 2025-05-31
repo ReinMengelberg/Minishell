@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/05/24 17:26:08 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/05/31 12:46:45 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,44 +17,82 @@
 
 extern char **environ;
 
-int main() {
-    char *input;
-    int status = 1;
-    t_env   *env;
-    t_token *tokens;
+t_shell *init_shell()
+{
+    t_shell *shell;
 
-    env = create_env(environ);
-    print_env(env);
+    shell = (t_shell *)malloc(sizeof(t_shell));
+    if (!shell)
+        return (NULL);
     
-    while (status) {
+    shell->commands = NULL;
+    shell->tokens = NULL;
+    shell->env = create_env(environ);
+    if (!shell->env)
+    {
+        free(shell);
+        return (NULL);
+    }
+    shell->exit_status = SUCCESS; // Assuming SUCCESS is defined in minishell.h
+    shell->status = 1; // 1 = shell is running
+    
+    return (shell);
+}
+
+int main()
+{
+    char *input;
+    t_shell *shell;
+
+    shell = init_shell();
+    if (!shell)
+    {
+        printf("Error initializing shell\n");
+        return (1);
+    }
+    
+    while (shell->status)
+    {
         // Display prompt and get input using readline
         input = readline(PROMPT);
         
         // Handle EOF or error
-        if (input == NULL) {
+        if (input == NULL)
+        {
             printf("\n");
             break;
         }
         
         // Skip empty input but add to history if not empty
-        if (input[0] != '\0') {
+        if (input[0] != '\0')
+        {
             add_history(input);
-        } else {
+        }
+        else
+        {
             free(input);
             continue;
         }
         
-        tokens = tokenize(input);
-        print_tokens(tokens);
-        tokens = expand_tokens(tokens, env, SUCCESS); // TODO: replace SUCCESS with last exit command.
-        print_tokens(tokens);
-
+        shell->tokens = tokenize(input);
+        shell->tokens = expand_tokens(shell->tokens, shell->env, shell->exit_status);
+        if (!shell->tokens)
+        {
+            shell->exit_status = ERROR_INVALID_INPUT;
+            continue;
+        }
+        shell->commands = extract_commands(shell->tokens);
+        print_tokens(shell->tokens);
         
         // Free the input string allocated by readline
         free(input);
+        
+        // Clear tokens between commands
+        // TODO: Add proper token cleanup function
     }
     
+    // TODO: Add function to free all shell resources
     printf("Shell terminated\n");
-    return 0;
+    return (shell->exit_status);
 }
 

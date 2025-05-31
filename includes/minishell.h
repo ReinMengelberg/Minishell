@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/05/24 17:22:33 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/05/31 12:50:08 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@
 # include <signal.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+
+#define MAX_COMMANDS 128
 
 typedef enum e_tokentype
 {
@@ -51,7 +53,10 @@ typedef enum e_fd
 typedef enum e_exitstatus
 {
 	SUCCESS = 0,
-	FAILURE = 1
+	FAILURE = 1,
+	ERROR_NULL_POINTER = -1,
+    ERROR_INVALID_INPUT = -2,
+    ERROR_MEMORY_ALLOCATION = -3
 }	t_exitstatus;
 
 // Token Linked List
@@ -100,6 +105,11 @@ typedef struct s_command {
 	struct s_command	*next;
 } t_command;
 
+typedef struct s_validator {
+	bool valid;
+	char *msg;
+} t_validator;
+
 // The Shell Struct
 typedef struct s_shell
 {
@@ -107,6 +117,7 @@ typedef struct s_shell
 	t_token			*tokens;
 	t_env			*env;
 	t_exitstatus	exit_status;
+	int				status;
 }	t_shell;
 
 //INPUT

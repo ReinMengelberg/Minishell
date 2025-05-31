@@ -15,6 +15,9 @@ SRCS =	./src/builtin/cd.c \
 		./src/input/token_utils.c \
 		./src/input/tokenizer.c \
 		./src/input/expander.c \
+		./src/input/parser.c \
+		./src/execution/execution.c \
+		./src/execution/path.c \
 		./src/env/env_init.c \
 		./src/env/env_service.c \
 		./src/main/main.c
@@ -29,15 +32,6 @@ OBJS = $(patsubst ./src/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 # 			./src/env/env_init.c
 
 # TEST_OBJS = $(patsubst ./src/%.c,$(OBJ_DIR)/%.o,$(TEST_SRCS))
-
-INTEGRATION_SRCS =	./src/testing/test_integration.c \
-					./src/input/tokenizer.c \
-					./src/input/token_utils.c \
-					./src/input/parser.c \
-					./src/execution/execution.c \
-					./src/execution/path.c \
-					./src/env/env_init.c \
-					./src/env/env_service.c
 
 INTEGRATION_OBJS = $(patsubst ./src/%.c,$(OBJ_DIR)/%.o,$(INTEGRATION_SRCS))
 
