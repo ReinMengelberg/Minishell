@@ -6,90 +6,108 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/05/17 17:11:34 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/05/31 14:09:22 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-#define MAX_ARGS 64
-#define PROMPT "armadillo $ "
-
 extern char **environ;
+volatile sig_atomic_t g_signal_received = 0;
 
-int main() {
-    char *input;
-    char *args[MAX_ARGS];
-    int status = 1;
-    t_env *env;
+// Signal handler for SIGINT (Ctrl+C)
+void handle_sigint(int sig)
+{
+    g_signal_received = sig;
+    // Write newline to move to next line
+    write(STDOUT_FILENO, "\n", 1);
+    // Clear the current readline line
+    rl_on_new_line();
+    rl_replace_line("", 0);
+    rl_redisplay();
+}
 
-    env = create_env(**environ);
-    printf('Printing environment');
-    print_env(env);
+void setup_signals(void)
+{
+    struct sigaction sa;
     
-    while (status) {
+    sa.sa_handler = handle_sigint;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+    sigaction(SIGINT, &sa, NULL);
+    
+    // Ignore SIGQUIT (Ctrl+\) in interactive mode
+    signal(SIGQUIT, SIG_IGN);
+}
+
+t_shell *init_shell()
+{
+    t_shell *shell;
+
+    shell = (t_shell *)malloc(sizeof(t_shell));
+    if (!shell)
+        return (NULL);
+    
+    shell->commands = NULL;
+    shell->tokens = NULL;
+    shell->env = create_env(environ);
+    if (!shell->env)
+    {
+        free(shell);
+        return (NULL);
+    }
+    shell->exit_status = SUCCESS; // Assuming SUCCESS is defined in minishell.h
+    shell->status = 1; // 1 = shell is running
+    
+    return (shell);
+}
+
+int main()
+{
+    char *input;
+    t_shell *shell;
+
+    shell = init_shell();
+    if (!shell)
+    {
+        printf("Error initializing shell\n");
+        return (1);
+    }
+    
+    // Set up signal handling
+    setup_signals();
+    
+    while (shell->status)
+    {
         // Display prompt and get input using readline
         input = readline(PROMPT);
         
-        // Handle EOF or error
-        if (input == NULL) {
-            printf("\n");
+        // Handle EOF (Ctrl+D) or error
+        if (input == NULL)
             break;
-        }
-        
-        // Skip empty input but add to history if not empty
-        if (input[0] != '\0') {
+        if (input[0] != '\0')
+        {
             add_history(input);
-        } else {
-            free(input);
-            continue;
-        }
-        
-        // Exit command
-        if (strcmp(input, "exit") == 0) {
-            free(input);
-            status = 0;
-            continue;
-        }
-        
-        // Parse input into arguments
-        int arg_count = 0;
-        char *token = strtok(input, " ");
-        
-        while (token != NULL && arg_count < MAX_ARGS - 1) {
-            args[arg_count++] = token;
-            token = strtok(NULL, " ");
-        }
-        args[arg_count] = NULL; // Null-terminate the argument list
-        
-        // Skip if empty command
-        if (arg_count == 0) {
-            free(input);
-            continue;
-        }
-        
-        // Fork and execute
-        pid_t pid = fork();
-        
-        if (pid < 0) {
-            // Fork error
-            perror("fork failed");
-        } else if (pid == 0) {
-            // Child process
-            if (execvp(args[0], args) == -1) {
-                perror("command execution failed");
-                exit(EXIT_FAILURE);
+            shell->tokens = tokenize(input);
+            shell->tokens = expand_tokens(shell->tokens, shell->env, shell->exit_status);
+            print_tokens(shell->tokens);
+            if (!shell->tokens)
+            {
+                shell->exit_status = ERROR_INVALID_INPUT;
+                free(input);
+                continue;
             }
-        } else {
-            // Parent process
-            waitpid(pid, &status, 0);
+            shell->commands = extract_commands(shell->tokens);
+            
+            // TODO: Execute the commands here
+            
+            // Clear tokens between commands
+            // TODO: Add proper token cleanup function
         }
         
         // Free the input string allocated by readline
         free(input);
     }
-    
-    printf("Shell terminated\n");
-    return 0;
+    printf("exit\n");
+    return (shell->exit_status);
 }
-

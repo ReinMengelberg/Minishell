@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/06/02 16:50:53 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/03 11:45:53 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,6 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#define MAX_COMMANDS 128
 typedef enum e_tokentype
 {
 	EMPTY,
@@ -52,7 +51,10 @@ typedef enum e_fd
 typedef enum e_exitstatus
 {
 	SUCCESS = 0,
-	FAILURE = 1
+	FAILURE = 1,
+	ERROR_NULL_POINTER = -1,
+    ERROR_INVALID_INPUT = -2,
+    ERROR_MEMORY_ALLOCATION = -3
 }	t_exitstatus;
 
 // Token Linked List
@@ -101,12 +103,19 @@ typedef struct s_command {
 	struct s_command	*next;
 } t_command;
 
+typedef struct s_validator {
+	bool valid;
+	char *msg;
+} t_validator;
+
 // The Shell Struct
 typedef struct s_shell
 {
-	t_command	*command_head;
-	t_token		*token_head;
-	t_env		*env;
+	t_command		*commands;
+	t_token			*tokens;
+	t_env			*env;
+	t_exitstatus	exit_status;
+	int				status;
 }	t_shell;
 
 //INPUT
@@ -115,10 +124,12 @@ t_token	*create_token(char *str, t_tokentype type);
 void	add_token(t_token **tokens, t_token *new);
 t_tokentype	get_token_type(char *str);
 t_token	*tokenize(char *input);
+
 //token_utils.c
 char	**ft_split_shell(char *input);
 void	ft_free_array(char **arr);
 void	free_tokens(t_token *tokens);
+
 //parser.c
 t_command	*extract_commands(t_token *tokens);
 t_command *create_command(void);
@@ -133,6 +144,7 @@ bool process_redirections(t_command *commands);
 void cleanup_redirections(t_command *commands, int saved_fds[][2], int cmd_count);
 //path.c
 bool find_command_path(char *cmd, char **env, char *path_buffer);
+
 //execution.c
 int execute_commands(t_command *commands, t_shell *shell);
 int run_command_pipeline(t_command *commands, t_env *env_list);
@@ -144,13 +156,18 @@ int count_commands(t_command *commands);
 bool is_builtin(char *cmd);
 char **env_to_array(t_env *env_list);
 void free_commands(t_command *commands);
+
 // env
 t_env	*create_env(char **environ);
+char	*env_get(t_env *head, const char *key);
 void	print_env(t_env *head);
 void	free_env(t_env *head);
 
 //for testing
 void print_tokens(t_token *tokens);
+
+// expander
+t_token *expand_tokens(t_token *token_head, t_env *env_head, t_exitstatus status);
 #endif
 
 

@@ -14,10 +14,13 @@ SRCS =	./src/builtin/cd.c \
 		./src/builtin/unset.c \
 		./src/input/token_utils.c \
 		./src/input/tokenizer.c \
-		./src/main/test.c \
+		./src/input/expander.c \
+		./src/input/parser.c \
+		./src/execution/execution.c \
+		./src/execution/path.c \
 		./src/env/env_init.c \
 		./src/env/env_service.c \
-		# ./src/main/main.c
+		./src/main/main.c
 
 OBJ_DIR = objs
 OBJS = $(patsubst ./src/%.c,$(OBJ_DIR)/%.o,$(SRCS))
@@ -60,7 +63,7 @@ $(OBJ_DIR):
 
 $(NAME): $(OBJ_DIR) $(OBJS) $(LIBFT)
 	$(CC) $(CFLAGS) $(OBJS) $(LIBFT) $(INCLUDES) $(LIBS) -o $(NAME)
-	# @cat ./includes/armadillo.txt
+	@cat ./includes/armadillo.txt
 
 $(LIBFT):
 	@$(MAKE) -C $(LIBFT_DIR)

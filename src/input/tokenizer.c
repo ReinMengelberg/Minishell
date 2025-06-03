@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:11:17 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/31 12:06:16 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/03 11:48:35 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ bool check_input(char *input)
 			if (input[i] == '$' && input[i+1] == '(' && input[i+2] == '(')
 				return true;
 			// Check glob characters
-			if ((input[i] == '*' || input[i] == '?') && quote == 0)
+			if ((input[i] == '*' || (input[i] == '?' && input[i + 1] != '\0')) && quote == 0)
 				return true;
 			// Check tilde expansion
 			if (input[i] == '~' && (i == 0 || input[i-1] == ' '))
