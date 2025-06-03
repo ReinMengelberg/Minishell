@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/22 15:26:27 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/22 16:10:45 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/05/31 20:21:19 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,6 @@ bool find_command_path(char *cmd, char **env, char *path_buffer)
 	char **paths;
 	int	result;
 
-	printf("DEBUG: Searching for command: %s\n", cmd);
 	if (!cmd || !env || !path_buffer)
 		return (false);
 	if (ft_strchr(cmd, '/'))

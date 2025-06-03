@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/22 16:13:16 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/06/02 16:55:55 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,12 +18,26 @@ int	execute_commands(t_command *commands, t_shell *shell)
 
 	if (!commands)
 		return (1);
+	if (!check_commands(commands))
+	{
+		free_tokens(shell->token_head);
+		return (free_commands(commands), 1);
+	}
 	if (!process_redirections(commands))
+	{
+		free_tokens(shell->token_head);
+		free_commands(commands);
 		return (1);
+	}
 	if (!setup_pipes(commands))
+	{
+		free_tokens(shell->token_head);
+		free_commands(commands);
 		return (1);
+	}
 	exit_status = run_command_pipeline(commands, shell->env);
-	cleanup_commands(commands);
+	free_tokens(shell->token_head);
+	free_commands(commands);
 	return (exit_status);
 }
 
@@ -34,17 +48,15 @@ int	run_command_pipeline(t_command *commands, t_env *env_list)
 	int		exit_status;
 	int		cmd_index;
 	t_command	*cmd;
+	t_command *temp;
 
 	cmd_count = count_commands(commands);
 	exit_status = 0;
 	cmd_index = 0;
 	cmd = commands;
-	pids = malloc(sizeof(pid_t) * cmd_count);
+	pids = ft_calloc(cmd_count, sizeof(pid_t));
 	if (!pids)
-	{
-		free(pids);
 		return (1);
-	}
 	while (cmd)
 	{
 		if (is_builtin(cmd->cmd->str))
@@ -57,6 +69,18 @@ int	run_command_pipeline(t_command *commands, t_env *env_list)
 			pids[cmd_index] = fork();
 			if (pids[cmd_index] == 0)
 			{
+				temp = commands;
+				while (temp)
+				{
+					if (temp != cmd) // Skip current command's FDs
+					{
+						if (temp->in_fd > 2)
+							close(temp->in_fd);
+						if (temp->out_fd > 2)
+							close(temp->out_fd);
+					}
+					temp = temp->next;
+				}
 				setup_command_redirections(cmd);
 				execute_external_command(cmd, env_list);
 				exit(127);
@@ -67,6 +91,15 @@ int	run_command_pipeline(t_command *commands, t_env *env_list)
 	}
 	exit_status = wait_for_children(pids, cmd_count);
 	free(pids);
+	cmd = commands;
+	while (cmd)
+	{
+		if (cmd->in_fd > 2)
+			close(cmd->in_fd);
+		if (cmd->out_fd > 2)
+			close(cmd->out_fd);
+		cmd = cmd->next;
+	}
 	return (exit_status);
 }
 
@@ -96,7 +129,8 @@ void	setup_command_redirections(t_command *cmd)
 	while (i < max_fd)
 	{
 		if (i != cmd->in_fd && i != cmd->out_fd)
-			close(i++);
+			close(i);
+		i++;
 	}
 }
 
@@ -107,19 +141,30 @@ void	execute_external_command(t_command *cmd, t_env *env_list)
 	char	path[PATH_MAX];
 
 	args = tokens_to_args(cmd->cmd, cmd->args);
+	if (!args)
+	{
+		printf("DEBUG: tokens_to_args failed");
+		exit(127);
+	}
 	envp = env_to_array(env_list);
-	printf("DEBUG: Executing command: %s\n", args[0]);
-	// printf("DEBUG: Environment initialized with %d variables\n", count_env_vars(env_list));
+	if (!envp)
+	{
+		printf("DEBUG: env_to_array failed");
+		free_env(env_list);
+		exit(127);
+	}
 	if (find_command_path(args[0], envp, path))
 	{
 		execve(path, args, envp);
+		perror("execve failed");
 	}
-	ft_dprintf(2, "minishell: %s: command not found\n", args[0]);
+	else
+		ft_dprintf(2, "minishell: %s: command not found\n", args[0]);
 	ft_free_array(args);
 	ft_free_array(envp);
 	exit(127);
 }
-//still needs to be fixed
+
 int	wait_for_children(pid_t *pids, int count)
 {
 	int status;
@@ -129,7 +174,11 @@ int	wait_for_children(pid_t *pids, int count)
 	{
 		if (pids[i] > 0) // Valid PID
 		{
-			waitpid(pids[i], &status, 0);
+			if (waitpid(pids[i], &status, 0) == -1)
+			{
+				perror("waitpid failed");
+				continue;
+			}
 			if (i == count - 1)
 			{
 				if (WIFEXITED(status))

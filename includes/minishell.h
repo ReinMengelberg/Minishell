@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/05/31 13:35:52 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/03 11:45:53 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,6 @@
 # include <signal.h>
 #include <readline/readline.h>
 #include <readline/history.h>
-
-#define MAX_COMMANDS 128
-#define MAX_ARGS 64
-#define PROMPT "armadillo $ "
 
 typedef enum e_tokentype
 {
@@ -139,9 +135,13 @@ t_command	*extract_commands(t_token *tokens);
 t_command *create_command(void);
 void add_to_args(t_command *cmd, t_token *arg_token);
 bool	process_redirections(t_command *commands);
+void cleanup_redirections(t_command *commands, int saved_fds[][2], int cmd_count);
 bool	setup_pipes(t_command *commands);
 char **tokens_to_args(t_token *cmd, t_token *args);
-
+bool	check_commands(t_command *cmd_head);
+//redirections.c
+bool process_redirections(t_command *commands);
+void cleanup_redirections(t_command *commands, int saved_fds[][2], int cmd_count);
 //path.c
 bool find_command_path(char *cmd, char **env, char *path_buffer);
 
