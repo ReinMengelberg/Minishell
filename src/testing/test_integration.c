@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/22 16:30:02 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/31 20:33:14 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/03 11:24:43 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,10 +32,15 @@ int main(int argc, char **argv, char **envp)
 	printf("\033[1;33m===== MINISHELL INTEGRATION TESTS =====\033[0m\n\n");
 
 	// Simple commands
-	run_test("Simple command", "ls | cat output.txt");
+	run_test("Simple command", "> hello | /bin/echo hi > hello");
 	// ABOVE COMMAND DOESNT WORK BECAUSE OF INPROPERLY SETTING UP in_fd of the 2nd command
 	// run_test("Simple command with arguments", "cat hello world | grep 'hello' | grep 'hello' | grep 'hello' > test_output.txt");
 	// run_test("das", "ls");
+
+	//TODO
+	// /bin/echo hi > permission > hello
+	// cat | cat | cat | echo hi
+	// < hello | /bin/echo hi > hello
 
 	// // Redirections
 	// run_test("Output redirection", "ls -la > output.txt");
@@ -100,36 +105,18 @@ void run_test(char *test_name, char *command)
 	// printf("\nPrinting environment\n\n");
 	// print_env(shell->env);
 
-	// Print command structure
-	// printf("\nBefore process_redirections and setup_pipes\n\n");
-	// print_commands(shell->command_head);
-
-	// Process redirections
-	printf("\nRedirection Processing Result: ");
-	if (process_redirections(shell->command_head))
-		printf("\033[1;32mSuccess\033[0m\n");
-	else
-		printf("\033[1;31mFailed\033[0m\n");
-
-	// printf("\nAfter process_redirections\n\n");
-	// print_commands(shell->command_head);
-
-	// Setup pipes
-	printf("Pipe Setup Result: ");
-	if (setup_pipes(shell->command_head))
-		printf("\033[1;32mSuccess\033[0m\n");
-	else
-		printf("\033[1;31mFailed\033[0m\n");
-
-	printf("\nAfter process_redirections and setup_pipes\n\n");
-	print_commands(shell->command_head);
-
 	// Execute command
 	printf("\nExecution Output:\n");
 	printf("------------------------\n");
 	int status = execute_commands(shell->command_head, shell);
 	printf("------------------------\n");
 	printf("Exit Status: %d\n", status);
+
+	if(status == 0)
+	{
+		printf("\nAfter process_redirections, setup_pipes and EXECUTION\n\n");
+		print_commands(shell->command_head);
+	}
 
 	// // Cleanup
 	// // free_and_exit(shell);

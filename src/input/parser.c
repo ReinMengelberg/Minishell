@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/20 14:28:09 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/31 14:22:03 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/02 16:49:45 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,4 +159,18 @@ char **tokens_to_args(t_token *cmd, t_token *args)
 	result[i] = NULL;
 	
 	return result;
+}
+
+bool	check_commands(t_command *cmd_head)
+{
+	t_command	*cmds;
+
+	cmds = cmd_head;
+	while(cmds)
+	{
+		if (!cmds->cmd)
+			return (false);
+		cmds = cmds->next;
+	}
+	return (true);
 }
