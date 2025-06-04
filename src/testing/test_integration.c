@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/22 16:30:02 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/03 11:24:43 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/03 12:31:02 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ int main(int argc, char **argv, char **envp)
 
 	//TODO
 	// /bin/echo hi > permission > hello
-	// cat | cat | cat | echo hi
+	// cat | cat | cat | echo hi  //IDK how to fix
 	// < hello | /bin/echo hi > hello
 
 	// // Redirections
@@ -80,24 +80,24 @@ void run_test(char *test_name, char *command)
 
 	shell = malloc(sizeof(t_shell));
 	// Tokenize the input
-	shell->token_head = tokenize(command);
-	if (!shell->token_head)
+	shell->tokens = tokenize(command);
+	if (!shell->tokens)
 	{
 		printf("\033[1;31mTokenization failed\033[0m\n");
 		return;
 	}
 
-	// Print shell->token_head
+	// Print shell->tokens
 	printf("Tokenization Result:\n");
-	print_tokens(shell->token_head);
+	print_tokens(shell->tokens);
 
 	// Extract commands
 	printf("\nCommand Extraction Result:\n");
-	shell->command_head = extract_commands(shell->token_head);
-	if (!shell->command_head)
+	shell->commands = extract_commands(shell->tokens);
+	if (!shell->commands)
 	{
 		printf("\033[1;31mCommand extraction failed\033[0m\n");
-		free_tokens(shell->token_head);
+		free_tokens(shell->tokens);
 		return;
 	}
 
@@ -108,14 +108,14 @@ void run_test(char *test_name, char *command)
 	// Execute command
 	printf("\nExecution Output:\n");
 	printf("------------------------\n");
-	int status = execute_commands(shell->command_head, shell);
+	int status = execute_commands(shell->commands, shell);
 	printf("------------------------\n");
 	printf("Exit Status: %d\n", status);
 
 	if(status == 0)
 	{
 		printf("\nAfter process_redirections, setup_pipes and EXECUTION\n\n");
-		print_commands(shell->command_head);
+		print_commands(shell->commands);
 	}
 
 	// // Cleanup
@@ -180,24 +180,3 @@ void cleanup_temp_files(void)
 		}
 	}
 }
-
-// Free command structures
-void free_commands(t_command *commands)
-{
-	t_command *temp;
-
-	while (commands)
-	{
-		temp = commands;
-		commands = commands->next;
-
-		// Close file descriptors
-		if (temp->in_fd > 2)
-			close(temp->in_fd);
-		if (temp->out_fd > 2)
-			close(temp->out_fd);
-
-		free(temp);
-	}
-}
-

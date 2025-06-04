@@ -18,6 +18,7 @@ SRCS =	./src/builtin/cd.c \
 		./src/input/parser.c \
 		./src/execution/execution.c \
 		./src/execution/path.c \
+		./src/execution/redirections.c \
 		./src/env/env_init.c \
 		./src/env/env_service.c \
 		./src/main/main.c

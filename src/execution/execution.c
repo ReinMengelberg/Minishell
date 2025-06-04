@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/02 16:55:55 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/03 12:50:04 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,23 +20,23 @@ int	execute_commands(t_command *commands, t_shell *shell)
 		return (1);
 	if (!check_commands(commands))
 	{
-		free_tokens(shell->token_head);
+		free_tokens(shell->tokens);
 		return (free_commands(commands), 1);
 	}
 	if (!process_redirections(commands))
 	{
-		free_tokens(shell->token_head);
+		free_tokens(shell->tokens);
 		free_commands(commands);
 		return (1);
 	}
 	if (!setup_pipes(commands))
 	{
-		free_tokens(shell->token_head);
+		free_tokens(shell->tokens);
 		free_commands(commands);
 		return (1);
 	}
 	exit_status = run_command_pipeline(commands, shell->env);
-	free_tokens(shell->token_head);
+	free_tokens(shell->tokens);
 	free_commands(commands);
 	return (exit_status);
 }
@@ -81,7 +81,7 @@ int	run_command_pipeline(t_command *commands, t_env *env_list)
 					}
 					temp = temp->next;
 				}
-				setup_command_redirections(cmd);
+				exit_status = setup_command_redirections(cmd);
 				execute_external_command(cmd, env_list);
 				exit(127);
 			}
@@ -103,7 +103,7 @@ int	run_command_pipeline(t_command *commands, t_env *env_list)
 	return (exit_status);
 }
 
-void	setup_command_redirections(t_command *cmd)
+int	setup_command_redirections(t_command *cmd)
 {
 	int	max_fd;
 	int	i;
@@ -111,18 +111,12 @@ void	setup_command_redirections(t_command *cmd)
 	if (cmd->in_fd != STDIN_FILENO)
 	{
 		if (dup2(cmd->in_fd, STDIN_FILENO) == -1)
-		{
-			perror("dup2 failed for in_fd");
-			exit(1);
-		}
+			return(perror("dup2 failed for in_fd"), 1);
 	}
 	if (cmd->out_fd != STDOUT_FILENO)
 	{
 		if (dup2(cmd->out_fd, STDOUT_FILENO) == -1)
-		{
-			perror("dup2 failed for out_fd");
-			exit(1);
-		}
+			return(perror("dup2 failed for out_fd"), 1);
 	}
 	max_fd = sysconf(_SC_OPEN_MAX);
 	i = 3;
@@ -134,7 +128,7 @@ void	setup_command_redirections(t_command *cmd)
 	}
 }
 
-void	execute_external_command(t_command *cmd, t_env *env_list)
+int	execute_external_command(t_command *cmd, t_env *env_list)
 {
 	char	**args;
 	char	**envp;
@@ -143,16 +137,11 @@ void	execute_external_command(t_command *cmd, t_env *env_list)
 	args = tokens_to_args(cmd->cmd, cmd->args);
 	if (!args)
 	{
-		printf("DEBUG: tokens_to_args failed");
 		exit(127);
 	}
 	envp = env_to_array(env_list);
 	if (!envp)
-	{
-		printf("DEBUG: env_to_array failed");
-		free_env(env_list);
 		exit(127);
-	}
 	if (find_command_path(args[0], envp, path))
 	{
 		execve(path, args, envp);
@@ -259,16 +248,18 @@ int count_commands(t_command *commands)
 	return count;
 }
 
-void cleanup_commands(t_command *commands)
+void free_commands(t_command *commands)
 {
-	t_command *current = commands;
+	t_command *temp;
 
-	while (current)
+	while (commands)
 	{
-		if (current->in_fd > 2)
-			close(current->in_fd);
-		if (current->out_fd > 2)
-			close(current->out_fd);
-		current = current->next;
+		temp = commands;
+		commands = commands->next;
+		if (temp->in_fd > 2)
+			close(temp->in_fd);
+		if (temp->out_fd > 2)
+			close(temp->out_fd);
+		free(temp);
 	}
 }
