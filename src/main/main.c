@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/06/07 14:41:45 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/07 15:38:06 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,23 @@ t_shell *init_shell()
 	return (shell);
 }
 
+void start_signal_monitoring(t_shell *shell)
+{
+    pid_t monitor_pid = fork();
+    
+    if (monitor_pid == 0)
+    {
+        // Child process - run the signal monitor
+        process_signal_monitor(shell);
+        exit(0);
+    }
+    else if (monitor_pid > 0)
+    {
+        // Parent continues with main shell logic
+        shell->signal_monitor = monitor_pid;
+    }
+}
+
 int main()
 {
 	char *input;
@@ -49,7 +66,7 @@ int main()
 	}
 
 	// Set up signal handling
-	setup_signals();
+	setup_signals(shell);
 
 	while (shell->status)
 	{
