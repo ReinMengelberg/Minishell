@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/07 15:32:27 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/07 16:16:37 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,12 @@ int	execute_commands(t_command *commands, t_shell *shell)
 	{
 		free_tokens(shell->tokens);
 		return (free_commands(commands), 1);
+	}
+	if (!process_heredocs(commands, shell))
+	{
+		free_tokens(shell->tokens);
+		free_commands(commands);
+		return (130);
 	}
 	if (!process_redirections(commands))
 	{
