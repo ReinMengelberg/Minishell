@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/27 11:15:53 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/27 12:42:15 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/06/05 17:59:38 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,7 @@ static bool handle_heredoc(t_command *cmd)
 {
 	(void)cmd; // Prevent unused parameter warning
 	ft_dprintf(2, "HEREDOC has not been implemented yet\n");
+	
 	return true;
 }
 

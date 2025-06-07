@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/06/07 15:23:08 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/07 15:40:05 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,13 +166,15 @@ bool find_command_path(char *cmd, char **env, char *path_buffer);
 //execution.c
 int execute_commands(t_command *commands, t_shell *shell);
 int run_command_pipeline(t_command *commands, t_env *env_list);
-int setup_command_redirections(t_command *cmd);
+void	close_unused_pipes(t_command *commands, t_command *current_cmd);
+void	close_all_pipes(t_command *commands);
+void setup_command_redirections(t_command *cmd);
 int execute_external_command(t_command *cmd, t_env *env_list);
-void free_commands(t_command *commands);
 int wait_for_children(pid_t *pids, int count);
-int count_commands(t_command *commands);
-bool is_builtin(char *cmd);
+void	wait_for_remain(pid_t *pids, int count);
 char **env_to_array(t_env *env_list);
+bool is_builtin(char *cmd);
+int count_commands(t_command *commands);
 void free_commands(t_command *commands);
 
 // env

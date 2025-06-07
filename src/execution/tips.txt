@@ -1,0 +1,12 @@
+add wait_for_remain() function
+this function waits till of the child processes finish, before it exits the program
+additionally save only the exit code of the last command
+
+
+you need the signal to handle parent, child and heredoc
+cat | cat | ls
+CTRL + C prints armadillo twice
+CTRL + D doesnt work while child process still running
+CTRL + \ doesnt work properly
+
+PARENT WORKS
