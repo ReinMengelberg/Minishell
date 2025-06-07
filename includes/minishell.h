@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/06/03 12:45:41 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/07 14:43:16 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,6 +122,18 @@ typedef struct s_shell
 	t_exitstatus	exit_status;
 	int				status;
 }	t_shell;
+
+/**
+ * MAIN
+ */
+// signals.c
+void handle_sigint(int sig);
+void setup_signals(void);
+
+
+
+// free.c
+
 
 //INPUT
 //tokenizer.c
