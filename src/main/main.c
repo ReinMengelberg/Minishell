@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/06/03 12:36:47 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/07 15:15:07 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,6 +99,7 @@ int main()
 			shell->commands = extract_commands(shell->tokens);
 			shell->exit_status = execute_commands(shell->commands, shell);
 		}
+		printf("Exit_status: %d\n", shell->exit_status);
 		free(input);
 	}
 	free_env(shell->env);

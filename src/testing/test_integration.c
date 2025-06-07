@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/22 16:30:02 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/03 12:31:02 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/06 16:43:05 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,8 +102,8 @@ void run_test(char *test_name, char *command)
 	}
 
 	shell->env = create_env(environ);
-	// printf("\nPrinting environment\n\n");
-	// print_env(shell->env);
+	printf("\nPrinting environment\n\n");
+	print_env(shell->env);
 
 	// Execute command
 	printf("\nExecution Output:\n");
