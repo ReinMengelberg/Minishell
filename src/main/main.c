@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/06/07 15:41:18 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/07 15:56:04 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,64 +36,54 @@ t_shell *init_shell()
 	return (shell);
 }
 
-void start_signal_monitoring(t_shell *shell)
-{
-    pid_t monitor_pid = fork();
-    
-    if (monitor_pid == 0)
-    {
-        // Child process - run the signal monitor
-        process_signal_monitor(shell);
-        exit(0);
-    }
-    else if (monitor_pid > 0)
-    {
-        // Parent continues with main shell logic
-        shell->signal_monitor = monitor_pid;
-    }
-}
 
 int main()
 {
-	char *input;
-	t_shell *shell;
+    char *input;
+    t_shell *shell;
 
-	shell = init_shell();
-	if (!shell)
-	{
-		printf("Error initializing shell\n");
-		return (1);
-	}
+    shell = init_shell();
+    if (!shell)
+    {
+        printf("Error initializing shell\n");
+        return (1);
+    }
 
-	// Set up signal handling
-	setup_signals(shell);
+    setup_signals(shell);  // Now this won't block
 
-	while (shell->status)
-	{
-		// Display prompt and get input using readline
-		input = readline(PROMPT);
+    while (shell->status)
+    {
+        // Check for signals at start of each loop iteration
+        check_signals(shell);
+        
+        input = readline(PROMPT);
 
-		// Handle EOF (Ctrl+D) or error
-		if (input == NULL)
-			break;
-		if (input[0] != '\0')
-		{
-			add_history(input);
-			shell->tokens = tokenize(input);
-			shell->tokens = expand_tokens(shell->tokens, shell->env, shell->exit_status);
-			if (!shell->tokens)
-			{
-				shell->exit_status = ERROR_INVALID_INPUT;
-				free(input);
-				continue;
-			}
-			shell->commands = extract_commands(shell->tokens);
-			shell->exit_status = execute_commands(shell->commands, shell);
-		}
-		printf("Exit_status: %d\n", shell->exit_status);
-		free(input);
-	}
-	free_env(shell->env);
-	printf("exit\n");
-	return (free(shell), shell->exit_status);
+        if (input == NULL)  // Ctrl+D
+            break;
+            
+        if (input[0] != '\0')
+        {
+            add_history(input);
+            
+            // Check for signals before processing command
+            monitor_signals(shell);
+            
+            shell->tokens = tokenize(input);
+            shell->tokens = expand_tokens(shell->tokens, shell->env, shell->exit_status);
+            if (!shell->tokens)
+            {
+                shell->exit_status = ERROR_INVALID_INPUT;
+                free(input);
+                continue;
+            }
+            shell->commands = extract_commands(shell->tokens);
+            shell->exit_status = execute_commands(shell->commands, shell);
+        }
+        printf("Exit_status: %d\n", shell->exit_status);
+        free(input);
+    }
+    
+    free_env(shell->env);
+    printf("exit\n");
+    return (free(shell), shell->exit_status);
 }

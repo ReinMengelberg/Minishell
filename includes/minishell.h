@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/06/07 15:40:05 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/07 15:44:07 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,12 +116,13 @@ typedef struct s_validator {
 // The Shell Struct
 typedef struct s_shell
 {
+	int				status;
+	t_env			*env;
+	pid_t			signal_monitor;
+	t_exitstatus	exit_status;
 	t_command		*commands;
 	t_token			*tokens;
-	t_env			*env;
 	pid_t			*pids;
-	t_exitstatus	exit_status;
-	int				status;
 }	t_shell;
 
 /**
