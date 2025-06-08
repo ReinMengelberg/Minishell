@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 14:41:34 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/06/07 15:55:59 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/08 10:54:51 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,28 +23,24 @@ void handle_signal(int sig)
     rl_redisplay();
 }
 
-// Non-blocking signal check function
 void monitor_signals(t_shell *shell)
 {
-    if (g_signal_received != 0)
+    while (shell->status == 1)
     {
-        int last_signal = g_signal_received;
-        g_signal_received = 0;
-        
-        switch (last_signal)
+        while (!g_signal_received)
+            pause();
+        switch (g_signal_received)
         {
             case SIGINT:
-                if (shell->pids)
-                {
-                    // Kill all processes in the pids array
-                    for (int i = 0; shell->pids[i] != 0; i++)
-                        kill(shell->pids[i], SIGINT);
-                }
-                shell->exit_status = 130;
+                if (shell->state == IN_HEREDOC)
+
+                else if ()
+
                 break;
             default:
                 break;
         }
+        
     }
 }
 

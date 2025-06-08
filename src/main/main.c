@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/06/07 15:56:04 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/08 10:49:15 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,10 +64,6 @@ int main()
         if (input[0] != '\0')
         {
             add_history(input);
-            
-            // Check for signals before processing command
-            monitor_signals(shell);
-            
             shell->tokens = tokenize(input);
             shell->tokens = expand_tokens(shell->tokens, shell->env, shell->exit_status);
             if (!shell->tokens)
