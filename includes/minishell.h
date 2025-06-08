@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/06/08 10:59:10 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/08 13:14:00 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,12 +32,14 @@
 # define MAX_ARGS 64
 # define PROMPT "armadillo $ "
 
-typedef enum e_signalstate
+extern volatile sig_atomic_t g_signal_received;
+
+typedef enum e_sigstate
 {
 	IN_HEREDOC,
 	IN_CHILD,
-	IN_PARENT
-}	t_signalstate;
+	INTERACTIVE
+}	t_sigstate;
 
 typedef enum e_tokentype
 {
@@ -125,23 +127,20 @@ typedef struct s_shell
 {
 	int				status;
 	t_env			*env;
-	pid_t			signal_monitor;
+	t_sigstate		sig_state;
 	t_exitstatus	exit_status;
 	t_command		*commands;
 	t_token			*tokens;
 	pid_t			*pids;
-	t_exitstatus	exit_status;
-	int				status;
 }	t_shell;
 
 /**
  * MAIN
  */
 // signals.c
-void handle_sigint(int sig);
-void setup_signals(shell);
-
-
+void check_signals(t_shell *shell);
+void setup_signal_handler(void (*handler)(int));
+void set_sigstate(t_shell *shell, t_sigstate state);
 
 // free.c
 

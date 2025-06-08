@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/06/08 10:56:32 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/08 13:08:51 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ t_shell *init_shell()
 		return (NULL);
 	}
 	shell->exit_status = SUCCESS;
-	shell->sig_state = PARENT;
 	shell->status = 1;
 
 	return (shell);
@@ -50,7 +49,7 @@ int main()
         return (1);
     }
 
-    setup_signals(shell);  // Now this won't block
+    set_sigstate(shell, INTERACTIVE);
 
     while (shell->status)
     {

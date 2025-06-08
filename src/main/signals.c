@@ -6,45 +6,91 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 14:41:34 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/06/08 10:57:42 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/08 13:25:49 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-volatile sig_atomic_t g_signal_received = 0;
+volatile sig_atomic_t g_signal_received = 0; 
 
-void handle_signal(int sig)
+void handle_signal_interactive(int sig)
 {
     g_signal_received = sig;
-    write(STDOUT_FILENO, "\n", 1);
-    rl_on_new_line();
-    rl_replace_line("", 0);
-    rl_redisplay();
-}
-
-void monitor_signals(t_shell *shell)
-{
-    while (shell->status == 1)
+    if (sig == SIGINT)
     {
-        while (!g_signal_received)
-            pause();
-        switch (g_signal_received)
-        {}
+        write(STDOUT_FILENO, "\n", 1);
+        rl_on_new_line();
+        rl_replace_line("", 0);
+        rl_redisplay();
     }
 }
 
-void setup_signals(t_shell *shell)
+void handle_signal_child(int sig)
+{
+    g_signal_received = sig;
+    if (sig == SIGINT)
+        write(STDOUT_FILENO, "\n", 1);
+    else if (sig == SIGQUIT)
+        write(STDERR_FILENO, "Quit: 3\n", 8);
+}
+
+void handle_signal_heredoc(int sig)
+{
+    g_signal_received = sig;
+    if (sig == SIGINT)
+        write(STDOUT_FILENO, "\n", 1);
+}
+
+// Non-blocking signal check function
+void check_signals(t_shell *shell)
+{
+    int sig;
+
+    if (g_signal_received != 0)
+    {
+        sig = g_signal_received;
+        g_signal_received = 0;  // Reset the flag
+        if (sig == SIGINT)
+            shell->exit_status = 130;
+        if (sig == SIGQUIT)
+        {
+            if (shell->sig_state == IN_CHILD)
+                shell->exit_status = 131;
+        }
+    }
+}
+
+void setup_signal_handler(void (*handler)(int))
 {
     struct sigaction sa;
-
-    sa.sa_handler = handle_signal;
+    
+    sa.sa_handler = handler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
-
-    // Register signal handlers FIRST
-    sigaction(SIGINT, &sa, NULL);
-    signal(SIGQUIT, SIG_IGN);
     
-    // No blocking monitor function!
+    sigaction(SIGINT, &sa, NULL);
+    sigaction(SIGQUIT, &sa, NULL);
+}
+
+void set_sigstate(t_shell *shell, t_sigstate state)
+{
+    shell->sig_state = state;
+    
+    switch (state)
+    {
+        case INTERACTIVE:
+            setup_signal_handler(handle_signal_interactive);
+            signal(SIGQUIT, SIG_IGN);
+            break;
+            
+        case IN_CHILD:
+            setup_signal_handler(handle_signal_child);
+            break;
+            
+        case IN_HEREDOC:
+            setup_signal_handler(handle_signal_heredoc);
+            signal(SIGQUIT, SIG_IGN);
+            break;
+    }
 }
