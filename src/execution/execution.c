@@ -6,7 +6,11 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
+<<<<<<< HEAD
 /*   Updated: 2025/06/08 13:48:43 by rmengelb      ########   odam.nl         */
+=======
+/*   Updated: 2025/06/08 14:16:59 by rbagin        ########   odam.nl         */
+>>>>>>> origin/main
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +43,8 @@ int	execute_commands(t_command *commands, t_shell *shell)
 		free_commands(commands);
 		return (1);
 	}
+	if (is_exit(shell->commands->cmd->str))
+		shell->exit_status = execute_exit(shell);
 	shell->exit_status = run_command_pipeline(commands, shell->env, shell->pids);
 	free_tokens(shell->tokens);
 	free_commands(commands);
