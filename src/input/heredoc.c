@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 15:59:44 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/06/08 13:08:11 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/08 13:35:38 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ int handle_heredoc(char *delimiter)
 	struct sigaction sa_old;
 	struct sigaction sa_new;
 
+	printf("Opening heredoc for delimiter: %s\n", delimiter);
 	// Create pipe
 	if (pipe(pipe_fd) == -1)
 	{
@@ -101,11 +102,14 @@ bool process_heredocs(t_command *commands, t_shell *shell)
 	cmd = commands;
 	while (cmd)
 	{
+		printf("Processing command: %s\n", cmd->cmd ? cmd->cmd->str : "NULL");
 		token = cmd->input;
 		while (token)
 		{
-			if (token->type == HEREDOC && strcmp(token->str, "<<") == 0 && token->next)
+			printf("  Checking token type %d: %s\n", token->type, token->str);
+			if (token->type == HEREDOC && token->next)
 			{
+				printf("  Found heredoc with delimiter: %s\n", token->next->str);
 				// Get delimiter from next token
 				heredoc_fd = handle_heredoc(token->next->str);
 				if (heredoc_fd == -1)
@@ -123,7 +127,8 @@ bool process_heredocs(t_command *commands, t_shell *shell)
 				// Skip the delimiter token
 				token = token->next;
 			}
-			token = token->next;
+			if (token)
+				token = token->next;
 		}
 		cmd = cmd->next;
 	}
