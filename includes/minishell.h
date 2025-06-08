@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/06/07 16:19:08 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/08 10:51:49 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,9 @@
 
 typedef enum e_signalstate
 {
-	HEREDOC_STATE,
-	CHILD,
-	PARENT
+	IN_HEREDOC,
+	IN_CHILD,
+	IN_PARENT
 }	t_signalstate;
 
 typedef enum e_tokentype
