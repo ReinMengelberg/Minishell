@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 14:41:34 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/06/08 13:25:49 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/08 13:32:06 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ void check_signals(t_shell *shell)
         g_signal_received = 0;  // Reset the flag
         if (sig == SIGINT)
             shell->exit_status = 130;
-        if (sig == SIGQUIT)
+        else if (sig == SIGQUIT)
         {
             if (shell->sig_state == IN_CHILD)
                 shell->exit_status = 131;
@@ -77,20 +77,18 @@ void set_sigstate(t_shell *shell, t_sigstate state)
 {
     shell->sig_state = state;
     
-    switch (state)
+    if (state == INTERACTIVE)
     {
-        case INTERACTIVE:
-            setup_signal_handler(handle_signal_interactive);
-            signal(SIGQUIT, SIG_IGN);
-            break;
-            
-        case IN_CHILD:
-            setup_signal_handler(handle_signal_child);
-            break;
-            
-        case IN_HEREDOC:
-            setup_signal_handler(handle_signal_heredoc);
-            signal(SIGQUIT, SIG_IGN);
-            break;
+        setup_signal_handler(handle_signal_interactive);
+        signal(SIGQUIT, SIG_IGN);
+    }
+    else if (state == IN_CHILD)
+    {
+        setup_signal_handler(handle_signal_child);
+    }
+    else if (state == IN_HEREDOC)
+    {
+        setup_signal_handler(handle_signal_heredoc);
+        signal(SIGQUIT, SIG_IGN);
     }
 }
