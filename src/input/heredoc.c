@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 15:59:44 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/06/08 13:09:18 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/08 13:35:38 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ bool process_heredocs(t_command *commands, t_shell *shell)
 	t_command *cmd;
 	t_token *token;
 	int heredoc_fd;
-	t_signalstate prev_state;
+	t_sigstate prev_state;
 
 	prev_state = shell->sig_state;
 	shell->sig_state = IN_HEREDOC;

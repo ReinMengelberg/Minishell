@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/08 11:08:11 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/08 13:36:49 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,7 +147,6 @@ void	setup_command_redirections(t_command *cmd)
 			close(i);
 		i++;
 	}
-	return ;
 }
 
 int	execute_external_command(t_command *cmd, t_env *env_list)
