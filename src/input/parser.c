@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/20 14:28:09 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/02 16:49:45 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/08 13:05:36 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,9 @@ t_command	*extract_commands(t_token *tokens)
 {
 	t_command	*cmd_head;
 	t_command	*current_cmd;
+	t_command	*cmd;
 	t_token		*current;
+	t_token		*default_cmd;
 
 	cmd_head = NULL;
 	current_cmd = NULL;
@@ -50,15 +52,28 @@ t_command	*extract_commands(t_token *tokens)
 		}
 		if (current->type == CMD)
 			current_cmd->cmd = current;
-		else if (current->type == ARG && \
-			!(current->prev && (current->prev->type == INPUT || current->prev->type == OUTPUT || \
-            current->prev->type == APPEND || current->prev->type == HEREDOC)))
+		else if (current->type == ARG && !(current->prev && \
+			(current->prev->type == INPUT || current->prev->type == OUTPUT || \
+			current->prev->type == APPEND || current->prev->type == HEREDOC)))
 			add_to_args(current_cmd, current);
 		else if (current->type == INPUT || current->type == HEREDOC)
 			current_cmd->input = current;
 		else if (current->type == OUTPUT || current->type == APPEND)
 			current_cmd->output = current;
 		current = current->next;
+	}
+	cmd = cmd_head;
+	while (cmd)
+	{
+		if (!cmd->cmd && (cmd->input || cmd->output))
+		{
+			default_cmd = create_token("cat", CMD);
+			if (!default_cmd)
+				return (free_commands(cmd_head), NULL);
+			cmd->cmd = default_cmd;
+			cmd->args = default_cmd;
+		}
+		cmd = cmd->next;
 	}
 	return (cmd_head);
 }

@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:11:17 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/03 11:48:35 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/08 13:30:50 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,17 +144,20 @@ t_tokentype	set_token_type(char *token_str)
 	t_tokentype	type;
 	static bool	cmd_found = false;
 	static bool	next_arg_is_redir_target = false;
+	static bool	after_redir_file = false;
 
 	if (token_str == NULL)
 	{
 		cmd_found = false;
 		next_arg_is_redir_target = false;
+		after_redir_file = false;
 		return (EMPTY);
 	}
 	type = get_token_type(token_str);
-	if (next_arg_is_redir_target && type == CMD)
+	if (next_arg_is_redir_target)
 	{
 		next_arg_is_redir_target = false;
+		after_redir_file = true;
 		return (ARG);
 	}
 	if (type == INPUT || type == OUTPUT || type == HEREDOC || type == APPEND)
@@ -166,7 +169,14 @@ t_tokentype	set_token_type(char *token_str)
 	{
 		cmd_found = false;
 		next_arg_is_redir_target = false;
+		after_redir_file = false;
 		return (type);
+	}
+	if (after_redir_file && !cmd_found && type == CMD)
+	{
+		cmd_found = true;
+		after_redir_file = false;
+		return (CMD);
 	}
 	if (type == CMD && cmd_found)
 		return (ARG);
