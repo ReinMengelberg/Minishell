@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/08 14:16:59 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/08 15:22:14 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,6 @@ int	execute_commands(t_command *commands, t_shell *shell)
 		free_commands(commands);
 		return (1);
 	}
-	if (is_exit(shell->commands->cmd->str))
-		shell->exit_status = execute_exit(shell);
 	shell->exit_status = run_command_pipeline(commands, shell->env, shell->pids);
 	free_tokens(shell->tokens);
 	free_commands(commands);
@@ -64,10 +62,7 @@ int	run_command_pipeline(t_command *commands, t_env *env_list, pid_t *pids)
 	while (cmd)
 	{
 		if (is_builtin(cmd->cmd->str))
-		{
-			ft_dprintf(2, "Not implemented yet\n");
-		//	exit_status = execute_builtin(cmd, env_list);
-		}
+			exit_status = exec_builtin(cmd, env_list);
 		else
 		{
 			pids[cmd_index] = fork();
@@ -261,20 +256,6 @@ char **env_to_array(t_env *env_list)
 	}
 	result[i] = NULL;
 	return result;
-}
-
-bool is_builtin(char *cmd)
-{
-	if (!cmd)
-		return false;
-
-	return (ft_strcmp(cmd, "cd") == 0 ||
-			ft_strcmp(cmd, "echo") == 0 ||
-			ft_strcmp(cmd, "pwd") == 0 ||
-			ft_strcmp(cmd, "export") == 0 ||
-			ft_strcmp(cmd, "unset") == 0 ||
-			ft_strcmp(cmd, "env") == 0 ||
-			ft_strcmp(cmd, "exit") == 0);
 }
 
 int count_commands(t_command *commands)

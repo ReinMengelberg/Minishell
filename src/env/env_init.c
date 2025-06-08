@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/17 14:54:29 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/05/17 17:36:13 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/08 14:58:37 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,6 @@ void	env_set(t_env **head, const char *key, const char *value)
 {
 	t_env	*current;
 	t_env	*new_node;
-
 	current = *head;
 	while (current)
 	{

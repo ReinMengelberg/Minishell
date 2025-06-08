@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/24 15:16:33 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/06/05 17:32:38 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/08 14:56:49 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,29 +36,6 @@ t_token *expand_token(t_token *token, t_env *env, t_exitstatus status)
 	return token;
 }
 
-static bool is_valid_var_syntax(const char *name)
-{
-	if (!name || !*name)
-		return false;
-	if (*name != '$')
-		return false;
-	name++;
-	if (!*name)
-		return false;
-	if (*name == '?' && *(name + 1) == '\0')
-		return true;
-	if (!ft_isalpha(*name) && *name != '_')
-		return false;
-	name++;
-	while (*name)
-	{
-		if (!ft_isalnum(*name) && *name != '_')
-			return false;
-		name++;
-	}
-	return true;
-}
-
 bool valid_expansions(t_token *token_head)
 {
 	t_token *current;
@@ -70,7 +47,7 @@ bool valid_expansions(t_token *token_head)
 	{
 		if (current->type == EXPANSION)
 		{
-			if (!is_valid_var_syntax(current->str))
+			if (!is_valid_var_syntax(current->str, true))
 			{
 				ft_dprintf(2, "minishell: invalid variable: %s\n", current->str);
 				return false;
