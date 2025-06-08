@@ -6,3 +6,24 @@
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+# Object files
+*.o
+*.ko
+*.obj
+# Executables
+minishell
+*.out
+*.exe
+# Libraries
+*.a
+*.so
+*.dylib
+# Build directories
+/objs/
+/obj/
+/build/
+# Editor files
+*.swp
+*.swo
+.vscode/
+.DS_Store

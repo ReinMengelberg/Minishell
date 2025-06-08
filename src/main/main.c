@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/06/08 10:49:15 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/08 10:56:32 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,9 @@ t_shell *init_shell()
 		free(shell);
 		return (NULL);
 	}
-	shell->exit_status = SUCCESS; // Assuming SUCCESS is defined in minishell.h
-	shell->status = 1; // 1 = shell is running
+	shell->exit_status = SUCCESS;
+	shell->sig_state = PARENT;
+	shell->status = 1;
 
 	return (shell);
 }
