@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/03 12:50:04 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/07 16:16:37 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,14 +14,18 @@
 
 int	execute_commands(t_command *commands, t_shell *shell)
 {
-	int	exit_status;
-
 	if (!commands)
 		return (1);
 	if (!check_commands(commands))
 	{
 		free_tokens(shell->tokens);
 		return (free_commands(commands), 1);
+	}
+	if (!process_heredocs(commands, shell))
+	{
+		free_tokens(shell->tokens);
+		free_commands(commands);
+		return (130);
 	}
 	if (!process_redirections(commands))
 	{
@@ -35,20 +39,18 @@ int	execute_commands(t_command *commands, t_shell *shell)
 		free_commands(commands);
 		return (1);
 	}
-	exit_status = run_command_pipeline(commands, shell->env);
+	shell->exit_status = run_command_pipeline(commands, shell->env, shell->pids);
 	free_tokens(shell->tokens);
 	free_commands(commands);
-	return (exit_status);
+	return (shell->exit_status);
 }
 
-int	run_command_pipeline(t_command *commands, t_env *env_list)
+int	run_command_pipeline(t_command *commands, t_env *env_list, pid_t *pids)
 {
 	int	cmd_count;
-	pid_t	*pids;
 	int		exit_status;
 	int		cmd_index;
 	t_command	*cmd;
-	t_command *temp;
 
 	cmd_count = count_commands(commands);
 	exit_status = 0;
@@ -69,28 +71,48 @@ int	run_command_pipeline(t_command *commands, t_env *env_list)
 			pids[cmd_index] = fork();
 			if (pids[cmd_index] == 0)
 			{
-				temp = commands;
-				while (temp)
-				{
-					if (temp != cmd) // Skip current command's FDs
-					{
-						if (temp->in_fd > 2)
-							close(temp->in_fd);
-						if (temp->out_fd > 2)
-							close(temp->out_fd);
-					}
-					temp = temp->next;
-				}
-				exit_status = setup_command_redirections(cmd);
+				close_unused_pipes(commands, cmd);
+				setup_command_redirections(cmd);
 				execute_external_command(cmd, env_list);
 				exit(127);
+			}
+			else if (pids[cmd_index] < 0)
+			{
+				perror("fork failed");
+				exit_status = 1;
 			}
 		}
 		cmd_index++;
 		cmd = cmd->next;
 	}
+	close_all_pipes(commands);
 	exit_status = wait_for_children(pids, cmd_count);
 	free(pids);
+	return (exit_status);
+}
+
+void	close_unused_pipes(t_command *commands, t_command *current_cmd)
+{
+	t_command	*temp;
+
+	temp = commands;
+	while (temp)
+	{
+		if (temp != current_cmd)
+		{
+			if (temp->in_fd > 2)
+				close(temp->in_fd);
+			if (temp->out_fd > 2)
+				close(temp->out_fd);
+		}
+		temp = temp->next;
+	}
+}
+
+void	close_all_pipes(t_command *commands)
+{
+	t_command	*cmd;
+
 	cmd = commands;
 	while (cmd)
 	{
@@ -100,10 +122,9 @@ int	run_command_pipeline(t_command *commands, t_env *env_list)
 			close(cmd->out_fd);
 		cmd = cmd->next;
 	}
-	return (exit_status);
 }
 
-int	setup_command_redirections(t_command *cmd)
+void	setup_command_redirections(t_command *cmd)
 {
 	int	max_fd;
 	int	i;
@@ -111,12 +132,12 @@ int	setup_command_redirections(t_command *cmd)
 	if (cmd->in_fd != STDIN_FILENO)
 	{
 		if (dup2(cmd->in_fd, STDIN_FILENO) == -1)
-			return(perror("dup2 failed for in_fd"), 1);
+			return(perror("dup2 failed for in_fd"));
 	}
 	if (cmd->out_fd != STDOUT_FILENO)
 	{
 		if (dup2(cmd->out_fd, STDOUT_FILENO) == -1)
-			return(perror("dup2 failed for out_fd"), 1);
+			return(perror("dup2 failed for out_fd"));
 	}
 	max_fd = sysconf(_SC_OPEN_MAX);
 	i = 3;
@@ -126,6 +147,7 @@ int	setup_command_redirections(t_command *cmd)
 			close(i);
 		i++;
 	}
+	return ;
 }
 
 int	execute_external_command(t_command *cmd, t_env *env_list)
@@ -156,37 +178,57 @@ int	execute_external_command(t_command *cmd, t_env *env_list)
 
 int	wait_for_children(pid_t *pids, int count)
 {
-	int status;
-	int exit_code = 0;
+	int	status;
+	int	exit_code;
+	int	last_cmd_index;
 
-	for (int i = 0; i < count; i++)
+	exit_code = 0;
+	last_cmd_index = count - 1;
+	if (last_cmd_index >= 0 && pids[last_cmd_index] > 0)
 	{
-		if (pids[i] > 0) // Valid PID
+		if (waitpid(pids[last_cmd_index], &status, 0) == -1)
+		{
+			perror("waitpid failed for last command");
+			exit_code = 1;
+		}
+		else
+		{
+			if (WIFEXITED(status))
+				exit_code = WEXITSTATUS(status);
+			else if (WIFSIGNALED(status))
+				exit_code = 128 + WTERMSIG(status);
+			else
+				exit_code = 1;
+		}
+		pids[last_cmd_index] = -1;
+	}
+	wait_for_remain(pids, count);
+	return (exit_code);
+}
+
+void	wait_for_remain(pid_t *pids, int count)
+{
+	int	status;
+	int	i;
+
+	i = 0;
+	while (i < count)
+	{
+		if (pids[i] > 0)
 		{
 			if (waitpid(pids[i], &status, 0) == -1)
-			{
 				perror("waitpid failed");
-				continue;
-			}
-			if (i == count - 1)
-			{
-				if (WIFEXITED(status))
-					exit_code = WEXITSTATUS(status);
-				else if (WIFSIGNALED(status))
-					exit_code = 128 + WTERMSIG(status);
-				else
-					exit_code = 1;
-			}
 		}
+		i++;
 	}
-	return exit_code;
 }
 
 char **env_to_array(t_env *env_list)
 {
 	int count = 0;
-	t_env *current = env_list;
+	t_env *current;
 
+	current = env_list;
 	while (current)
 	{
 		count++;
@@ -200,7 +242,6 @@ char **env_to_array(t_env *env_list)
 	int i = 0;
 	while (current)
 	{
-		// Format: KEY=VALUE
 		char *temp = ft_strjoin(current->key, "=");
 		if (!temp)
 		{

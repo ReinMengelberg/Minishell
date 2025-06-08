@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/06/03 12:45:41 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/08 10:51:49 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,16 @@
 # define MAX_ARGS 64
 # define PROMPT "armadillo $ "
 
+typedef enum e_signalstate
+{
+	IN_HEREDOC,
+	IN_CHILD,
+	IN_PARENT
+}	t_signalstate;
+
 typedef enum e_tokentype
 {
+	HEREDOC,
 	EMPTY,
 	CMD,
 	ARG,
@@ -41,7 +49,6 @@ typedef enum e_tokentype
 	APPEND,
 	INPUT,
 	PIPE,
-	HEREDOC,
 	END,
 	EXPANSION
 }	t_tokentype;
@@ -119,7 +126,9 @@ typedef struct s_shell
 	t_command		*commands;
 	t_token			*tokens;
 	t_env			*env;
+	pid_t			*pids;
 	t_exitstatus	exit_status;
+	t_signalstate	sig_state;
 	int				status;
 }	t_shell;
 
@@ -152,14 +161,16 @@ bool find_command_path(char *cmd, char **env, char *path_buffer);
 
 //execution.c
 int execute_commands(t_command *commands, t_shell *shell);
-int run_command_pipeline(t_command *commands, t_env *env_list);
-int setup_command_redirections(t_command *cmd);
+int	run_command_pipeline(t_command *commands, t_env *env_list, pid_t *pids);
+void	close_unused_pipes(t_command *commands, t_command *current_cmd);
+void	close_all_pipes(t_command *commands);
+void setup_command_redirections(t_command *cmd);
 int execute_external_command(t_command *cmd, t_env *env_list);
-void free_commands(t_command *commands);
 int wait_for_children(pid_t *pids, int count);
-int count_commands(t_command *commands);
-bool is_builtin(char *cmd);
+void	wait_for_remain(pid_t *pids, int count);
 char **env_to_array(t_env *env_list);
+bool is_builtin(char *cmd);
+int count_commands(t_command *commands);
 void free_commands(t_command *commands);
 
 // env
@@ -173,7 +184,8 @@ void print_tokens(t_token *tokens);
 
 // expander
 t_token *expand_tokens(t_token *token_head, t_env *env_head, t_exitstatus status);
+// heredoc.c
+bool process_heredocs(t_command *commands, t_shell *shell);
 #endif
-
 
 // echo hello > temp1 > temp2 > temp3

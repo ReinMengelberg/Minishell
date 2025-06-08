@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/27 11:15:53 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/27 12:42:15 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/06/07 16:22:41 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,14 +68,6 @@ static bool handle_input_redirection(t_command *cmd, t_command *commands,
 		cleanup_redirections(commands, saved_fds, current_cmd);
 		return false;
 	}
-	return true;
-}
-
-// Handle heredoc (<<) - placeholder for now
-static bool handle_heredoc(t_command *cmd)
-{
-	(void)cmd; // Prevent unused parameter warning
-	ft_dprintf(2, "HEREDOC has not been implemented yet\n");
 	return true;
 }
 
@@ -143,8 +135,7 @@ bool process_redirections(t_command *commands)
 			}
 			else if (cmd->input->type == HEREDOC)
 			{
-				if (!handle_heredoc(cmd))
-					return false;
+				//gets handled before redirections
 			}
 		}
 		if (cmd->output)
