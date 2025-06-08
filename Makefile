@@ -20,11 +20,12 @@ SRCS =	./src/builtin/cd.c \
 		./src/execution/execution.c \
 		./src/execution/path.c \
 		./src/execution/redirections.c \
+		./src/execution/execute_builtin.c \
 		./src/env/env_init.c \
 		./src/env/env_service.c \
 		./src/main/main.c \
 		./src/main/signals.c \
-		./src/main/free.c
+		./src/main/free.c \
 
 OBJ_DIR = objs
 OBJS = $(patsubst ./src/%.c,$(OBJ_DIR)/%.o,$(SRCS))

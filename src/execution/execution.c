@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/08 10:56:26 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/08 13:48:43 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ int	run_command_pipeline(t_command *commands, t_env *env_list, pid_t *pids)
 		if (is_builtin(cmd->cmd->str))
 		{
 			ft_dprintf(2, "Not implemented yet\n");
-		//	exit_status = execute_builtin(cmd, env_list);
+			exit_status = execute_builtin(cmd, env_list);
 		}
 		else
 		{
