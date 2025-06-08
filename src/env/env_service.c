@@ -6,30 +6,11 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/17 17:18:54 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/06/08 14:19:06 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/08 15:28:55 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
-// Print all environment variables
-
 #include "minishell.h"
-
-// Free the entire list
-void	free_env(t_env *head)
-{
-	t_env	*current;
-	t_env	*next;
-
-	current = head;
-	while (current)
-	{
-		next = current->next;
-		free(current->key);
-		free(current->value);
-		free(current);
-		current = next;
-	}
-}
 
 // Find a value by key
 char	*env_get(t_env *head, const char *key)
@@ -44,23 +25,6 @@ char	*env_get(t_env *head, const char *key)
 		current = current->next;
 	}
 	return (NULL);
-}
-
-void	print_env(t_env *head)
-{
-	t_env	*current;
-
-	current = head;
-	if (!current)
-	{
-		printf("Environment is empty\n");
-		return ;
-	}
-	while (current)
-	{
-		printf("%s=%s\n", current->key, current->value);
-		current = current->next;
-	}
 }
 
 int update_env_var(t_env *env, const char *key, const char *value)
@@ -101,4 +65,28 @@ int update_env_var(t_env *env, const char *key, const char *value)
     env->next = new_var;
     
     return (SUCCESS);
+}
+
+
+int remove_env_var(t_env *env_head, const char *key)
+{
+    t_env *current = env_head;
+    
+    while (current)
+    {
+        if (current->key && ft_strcmp(current->key, key) == 0)
+        {
+            if (current->prev)
+                current->prev->next = current->next;
+            if (current->next)
+                current->next->prev = current->prev;
+            free(current->key);
+            free(current->value);
+            free(current);
+            
+            return (SUCCESS);
+        }
+        current = current->next;
+    }
+    return (ERROR_INVALID_INPUT);
 }

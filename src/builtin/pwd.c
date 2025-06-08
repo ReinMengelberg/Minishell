@@ -6,13 +6,13 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 14:36:59 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/08 14:23:31 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/08 15:16:04 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int execute_pwd(t_command *cmd, t_env *env_list)
+int exec_pwd(t_command *cmd, t_env *env_list)
 {
     char current_dir[PATH_MAX];
     

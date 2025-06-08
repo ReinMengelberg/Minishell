@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 14:36:41 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/08 14:19:35 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/08 15:15:43 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ static int count_args(t_token *args)
     return (count);
 }
 
-int execute_cd(t_command *cmd, t_env *env)
+int exec_cd(t_command *cmd, t_env *env)
 {
     char *target_dir;
     char *home_dir;

@@ -12,6 +12,8 @@ SRCS =	./src/builtin/cd.c \
 		./src/builtin/export.c \
 		./src/builtin/pwd.c \
 		./src/builtin/unset.c \
+		./src/builtin/env.c \
+		./src/builtin/builtin.c \
 		./src/input/token_utils.c \
 		./src/input/tokenizer.c \
 		./src/input/expander.c \
@@ -20,9 +22,9 @@ SRCS =	./src/builtin/cd.c \
 		./src/execution/execution.c \
 		./src/execution/path.c \
 		./src/execution/redirections.c \
-		./src/execution/execute_builtin.c \
 		./src/env/env_init.c \
 		./src/env/env_service.c \
+		./src/env/env_utils.c \
 		./src/main/main.c \
 		./src/main/signals.c \
 		./src/main/free.c \
