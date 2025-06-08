@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 14:41:34 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/06/08 10:54:51 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/08 10:57:42 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,17 +30,7 @@ void monitor_signals(t_shell *shell)
         while (!g_signal_received)
             pause();
         switch (g_signal_received)
-        {
-            case SIGINT:
-                if (shell->state == IN_HEREDOC)
-
-                else if ()
-
-                break;
-            default:
-                break;
-        }
-        
+        {}
     }
 }
 
