@@ -6,30 +6,34 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/08 13:46:21 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/06/08 15:31:17 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/23 17:23:33 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int exec_builtin(t_command *cmd, t_env *env_list)
+int exec_builtin(t_command *cmd, t_shell *shell)  // Changed from t_env *env_list
 {
     if (!cmd || !cmd->cmd || !cmd->cmd->str)
         return (-1);
-        
-    if (ft_strcmp(cmd->cmd->str, "cd") == 0)
-        return exec_cd(cmd, env_list);
-    else if (ft_strcmp(cmd->cmd->str, "pwd") == 0)
-        return exec_pwd(cmd, env_list);
-    else if (ft_strcmp(cmd->cmd->str, "echo") == 0)
-        return exec_echo(cmd, env_list);
-    else if (ft_strcmp(cmd->cmd->str, "env") == 0)
-        return exec_env(cmd, env_list);
-    else if (ft_strcmp(cmd->cmd->str, "export") == 0)
-        return exec_export(cmd, env_list);
-    else if (ft_strcmp(cmd->cmd->str, "unset") == 0)
-        return exec_unset(cmd, env_list);
-    return (-1);
+    if (strcmp(cmd->cmd->str, "exit") == 0)
+        return exec_exit(cmd, shell);
+    else if (strcmp(cmd->cmd->str, "cd") == 0)
+        return exec_cd(cmd, shell->env);
+    else if (strcmp(cmd->cmd->str, "pwd") == 0)
+        return exec_pwd(cmd, shell->env);
+    else if (strcmp(cmd->cmd->str, "echo") == 0)
+        return exec_echo(cmd, shell->env);
+    else if (strcmp(cmd->cmd->str, "env") == 0)
+        return exec_env(cmd, shell->env);
+    else if (strcmp(cmd->cmd->str, "export") == 0)
+        return exec_export(cmd, shell->env);
+    else if (strcmp(cmd->cmd->str, "unset") == 0)
+        return exec_unset(cmd, shell->env);
+            else if (strcmp(cmd->cmd->str, "unset") == 0)
+        return exec_unset(cmd, shell->env);
+    
+    return (1);  // Unknown builtin
 }
 
 bool is_builtin(char *cmd)
