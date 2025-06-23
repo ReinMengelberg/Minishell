@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/23 17:03:37 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/23 17:23:29 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,11 @@ int	execute_commands(t_command *commands, t_shell *shell)
 		return (free_everything(shell), 1);
 	if (!setup_pipes(commands))
 		return (free_everything(shell), 1);
-	shell->exit_status = run_command_pipeline(commands, shell->env, shell->pids);
+	shell->exit_status = run_command_pipeline(commands, shell);
 	return (shell->exit_status);
 }
 
-int	run_command_pipeline(t_command *commands, t_env *env_list, pid_t *pids)
+int	run_command_pipeline(t_command *commands, t_shell *shell)
 {
 	int	cmd_count;
 	int		exit_status;
@@ -39,24 +39,24 @@ int	run_command_pipeline(t_command *commands, t_env *env_list, pid_t *pids)
 	exit_status = 0;
 	cmd_index = 0;
 	cmd = commands;
-	pids = ft_calloc(cmd_count, sizeof(pid_t));
-	if (!pids)
+	shell->pids = ft_calloc(cmd_count, sizeof(pid_t));  // Use shell->pids
+	if (!shell->pids)
 		return (1);
 	while (cmd)
 	{
 		if (is_builtin(cmd->cmd->str))
-			exit_status = exec_builtin(cmd, env_list);
+			exit_status = exec_builtin(cmd, shell);  // Pass entire shell to builtins
 		else
 		{
-			pids[cmd_index] = fork();
-			if (pids[cmd_index] == 0)
+			shell->pids[cmd_index] = fork();
+			if (shell->pids[cmd_index] == 0)
 			{
 				close_unused_pipes(commands, cmd);
 				setup_command_redirections(cmd);
-				execute_external_command(cmd, env_list);
+				execute_external_command(cmd, shell->env);  // Still pass env for external commands
 				exit(127);
 			}
-			else if (pids[cmd_index] < 0)
+			else if (shell->pids[cmd_index] < 0)
 			{
 				perror("fork failed");
 				exit_status = 1;
@@ -66,8 +66,9 @@ int	run_command_pipeline(t_command *commands, t_env *env_list, pid_t *pids)
 		cmd = cmd->next;
 	}
 	close_all_pipes(commands);
-	exit_status = wait_for_children(pids, cmd_count);
-	free(pids);
+	exit_status = wait_for_children(shell->pids, cmd_count);
+	free(shell->pids);
+	shell->pids = NULL;  // Clean up the pointer
 	return (exit_status);
 }
 
