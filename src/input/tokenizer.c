@@ -6,83 +6,91 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:11:17 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/08 13:30:50 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/20 13:23:19 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-/*	Invalid input:
-	\ Escape
-	# Comment
-	= Assignment
-	[[ ]] Test
-	; Command separator
-	{ } Inline group
-	( ) Subshell group
-	(( )) Arithmetic expression
-	$(( )) Arithmetic expansion
-	*, ? Globs -- "wildcard"
-	~ Home directory
-	& Background */
-bool check_input(char *input)
+static bool	is_unsupported_char(char c)
 {
-	int i;
-	char quote;
+	return (c == ';' || c == '#' || c == '!' || \
+		c == '=' || c == '&' || c == '\\');
+}
+
+static bool	is_unsupported_syntax(char *input, int i, char quote)
+{
+	if (quote != 0)
+		return (false);
+	if ((input[i] == '[' && input[i + 1] == '[') || \
+		(input[i] == ']' && input[i + 1] == ']'))
+		return (true);
+	if (input[i] == '{' || input[i] == '}')
+		return (true);
+	if (input[i] == '(' || input[i] == ')')
+		return (true);
+	if ((input[i] == '(' && input[i + 1] == '(') || \
+		(input[i] == ')' && input[i + 1] == ')'))
+		return (true);
+	return (false);
+}
+
+static bool	is_unsupported_expansion(char *input, int i, char quote)
+{
+	if (quote != 0)
+		return (false);
+	if (input[i] == '$' && input[i + 1] == '(' && input[i + 2] == '(')
+		return (true);
+	if ((input[i] == '*' || (input[i] == '?' && input[i + 1] != '\0')))
+		return (true);
+	if (input[i] == '~' && (i == 0 || input[i - 1] == ' '))
+		return (true);
+	if (input[i] == '|' && input[i + 1] == '|')
+		return (true);
+	return (false);
+}
+
+static void	update_quote_status(char input_char, char *quote)
+{
+	if (*quote == input_char)
+		*quote = 0;
+	else
+		*quote = input_char;
+}
+
+static bool	check_input_char(char *input, int i, char quote)
+{
+	if (quote == 0)
+	{
+		if (is_unsupported_char(input[i]))
+			return (true);
+		if (is_unsupported_syntax(input, i, quote))
+			return (true);
+		if (is_unsupported_expansion(input, i, quote))
+			return (true);
+	}
+	return (false);
+}
+
+bool	check_input(char *input)
+{
+	int		i;
+	char	quote;
 
 	i = 0;
 	quote = 0;
 	while (input && input[i])
 	{
-		// Handle quote tracking
-		if ((input[i] == '\'' || input[i] == '"') && (!quote || quote == input[i]))
-		{
-			if (quote == input[i])
-				quote = 0;
-			else
-				quote = input[i];
-		}
-		else if (quote == 0)
-		{
-			// Check basic characters that aren't supported
-			if (input[i] == ';' || input[i] == '#' || input[i] == '!' ||
-				input[i] == '=' || input[i] == '&')
-				return true;
-			// Check backslash escape
-			if (input[i] == '\\')
-				return true;
-			// Check special bracket combinations
-			if (input[i] == '[' && input[i+1] == '[')
-				return true;
-			if (input[i] == ']' && input[i+1] == ']')
-				return true;
-			if (input[i] == '{' || input[i] == '}')
-				return true;
-			if (input[i] == '(' || input[i] == ')')
-				return true;
-			// Check for arithmetic expressions
-			if (input[i] == '(' && input[i+1] == '(')
-				return true;
-			if (input[i] == ')' && input[i+1] == ')')
-				return true;
-			// Check for arithmetic expansion
-			if (input[i] == '$' && input[i+1] == '(' && input[i+2] == '(')
-				return true;
-			// Check glob characters
-			if ((input[i] == '*' || (input[i] == '?' && input[i + 1] != '\0')) && quote == 0)
-				return true;
-			// Check tilde expansion
-			if (input[i] == '~' && (i == 0 || input[i-1] == ' '))
-				return true;
-			if (input[i] == '|' && input[i + 1] == '|')
-				return true;
-		}
+		if ((input[i] == '\'' || input[i] == '"') && \
+			(!quote || quote == input[i]))
+			update_quote_status(input[i], &quote);
+		else if (check_input_char(input, i, quote))
+			return (true);
 		i++;
 	}
-	// Check for unclosed quotes
 	if (quote != 0)
-		return true;
-	return false;
+		return (true);
+	return (false);
 }
 
 t_token	*create_token(char *str, t_tokentype type)
@@ -111,7 +119,7 @@ void	add_token(t_token **tokens, t_token *new)
 	if (!*tokens)
 	{
 		*tokens = new;
-		return;
+		return ;
 	}
 	current = *tokens;
 	while (current->next)
@@ -136,77 +144,92 @@ t_tokentype	get_token_type(char *str)
 		return (HEREDOC);
 	if (str[0] == '$' && str[1] != '\0')
 		return (EXPANSION);
-	return (CMD); // Default to CMD, will adjust in tokenize function
+	return (CMD);
+}
+
+static bool	handle_redirection_token(t_tokentype type,
+			bool *next_redir_target)
+{
+	if (type == INPUT || type == OUTPUT || type == HEREDOC || type == APPEND)
+	{
+		*next_redir_target = true;
+		return (true);
+	}
+	return (false);
+}
+
+static t_tokentype	handle_cmd_arg_token(t_tokentype type, bool *cmd_found,
+					bool *after_redir_file)
+{
+	if (*after_redir_file && !*cmd_found && type == CMD)
+	{
+		*cmd_found = true;
+		*after_redir_file = false;
+		return (CMD);
+	}
+	if (type == CMD && *cmd_found)
+		return (ARG);
+	if (type == CMD)
+		*cmd_found = true;
+	return (type);
+}
+
+static void	reset_token_state(bool *cmd_found, bool *next_arg, bool *after_file)
+{
+	*cmd_found = false;
+	*next_arg = false;
+	*after_file = false;
+}
+
+static t_tokentype	process_token_type(t_tokentype type, bool *cmd_found,
+					bool *next_redir_target, bool *after_redir_file)
+{
+	if (*next_redir_target)
+	{
+		*next_redir_target = false;
+		*after_redir_file = true;
+		return (ARG);
+	}
+	if (handle_redirection_token(type, next_redir_target))
+		return (type);
+	if (type == PIPE)
+	{
+		reset_token_state(cmd_found, next_redir_target, after_redir_file);
+		return (type);
+	}
+	return (handle_cmd_arg_token(type, cmd_found, after_redir_file));
 }
 
 t_tokentype	set_token_type(char *token_str)
 {
 	t_tokentype	type;
 	static bool	cmd_found = false;
-	static bool	next_arg_is_redir_target = false;
+	static bool	next_redir_target = false;
 	static bool	after_redir_file = false;
 
 	if (token_str == NULL)
 	{
-		cmd_found = false;
-		next_arg_is_redir_target = false;
-		after_redir_file = false;
+		reset_token_state(&cmd_found, &next_redir_target,
+			&after_redir_file);
 		return (EMPTY);
 	}
 	type = get_token_type(token_str);
-	if (next_arg_is_redir_target)
-	{
-		next_arg_is_redir_target = false;
-		after_redir_file = true;
-		return (ARG);
-	}
-	if (type == INPUT || type == OUTPUT || type == HEREDOC || type == APPEND)
-	{
-		next_arg_is_redir_target = true;
-		return (type);
-	}
-	if (type == PIPE)
-	{
-		cmd_found = false;
-		next_arg_is_redir_target = false;
-		after_redir_file = false;
-		return (type);
-	}
-	if (after_redir_file && !cmd_found && type == CMD)
-	{
-		cmd_found = true;
-		after_redir_file = false;
-		return (CMD);
-	}
-	if (type == CMD && cmd_found)
-		return (ARG);
-	if (type == CMD)
-		cmd_found = true;
-	return (type);
+	return (process_token_type(type, &cmd_found,
+			&next_redir_target, &after_redir_file));
 }
 
-t_token	*tokenize(char *input)
+static t_token	*create_tokens_from_split(char **split)
 {
 	t_token		*tokens;
-	char		**split;
-	int			i;
 	t_tokentype	type;
 	t_token		*token;
+	int			i;
 
-	set_token_type(NULL);
-	if (check_input(input))
-	{
-		ft_putstr_fd("minishell: syntax error\n", 2);
-		return NULL;
-	}
 	tokens = NULL;
-	split = ft_split_shell(input);
-	if (!split)
-		return (NULL);
 	i = 0;
 	while (split[i])
 	{
-		type = 	set_token_type(split[i]);
+		type = set_token_type(split[i]);
 		token = create_token(split[i++], type);
 		if (!token)
 		{
@@ -216,20 +239,49 @@ t_token	*tokenize(char *input)
 		}
 		add_token(&tokens, token);
 	}
-	ft_free_array(split);
-	return(tokens);
+	return (tokens);
 }
 
-void print_tokens(t_token *tokens)
+t_token	*tokenize(char *input)
 {
-	t_token *current;
-	char *type_names[] = {"EMPTY", "CMD", "ARG", "OUTPUT", "APPEND", "INPUT",
-							"PIPE", "HEREDOC", "END", "EXPANSION"};
+	t_token	*tokens;
+	char	**split;
 
+	set_token_type(NULL);
+	if (check_input(input))
+	{
+		ft_putstr_fd("minishell: syntax error\n", 2);
+		return (NULL);
+	}
+	split = ft_split_shell(input);
+	if (!split)
+		return (NULL);
+	tokens = create_tokens_from_split(split);
+	ft_free_array(split);
+	return (tokens);
+}
+
+// Debug function - can be removed for final version
+void	print_tokens(t_token *tokens)
+{
+	t_token	*current;
+	char	*type_names[10];
+
+	type_names[0] = "HEREDOC";
+	type_names[1] = "EMPTY";
+	type_names[2] = "CMD";
+	type_names[3] = "ARG";
+	type_names[4] = "OUTPUT";
+	type_names[5] = "APPEND";
+	type_names[6] = "INPUT";
+	type_names[7] = "PIPE";
+	type_names[8] = "END";
+	type_names[9] = "EXPANSION";
 	current = tokens;
 	while (current)
 	{
-		printf("Token: '%s', Type: %s\n", current->str, type_names[current->type]);
+		printf("Token: '%s', Type: %s\n", current->str,
+			type_names[current->type]);
 		current = current->next;
 	}
 }

@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/06/08 15:30:29 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/23 17:02:43 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -189,13 +189,13 @@ int			exec_export(t_command *cmd, t_env *env_list);
 int 		exec_unset(t_command *cmd, t_env *env_list);
 
 // env
-t_env		*create_env(char **environ);
-char		*env_get(t_env *head, const char *key);
-void		print_env(t_env *head);
-void		free_env(t_env *head);
-int			update_env_var(t_env *env, const char *key, const char *value);
-int 		remove_env_var(t_env *env_head, const char *key);
-bool 		is_valid_var_syntax(const char *name, bool dollar);
+t_env	*create_env(char **environ);
+char	*env_get(t_env *head, const char *key);
+void	print_env(t_env *head);
+void	free_env(t_env *head);
+
+//free
+void free_everything(t_shell *shell);
 
 //for testing
 void		print_tokens(t_token *tokens);
