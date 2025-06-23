@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/08 15:22:14 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/23 17:03:37 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,31 +17,14 @@ int	execute_commands(t_command *commands, t_shell *shell)
 	if (!commands)
 		return (1);
 	if (!check_commands(commands))
-	{
-		free_tokens(shell->tokens);
-		return (free_commands(commands), 1);
-	}
+		return (free_everything(shell), 1);
 	if (!process_heredocs(commands, shell))
-	{
-		free_tokens(shell->tokens);
-		free_commands(commands);
-		return (130);
-	}
+		return (free_everything(shell), 130);
 	if (!process_redirections(commands))
-	{
-		free_tokens(shell->tokens);
-		free_commands(commands);
-		return (1);
-	}
+		return (free_everything(shell), 1);
 	if (!setup_pipes(commands))
-	{
-		free_tokens(shell->tokens);
-		free_commands(commands);
-		return (1);
-	}
+		return (free_everything(shell), 1);
 	shell->exit_status = run_command_pipeline(commands, shell->env, shell->pids);
-	free_tokens(shell->tokens);
-	free_commands(commands);
 	return (shell->exit_status);
 }
 
@@ -198,8 +181,7 @@ int	wait_for_children(pid_t *pids, int count)
 		}
 		pids[last_cmd_index] = -1;
 	}
-	wait_for_remain(pids, count);
-	return (exit_code);
+	return (wait_for_remain(pids, count), exit_code);
 }
 
 void	wait_for_remain(pid_t *pids, int count)

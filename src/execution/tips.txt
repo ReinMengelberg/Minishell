@@ -10,3 +10,12 @@ CTRL + D doesnt work while child process still running
 CTRL + \ doesnt work properly
 
 PARENT WORKS
+
+
+heredoc if delimiter within quotes, dont expand
+if delimiter not withing quotes, expand
+
+
+heredoc
+main
+execution

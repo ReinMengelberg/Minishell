@@ -6,179 +6,207 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:56:21 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/05/31 12:05:46 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/20 13:53:00 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-static char *remove_quotes(char *str)
+static void	handle_quote_char(char c, char *quote)
 {
-	int i, j;
-	int len = ft_strlen(str);
-	char *result = malloc(len + 1);
-	char quote = 0;
+	if (*quote == c)
+		*quote = 0;
+	else
+		*quote = c;
+}
 
+static char	*remove_quotes(char *str)
+{
+	int		i;
+	int		j;
+	int		len;
+	char	*result;
+	char	quote;
+
+	len = ft_strlen(str);
+	result = malloc(len + 1);
+	quote = 0;
 	if (!result)
-		return NULL;
+		return (NULL);
 	i = 0;
 	j = 0;
 	while (i < len)
 	{
 		if ((str[i] == '\'' || str[i] == '\"') && (!quote || quote == str[i]))
-		{
-			if (!quote)
-				quote = str[i];
-			else
-				quote = 0;
-		}
+			handle_quote_char(str[i], &quote);
 		else
 			result[j++] = str[i];
 		i++;
 	}
 	result[j] = '\0';
-	return result;
+	return (result);
 }
 
-static int count_tokens(char *input)
+static int	skip_whitespace(char *input, int i)
 {
-	int count = 0;
-	int i = 0;
-	char quote = 0;
+	while (input[i] && (input[i] == ' ' || input[i] == '\t'))
+		i++;
+	return (i);
+}
 
+static int	handle_quoted_token(char *input, int i, char quote)
+{
+	i++;
+	while (input[i] && input[i] != quote)
+		i++;
+	if (input[i])
+		i++;
+	return (i);
+}
+
+static int	handle_special_chars(char *input, int i)
+{
+	if (input[i] == '|' || input[i] == '<' || \
+		(input[i] == '>' && input[i + 1] != '>'))
+		return (i + 1);
+	else if (input[i] == '>' && input[i + 1] == '>')
+		return (i + 2);
+	return (i);
+}
+
+static int	process_next_token(char *input, int *i)
+{
+	char	quote;
+
+	if (input[*i] == '\'' || input[*i] == '\"')
+	{
+		quote = input[*i];
+		*i = handle_quoted_token(input, *i, quote);
+	}
+	else if (input[*i] == '|' || input[*i] == '<' || input[*i] == '>')
+		*i = handle_special_chars(input, *i);
+	else
+	{
+		while (input[*i] && input[*i] != ' ' && input[*i] != '|'
+			&& input[*i] != '<' && input[*i] != '>'
+			&& input[*i] != '\'' && input[*i] != '\"')
+			(*i)++;
+	}
+	return (1);
+}
+
+static int	count_tokens(char *input)
+{
+	int	count;
+	int	i;
+
+	count = 0;
+	i = 0;
 	while (input[i])
 	{
-		// Skip whitespace between tokens
-		while (input[i] && (input[i] == ' ' || input[i] == '\t'))
-			i++;
+		i = skip_whitespace(input, i);
 		if (!input[i])
-			break;
-		// Found start of a token
-		count++;
-		// Handle quoted strings as complete tokens
-		if (input[i] == '\'' || input[i] == '\"')
-		{
-			quote = input[i++];
-			while (input[i] && input[i] != quote)
-				i++;
-			if (input[i])
-				i++;  // Skip the closing quote
-		}
-		// Handle special characters
-		else if (input[i] == '|' || input[i] == '<' ||
-				(input[i] == '>' && input[i + 1] != '>'))
-		{
-			i++;
-		}
-		else if (input[i] == '>' && input[i + 1] == '>')
-		{
-			i += 2;
-		}
-		// Handle regular tokens
-		else
-		{
-			while (input[i] && input[i] != ' ' && input[i] != '|' &&
-					input[i] != '<' && input[i] != '>' &&
-					input[i] != '\'' && input[i] != '\"')
-			{
-				i++;
-			}
-		}
+			break ;
+		count += process_next_token(input, &i);
 	}
-	return count;
+	return (count);
 }
 
-static char *extract_token(char *input, int *pos)
+static char	*handle_redirection(char *input, int *pos, int len)
 {
-	int start = *pos;
-	int end = start;
-	char quote = 0;
-	char *token;
-	char *result;
+	int		start;
 
-	// Handle special characters
-	if (input[start] == '|' ||
-		(input[start] == '>' && input[start + 1] != '>') ||
-		(input[start] == '<' && input[start + 1] != '<'))
-	{
-		*pos = start + 1;
-		return ft_substr(input, start, 1);
-	}
-	else if ((input[start] == '>' && input[start + 1] == '>') ||
-			(input[start] == '<' && input[start + 1] == '<' ))
-	{
-		*pos = start + 2;
-		return ft_substr(input, start, 2);
-	}
-	// Handle quoted strings specially
-	if (input[start] == '\'' || input[start] == '\"')
-	{
-		quote = input[start];
-		end++;
-		while (input[end] && input[end] != quote)
-			end++;
-		if (input[end] == quote)
-			end++;  // Include the closing quote
-		*pos = end;
-		token = ft_substr(input, start, end - start);
-		result = remove_quotes(token);
-		free(token);
-		return result;
-	}
-	// Handle regular tokens
-	while (input[end] && input[end] != ' ' && input[end] != '|' &&
-			input[end] != '<' && input[end] != '>' &&
-			input[end] != '\'' && input[end] != '\"')
-	{
-		end++;
-	}
-
-	*pos = end;
-	return ft_substr(input, start, end - start);
+	start = *pos;
+	*pos = start + len;
+	return (ft_substr(input, start, len));
 }
 
-/*	This function needs special handling for:
-	1. Spaces as delimiters (except within quotes)
-	2. Quoted strings (both single and double quotes)
-	3. Special characters like |, >, >>, <
-	4. Escape characters*/
+static char	*handle_quoted_string(char *input, int *pos)
+{
+	int		start;
+	int		end;
+	char	quote;
+	char	*token;
+	char	*result;
+
+	start = *pos;
+	quote = input[start];
+	end = start + 1;
+	while (input[end] && input[end] != quote)
+		end++;
+	if (input[end] == quote)
+		end++;
+	*pos = end;
+	token = ft_substr(input, start, end - start);
+	result = remove_quotes(token);
+	free(token);
+	return (result);
+}
+
+static char	*handle_regular_token(char *input, int *pos)
+{
+	int		start;
+	int		end;
+
+	start = *pos;
+	end = start;
+	while (input[end] && input[end] != ' ' && input[end] != '|'
+		&& input[end] != '<' && input[end] != '>'
+		&& input[end] != '\'' && input[end] != '\"')
+		end++;
+	*pos = end;
+	return (ft_substr(input, start, end - start));
+}
+
+static char	*extract_token(char *input, int *pos)
+{
+	if (input[*pos] == '|'
+		|| (input[*pos] == '>' && input[*pos + 1] != '>')
+		|| (input[*pos] == '<' && input[*pos + 1] != '<'))
+		return (handle_redirection(input, pos, 1));
+	else if ((input[*pos] == '>' && input[*pos + 1] == '>')
+		|| (input[*pos] == '<' && input[*pos + 1] == '<'))
+		return (handle_redirection(input, pos, 2));
+	if (input[*pos] == '\'' || input[*pos] == '\"')
+		return (handle_quoted_string(input, pos));
+	return (handle_regular_token(input, pos));
+}
+
 char	**ft_split_shell(char *input)
 {
-	int token_count = count_tokens(input);
-	char **result = (char **)malloc(sizeof(char *) * (token_count + 1));
-	int i = 0;
-	int pos = 0;
+	int		token_count;
+	char	**result;
+	int		i;
+	int		pos;
 
+	token_count = count_tokens(input);
+	result = (char **)malloc(sizeof(char *) * (token_count + 1));
 	if (!result)
-		return NULL;
-
+		return (NULL);
+	i = 0;
+	pos = 0;
 	while (i < token_count)
 	{
-		// Skip spaces
 		while (input[pos] && input[pos] == ' ')
 			pos++;
-
-		// Extract the next token
 		result[i] = extract_token(input, &pos);
-		if(!result[i])
+		if (!result[i])
 		{
 			ft_free_array(result);
 			return (NULL);
 		}
-			i++;
+		i++;
 	}
-
-	// NULL-terminate the array
 	result[i] = NULL;
-	return result;
+	return (result);
 }
 
 void	ft_free_array(char **arr)
 {
-	int i;
+	int	i;
 
 	if (!arr)
-		return;
+		return ;
 	i = 0;
 	while (arr[i])
 	{
@@ -190,7 +218,7 @@ void	ft_free_array(char **arr)
 
 void	free_tokens(t_token *tokens)
 {
-	t_token *tmp;
+	t_token	*tmp;
 
 	while (tokens)
 	{
