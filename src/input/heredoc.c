@@ -6,17 +6,17 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 15:59:44 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/06/08 13:35:38 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/23 17:23:57 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
 // Global flag for heredoc signal handling
-volatile sig_atomic_t g_heredoc_signal = 0;
+volatile sig_atomic_t	g_heredoc_signal = 0;
 
 // Special signal handler for heredoc mode
-static void heredoc_signal_handler(int sig)
+static void	heredoc_signal_handler(int sig)
 {
 	if (sig == SIGINT)
 	{
@@ -26,114 +26,179 @@ static void heredoc_signal_handler(int sig)
 	}
 }
 
-int handle_heredoc(char *delimiter)
+static int	setup_heredoc_pipe(struct sigaction *sa_new,
+								struct sigaction *sa_old)
 {
-	int pipe_fd[2];
-	char *line;
-	size_t delimiter_len;
-	struct sigaction sa_old;
-	struct sigaction sa_new;
+	int	pipe_fd[2];
 
-	printf("Opening heredoc for delimiter: %s\n", delimiter);
-	// Create pipe
 	if (pipe(pipe_fd) == -1)
 	{
 		perror("pipe");
 		return (-1);
 	}
-
-	// Set up special signal handling for heredoc
-	memset(&sa_new, 0, sizeof(sa_new));
-	sa_new.sa_handler = heredoc_signal_handler;
-	sigaction(SIGINT, &sa_new, &sa_old);
-
+	memset(sa_new, 0, sizeof(*sa_new));
+	sa_new->sa_handler = heredoc_signal_handler;
+	sigaction(SIGINT, sa_new, sa_old);
 	g_heredoc_signal = 0;
-	delimiter_len = ft_strlen(delimiter);
+	return (0);
+}
 
-	// Read input until delimiter is found
+static int	read_heredoc_line(int *pipe_fd, char *delimiter,
+								size_t delimiter_len, struct sigaction *sa_old)
+{
+	char	*line;
+
+	write(STDOUT_FILENO, "> ", 2);
+	line = readline("");
+	if (g_heredoc_signal || !line)
+	{
+		if (line)
+			free(line);
+		close(pipe_fd[1]);
+		close(pipe_fd[0]);
+		sigaction(SIGINT, sa_old, NULL);
+		return (-1);
+	}
+	if (ft_strncmp(line, delimiter, delimiter_len) == 0
+		&& line[delimiter_len] == '\0')
+	{
+		free(line);
+		return (1);
+	}
+	ft_putendl_fd(line, pipe_fd[1]);
+	free(line);
+	return (0);
+}
+
+int	handle_heredoc(char *delimiter)
+{
+	int					pipe_fd[2];
+	struct sigaction	sa_old;
+	struct sigaction	sa_new;
+	size_t				delimiter_len;
+	int					result;
+
+	if (pipe(pipe_fd) == -1)
+		return (-1);
+	if (setup_heredoc_pipe(&sa_new, &sa_old) == -1)
+		return (-1);
+	delimiter_len = ft_strlen(delimiter);
 	while (1)
 	{
-		write(STDOUT_FILENO, "> ", 2);
-		line = readline("");
-
-		// Check for signals or EOF
-		if (g_heredoc_signal || !line)
-		{
-			if (line)
-				free(line);
-			close(pipe_fd[1]);
-			close(pipe_fd[0]);
-			sigaction(SIGINT, &sa_old, NULL);
+		result = read_heredoc_line(pipe_fd, delimiter, delimiter_len, &sa_old);
+		if (result == -1)
 			return (-1);
-		}
-
-		// Check for delimiter match
-		if (ft_strncmp(line, delimiter, delimiter_len) == 0 &&
-			line[delimiter_len] == '\0')
-		{
-			free(line);
-			break;
-		}
-
-		// Write input to pipe
-		ft_putendl_fd(line, pipe_fd[1]);
-		free(line);
+		if (result == 1)
+			break ;
 	}
-
-	// Restore signal handling
 	sigaction(SIGINT, &sa_old, NULL);
-
-	// Close write end, return read end
 	close(pipe_fd[1]);
 	return (pipe_fd[0]);
 }
 
-// Process all heredocs in a command chain
-bool process_heredocs(t_command *commands, t_shell *shell)
+// int handle_heredoc(char *delimiter)
+// {
+// 	int pipe_fd[2];
+// 	char *line;
+// 	size_t delimiter_len;
+// 	struct sigaction sa_old;
+// 	struct sigaction sa_new;
+
+// 	if (pipe(pipe_fd) == -1)
+// 	{
+// 		perror("pipe");
+// 		return (-1);
+// 	}
+// 	memset(&sa_new, 0, sizeof(sa_new));
+// 	sa_new.sa_handler = heredoc_signal_handler;
+// 	sigaction(SIGINT, &sa_new, &sa_old);
+// 	g_heredoc_signal = 0;
+// 	delimiter_len = ft_strlen(delimiter);
+// 	while (1)
+// 	{
+// 		write(STDOUT_FILENO, "> ", 2);
+// 		line = readline("");
+// 		if (g_heredoc_signal || !line)
+// 		{
+// 			if (line)
+// 				free(line);
+// 			close(pipe_fd[1]);
+// 			close(pipe_fd[0]);
+// 			sigaction(SIGINT, &sa_old, NULL);
+// 			return (-1);
+// 		}
+// 		if (ft_strncmp(line, delimiter, delimiter_len) == 0 &&
+// 			line[delimiter_len] == '\0')
+// 		{
+// 			free(line);
+// 			break;
+// 		}
+// 		ft_putendl_fd(line, pipe_fd[1]);
+// 		free(line);
+// 	}
+// 	sigaction(SIGINT, &sa_old, NULL);
+// 	close(pipe_fd[1]);
+// 	return (pipe_fd[0]);
+// }
+
+static bool	process_heredoc_token(t_token *token, t_command *cmd,
+								t_shell *shell, t_sigstate *prev_state)
 {
-	t_command *cmd;
-	t_token *token;
-	int heredoc_fd;
-	t_sigstate prev_state;
+	int	heredoc_fd;
+
+	if (token->type == HEREDOC && token->next)
+	{
+		heredoc_fd = handle_heredoc(token->next->str);
+		if (heredoc_fd == -1)
+		{
+			shell->sig_state = *prev_state;
+			return (false);
+		}
+		if (cmd->in_fd > 2)
+			close(cmd->in_fd);
+		cmd->in_fd = heredoc_fd;
+		return (true);
+	}
+	return (false);
+}
+
+static bool	process_command_tokens(t_command *cmd, t_shell *shell,
+									t_sigstate *prev_state)
+{
+	t_token	*token;
+	bool	skip_token;
+
+	token = cmd->input;
+	while (token)
+	{
+		skip_token = false;
+		if (token->type == HEREDOC && token->next)
+		{
+			if (!process_heredoc_token(token, cmd, shell, prev_state))
+				return (false);
+			token = token->next;
+			skip_token = true;
+		}
+		if (token && !skip_token)
+			token = token->next;
+	}
+	return (true);
+}
+
+bool	process_heredocs(t_command *commands, t_shell *shell)
+{
+	t_command	*cmd;
+	t_sigstate	prev_state;
 
 	prev_state = shell->sig_state;
 	shell->sig_state = IN_HEREDOC;
-
 	cmd = commands;
 	while (cmd)
 	{
-		printf("Processing command: %s\n", cmd->cmd ? cmd->cmd->str : "NULL");
-		token = cmd->input;
-		while (token)
-		{
-			printf("  Checking token type %d: %s\n", token->type, token->str);
-			if (token->type == HEREDOC && token->next)
-			{
-				printf("  Found heredoc with delimiter: %s\n", token->next->str);
-				// Get delimiter from next token
-				heredoc_fd = handle_heredoc(token->next->str);
-				if (heredoc_fd == -1)
-				{
-					// Restore signal state before returning
-					shell->sig_state = prev_state;
-					return false;
-				}
-
-				// Store the heredoc fd as the command's input
-				if (cmd->in_fd > 2)
-					close(cmd->in_fd);
-				cmd->in_fd = heredoc_fd;
-
-				// Skip the delimiter token
-				token = token->next;
-			}
-			if (token)
-				token = token->next;
-		}
+		if (!process_command_tokens(cmd, shell, &prev_state))
+			return (false);
 		cmd = cmd->next;
 	}
-
-	// Restore signal state
 	shell->sig_state = prev_state;
-	return true;
+	return (true);
 }
