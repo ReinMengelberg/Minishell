@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/06/08 14:17:57 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/08 15:30:33 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ t_shell *init_shell()
 
 	shell->commands = NULL;
 	shell->tokens = NULL;
+	shell->pids = NULL;
 	shell->env = create_env(environ);
 	if (!shell->env)
 	{
@@ -32,7 +33,7 @@ t_shell *init_shell()
 	}
 	shell->exit_status = SUCCESS;
 	shell->status = 1;
-
+	shell->sig_state = INTERACTIVE;
 	return (shell);
 }
 
@@ -41,6 +42,7 @@ int main()
 {
 	char *input;
 	t_shell *shell;
+	int		exit_status;
 
 	shell = init_shell();
 	if (!shell)
@@ -48,19 +50,13 @@ int main()
 		printf("Error initializing shell\n");
 		return (1);
 	}
-
 	set_sigstate(shell, INTERACTIVE);
-
 	while (shell->status)
 	{
-		// Check for signals at start of each loop iteration
 		check_signals(shell);
-
 		input = readline(PROMPT);
-
 		if (input == NULL)  // Ctrl+D
 			break;
-
 		if (input[0] != '\0')
 		{
 			add_history(input);
@@ -78,8 +74,9 @@ int main()
 		printf("Exit_status: %d\n", shell->exit_status);
 		free(input);
 	}
-
-	free_env(shell->env);
+	free_everything(shell);
+	exit_status = shell->exit_status;
+	free(shell);
 	printf("exit\n");
-	return (free(shell), shell->exit_status);
+	return (exit_status);
 }

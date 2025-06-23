@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/06/08 13:14:00 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/08 15:19:20 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -191,6 +191,9 @@ t_env	*create_env(char **environ);
 char	*env_get(t_env *head, const char *key);
 void	print_env(t_env *head);
 void	free_env(t_env *head);
+
+//free
+void free_everything(t_shell *shell);
 
 //for testing
 void print_tokens(t_token *tokens);
