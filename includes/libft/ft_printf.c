@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/09 13:46:55 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/05/05 15:08:26 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/24 14:55:07 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,26 +18,26 @@
 // 	return (1);
 // }
 
-int	ft_choose_flag(const char *format, va_list args, int fd)
-{
-	if (*format == 'd' || *format == 'i')
-		return (handle_int(va_arg(args, int), fd));
-	else if (*format == 'u')
-		return (handle_u_int(va_arg(args, unsigned int), fd));
-	else if (*format == 's')
-		return (handle_str(va_arg(args, char *), fd));
-	else if (*format == 'c')
-		return (handle_char(va_arg(args, unsigned int), fd));
-	else if (*format == 'p')
-		return (handle_ptraddress(va_arg(args, uintptr_t), fd));
-	else if (*format == 'x')
-		return (handle_low_hex(va_arg(args, unsigned int), fd));
-	else if (*format == 'X')
-		return (handle_upper_hex(va_arg(args, unsigned int), fd));
-	else if (*format == '%')
-		return (handle_char('%', fd));
-	return (0);
-}
+// int	ft_choose_flag(const char *format, va_list args, int fd)
+// {
+// 	if (*format == 'd' || *format == 'i')
+// 		return (handle_int(va_arg(args, int), fd));
+// 	else if (*format == 'u')
+// 		return (handle_u_int(va_arg(args, unsigned int), fd));
+// 	else if (*format == 's')
+// 		return (handle_str(va_arg(args, char *), fd));
+// 	else if (*format == 'c')
+// 		return (handle_char(va_arg(args, unsigned int), fd));
+// 	else if (*format == 'p')
+// 		return (handle_ptraddress(va_arg(args, uintptr_t), fd));
+// 	else if (*format == 'x')
+// 		return (handle_low_hex(va_arg(args, unsigned int), fd));
+// 	else if (*format == 'X')
+// 		return (handle_upper_hex(va_arg(args, unsigned int), fd));
+// 	else if (*format == '%')
+// 		return (handle_char('%', fd));
+// 	return (0);
+// }
 
 int	ft_printf(const char *format, ...)
 {

@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/23 17:23:29 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/24 13:51:39 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,13 +39,13 @@ int	run_command_pipeline(t_command *commands, t_shell *shell)
 	exit_status = 0;
 	cmd_index = 0;
 	cmd = commands;
-	shell->pids = ft_calloc(cmd_count, sizeof(pid_t));  // Use shell->pids
+	shell->pids = ft_calloc(cmd_count, sizeof(pid_t));
 	if (!shell->pids)
 		return (1);
 	while (cmd)
 	{
 		if (is_builtin(cmd->cmd->str))
-			exit_status = exec_builtin(cmd, shell);  // Pass entire shell to builtins
+			exit_status = exec_builtin(cmd, shell);
 		else
 		{
 			shell->pids[cmd_index] = fork();
@@ -53,7 +53,7 @@ int	run_command_pipeline(t_command *commands, t_shell *shell)
 			{
 				close_unused_pipes(commands, cmd);
 				setup_command_redirections(cmd);
-				execute_external_command(cmd, shell->env);  // Still pass env for external commands
+				execute_external_command(cmd, shell->env);
 				exit(127);
 			}
 			else if (shell->pids[cmd_index] < 0)
@@ -68,7 +68,7 @@ int	run_command_pipeline(t_command *commands, t_shell *shell)
 	close_all_pipes(commands);
 	exit_status = wait_for_children(shell->pids, cmd_count);
 	free(shell->pids);
-	shell->pids = NULL;  // Clean up the pointer
+	shell->pids = NULL;
 	return (exit_status);
 }
 

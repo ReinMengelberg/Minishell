@@ -7,7 +7,7 @@ you need the signal to handle parent, child and heredoc
 cat | cat | ls
 CTRL + C prints armadillo twice
 CTRL + D doesnt work while child process still running
-CTRL + \ doesnt work properly
+CTRL + \ doesnt work properly, it should quit waiting the input
 
 PARENT WORKS
 
@@ -15,6 +15,34 @@ PARENT WORKS
 heredoc if delimiter within quotes, dont expand
 if delimiter not withing quotes, expand
 
+
+should be
+rbagin@f1r1s14:~/minishell/minishell_git$ cd ../src
+bash: cd: ../src: No such file or directory
+rbagin@f1r1s14:~/minishell/minishell_git$ echo $?
+1
+
+armadillo $ /bin/echo hi > permission > 1 --> should print error: permission denied and not create 1 with hi
+
+
+wrong:
+armadillo $ echo hi | echo hello
+hi | echo hello
+hello
+Exit_status: 0
+armadillo $ /bin/echo hi | echo hello
+hello
+Exit_status: 0
+armadillo $ /bin/echo hi
+hi
+Exit_status: 0
+
+armadillo $ ls | cat << eof | echo hi
+> hi
+> eof
+hi 
+minishell: ls: command not found
+minishell: cat: command not found
 
 main
 execution

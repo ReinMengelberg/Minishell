@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 15:59:44 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/06/23 17:23:57 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/24 12:17:55 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,51 +95,6 @@ int	handle_heredoc(char *delimiter)
 	close(pipe_fd[1]);
 	return (pipe_fd[0]);
 }
-
-// int handle_heredoc(char *delimiter)
-// {
-// 	int pipe_fd[2];
-// 	char *line;
-// 	size_t delimiter_len;
-// 	struct sigaction sa_old;
-// 	struct sigaction sa_new;
-
-// 	if (pipe(pipe_fd) == -1)
-// 	{
-// 		perror("pipe");
-// 		return (-1);
-// 	}
-// 	memset(&sa_new, 0, sizeof(sa_new));
-// 	sa_new.sa_handler = heredoc_signal_handler;
-// 	sigaction(SIGINT, &sa_new, &sa_old);
-// 	g_heredoc_signal = 0;
-// 	delimiter_len = ft_strlen(delimiter);
-// 	while (1)
-// 	{
-// 		write(STDOUT_FILENO, "> ", 2);
-// 		line = readline("");
-// 		if (g_heredoc_signal || !line)
-// 		{
-// 			if (line)
-// 				free(line);
-// 			close(pipe_fd[1]);
-// 			close(pipe_fd[0]);
-// 			sigaction(SIGINT, &sa_old, NULL);
-// 			return (-1);
-// 		}
-// 		if (ft_strncmp(line, delimiter, delimiter_len) == 0 &&
-// 			line[delimiter_len] == '\0')
-// 		{
-// 			free(line);
-// 			break;
-// 		}
-// 		ft_putendl_fd(line, pipe_fd[1]);
-// 		free(line);
-// 	}
-// 	sigaction(SIGINT, &sa_old, NULL);
-// 	close(pipe_fd[1]);
-// 	return (pipe_fd[0]);
-// }
 
 static bool	process_heredoc_token(t_token *token, t_command *cmd,
 								t_shell *shell, t_sigstate *prev_state)

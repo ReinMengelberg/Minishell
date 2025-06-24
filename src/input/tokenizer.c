@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:11:17 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/20 13:23:19 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/24 15:28:10 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 static bool	is_unsupported_char(char c)
 {
 	return (c == ';' || c == '#' || c == '!' || \
-		c == '=' || c == '&' || c == '\\');
+		c == '&' || c == '\\');
 }
 
 static bool	is_unsupported_syntax(char *input, int i, char quote)

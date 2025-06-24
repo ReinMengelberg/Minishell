@@ -6,16 +6,16 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 14:41:27 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/06/08 15:15:54 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/24 16:24:36 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void free_everything(t_shell *shell)
+void	free_everything(t_shell *shell, int )
 {
 	if (!shell)
-		return;
+		return ;
 	if (shell->tokens)
 	{
 		free_tokens(shell->tokens);
