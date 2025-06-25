@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/06/24 12:16:26 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/25 14:51:37 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ static int	process_input(char *input, t_shell *shell)
 	}
 	shell->commands = extract_commands(shell->tokens);
 	shell->exit_status = execute_commands(shell->commands, shell);
+	free_everything(shell, false);
 	return (1);
 }
 
@@ -71,7 +72,11 @@ static int	shell_loop(t_shell *shell)
 	}
 	return (shell->exit_status);
 }
-
+/*	Note: This project uses the readline library which has known memory leaks.
+	These leaks are expected and allowed by the project subject.
+	To test without readline leak noise:
+	valgrind --leak-check=full --show-leak-kinds=definite,indirect
+	--suppressions=readline.supp ./minishell*/
 int	main(void)
 {
 	t_shell	*shell;
@@ -85,7 +90,7 @@ int	main(void)
 	}
 	set_sigstate(shell, INTERACTIVE);
 	exit_status = shell_loop(shell);
-	free_everything(shell);
+	free_everything(shell, true);
 	free(shell);
 	printf("exit\n");
 	return (exit_status);

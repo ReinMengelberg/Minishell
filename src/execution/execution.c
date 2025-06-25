@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/24 13:51:39 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/25 14:01:09 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,13 +17,18 @@ int	execute_commands(t_command *commands, t_shell *shell)
 	if (!commands)
 		return (1);
 	if (!check_commands(commands))
-		return (free_everything(shell), 1);
+		return (free_everything(shell, false), 1);
 	if (!process_heredocs(commands, shell))
-		return (free_everything(shell), 130);
+		return (free_everything(shell, false), 130);
 	if (!process_redirections(commands))
-		return (free_everything(shell), 1);
+		return (free_everything(shell, false), 1);
 	if (!setup_pipes(commands))
-		return (free_everything(shell), 1);
+		return (free_everything(shell, false), 1);
+	if (shell->pids)
+	{
+		free(shell->pids);
+		shell->pids = NULL;
+	}
 	shell->exit_status = run_command_pipeline(commands, shell);
 	return (shell->exit_status);
 }
@@ -138,12 +143,13 @@ int	execute_external_command(t_command *cmd, t_env *env_list)
 
 	args = tokens_to_args(cmd->cmd, cmd->args);
 	if (!args)
-	{
 		exit(127);
-	}
 	envp = env_to_array(env_list);
 	if (!envp)
+	{
+		ft_free_array(args);
 		exit(127);
+	}
 	if (find_command_path(args[0], envp, path))
 	{
 		execve(path, args, envp);
@@ -266,6 +272,12 @@ void free_commands(t_command *commands)
 			close(temp->in_fd);
 		if (temp->out_fd > 2)
 			close(temp->out_fd);
+		if (temp->cmd && temp->cmd->str && ft_strcmp(temp->cmd->str, "cat") == 0
+			&& (!temp->args || temp->args == temp->cmd))
+		{
+			free(temp->cmd->str);
+			free(temp->cmd);
+		}
 		free(temp);
 	}
 }

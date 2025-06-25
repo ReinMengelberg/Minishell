@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/06/23 17:27:23 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/25 14:38:15 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,7 +198,8 @@ int			update_env_var(t_env *env, const char *key, const char *value);
 int			remove_env_var(t_env *env_head, const char *key);
 
 //free
-void free_everything(t_shell *shell);
+void	free_commands_without_tokens(t_command *commands);
+void	free_everything(t_shell *shell, bool on_exit);
 
 //for testing
 void		print_tokens(t_token *tokens);
