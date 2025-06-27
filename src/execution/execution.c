@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/25 14:01:09 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/27 15:21:13 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ int	run_command_pipeline(t_command *commands, t_shell *shell)
 		return (1);
 	while (cmd)
 	{
-		if (is_builtin(cmd->cmd->str))
+		if (is_builtin(cmd->cmd->str) && cmd->next == NULL && !cmd->is_piped)
 			exit_status = exec_builtin(cmd, shell);
 		else
 		{
@@ -58,7 +58,10 @@ int	run_command_pipeline(t_command *commands, t_shell *shell)
 			{
 				close_unused_pipes(commands, cmd);
 				setup_command_redirections(cmd);
-				execute_external_command(cmd, shell->env);
+				if (is_builtin(cmd->cmd->str))
+					exit(exec_builtin(cmd, shell));
+				else
+					execute_external_command(cmd, shell->env);
 				exit(127);
 			}
 			else if (shell->pids[cmd_index] < 0)
