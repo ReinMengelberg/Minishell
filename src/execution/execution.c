@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/23 17:23:29 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/28 11:06:37 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,13 +17,18 @@ int	execute_commands(t_command *commands, t_shell *shell)
 	if (!commands)
 		return (1);
 	if (!check_commands(commands))
-		return (free_everything(shell), 1);
+		return (free_everything(shell, false), 1);
 	if (!process_heredocs(commands, shell))
-		return (free_everything(shell), 130);
+		return (free_everything(shell, false), 130);
 	if (!process_redirections(commands))
-		return (free_everything(shell), 1);
+		return (free_everything(shell, false), 1);
 	if (!setup_pipes(commands))
-		return (free_everything(shell), 1);
+		return (free_everything(shell, false), 1);
+	if (shell->pids)
+	{
+		free(shell->pids);
+		shell->pids = NULL;
+	}
 	shell->exit_status = run_command_pipeline(commands, shell);
 	return (shell->exit_status);
 }
@@ -39,13 +44,30 @@ int	run_command_pipeline(t_command *commands, t_shell *shell)
 	exit_status = 0;
 	cmd_index = 0;
 	cmd = commands;
-	shell->pids = ft_calloc(cmd_count, sizeof(pid_t));  // Use shell->pids
+	shell->pids = ft_calloc(cmd_count, sizeof(pid_t));
 	if (!shell->pids)
 		return (1);
 	while (cmd)
 	{
-		if (is_builtin(cmd->cmd->str))
-			exit_status = exec_builtin(cmd, shell);  // Pass entire shell to builtins
+		if (is_builtin(cmd->cmd->str) && cmd->next == NULL && !cmd->is_piped)
+		{
+			int stdin_save = dup(STDIN_FILENO);
+			int stdout_save = dup(STDOUT_FILENO);
+
+			// Set up redirections for builtin
+			if (cmd->in_fd != STDIN_FILENO)
+				dup2(cmd->in_fd, STDIN_FILENO);
+			if (cmd->out_fd != STDOUT_FILENO)
+				dup2(cmd->out_fd, STDOUT_FILENO);
+
+			exit_status = exec_builtin(cmd, shell);
+
+			// Restore original stdin/stdout
+			dup2(stdin_save, STDIN_FILENO);
+			dup2(stdout_save, STDOUT_FILENO);
+			close(stdin_save);
+			close(stdout_save);
+		}
 		else
 		{
 			shell->pids[cmd_index] = fork();
@@ -53,7 +75,10 @@ int	run_command_pipeline(t_command *commands, t_shell *shell)
 			{
 				close_unused_pipes(commands, cmd);
 				setup_command_redirections(cmd);
-				execute_external_command(cmd, shell->env);  // Still pass env for external commands
+				if (is_builtin(cmd->cmd->str))
+					exit(exec_builtin(cmd, shell));
+				else
+					execute_external_command(cmd, shell->env);
 				exit(127);
 			}
 			else if (shell->pids[cmd_index] < 0)
@@ -68,7 +93,7 @@ int	run_command_pipeline(t_command *commands, t_shell *shell)
 	close_all_pipes(commands);
 	exit_status = wait_for_children(shell->pids, cmd_count);
 	free(shell->pids);
-	shell->pids = NULL;  // Clean up the pointer
+	shell->pids = NULL;
 	return (exit_status);
 }
 
@@ -138,12 +163,13 @@ int	execute_external_command(t_command *cmd, t_env *env_list)
 
 	args = tokens_to_args(cmd->cmd, cmd->args);
 	if (!args)
-	{
 		exit(127);
-	}
 	envp = env_to_array(env_list);
 	if (!envp)
+	{
+		ft_free_array(args);
 		exit(127);
+	}
 	if (find_command_path(args[0], envp, path))
 	{
 		execve(path, args, envp);
@@ -266,6 +292,12 @@ void free_commands(t_command *commands)
 			close(temp->in_fd);
 		if (temp->out_fd > 2)
 			close(temp->out_fd);
+		if (temp->cmd && temp->cmd->str && ft_strcmp(temp->cmd->str, "cat") == 0
+			&& (!temp->args || temp->args == temp->cmd))
+		{
+			free(temp->cmd->str);
+			free(temp->cmd);
+		}
 		free(temp);
 	}
 }

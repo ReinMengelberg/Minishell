@@ -1,0 +1,29 @@
+{
+   Readline leak
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:readline
+}
+{
+   AddHistory leak
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:add_history
+}
+{
+   Readline still reachable
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   obj:*/libreadline.so*
+}
+{
+   Readline leak malloc
+   Memcheck:Leak
+   match-leak-kinds: definite,reachable
+   fun:malloc
+   ...
+   obj:*/libreadline.so*
+}
