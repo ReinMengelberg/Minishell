@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 14:36:45 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/28 10:52:07 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/28 13:02:15 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ int exec_echo(t_command *cmd, t_env *env_list)
 		newline = false;
 		current_arg = current_arg->next;
 	}
-	while (current_arg)
+	while (current_arg && current_arg->type == ARG)
 	{
 		printf("%s", current_arg->str);
 		current_arg = current_arg->next;

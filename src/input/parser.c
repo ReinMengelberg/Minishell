@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/20 14:28:09 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/20 13:06:38 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/28 11:33:04 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -286,43 +286,6 @@ char	**tokens_to_args(t_token *cmd, t_token *args)
 		return (NULL);
 	return (result);
 }
-
-// char **tokens_to_args(t_token *cmd, t_token *args)
-// {
-// 	int count = 0;
-// 	t_token *arg = args;
-// 	char **result;
-// 	int i = 0;
-// 	int j = 0;
-
-// 	if (cmd)
-// 		count++;
-// 	while (arg && arg->type == ARG)
-// 	{
-// 		count++;
-// 		arg = arg->next;
-// 	}
-// 	result = malloc(sizeof(char *) * (count + 1));
-// 	if (!result)
-// 		return NULL;
-// 	if (cmd)
-// 		result[i++] = ft_strdup(cmd->str);
-// 	arg = args;
-// 	while (arg && arg->type == ARG)
-// 	{
-// 		result[i++] = ft_strdup(arg->str);
-// 		if (!result[i - 1])
-// 		{
-// 			while (j < i - 1)
-// 				free(result[j++]);
-// 			free(result);
-// 			return NULL;
-// 		}
-// 		arg = arg->next;
-// 	}
-// 	result[i] = NULL;
-// 	return result;
-// }
 
 bool	check_commands(t_command *cmd_head)
 {
