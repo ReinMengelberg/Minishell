@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/06/28 13:51:08 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/28 17:09:23 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,10 +55,21 @@ static int	process_input(char *input, t_shell *shell)
 static int	shell_loop(t_shell *shell)
 {
 	char	*input;
+	bool	signal_received;
 
+	signal_received = false;
 	while (shell->status)
 	{
-		check_signals(shell);
+		if (g_signal_received == SIGINT)
+		{
+			signal_received = true;
+			g_signal_received = 0;
+			shell->exit_status = 130;
+		}
+		else
+			check_signals(shell);
+		if (signal_received)
+			signal_received = false;
 		input = readline(PROMPT);
 		if (!input)
 			break ;

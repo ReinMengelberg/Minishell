@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/27 11:15:53 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/28 13:27:40 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/28 16:18:12 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ static bool save_original_fds(t_command *commands, int saved_fds[][2], int *cmd_
 }
 
 // Handle input redirection (<)
-static bool handle_input_redirection(t_command *cmd, t_command *commands,
+static bool handle_input(t_command *cmd, t_command *commands,
 									int saved_fds[][2], int current_cmd)
 {
 	t_token *filename = cmd->input->next;
@@ -71,8 +71,30 @@ static bool handle_input_redirection(t_command *cmd, t_command *commands,
 	return true;
 }
 
+static bool handle_heredoc_redirect(t_command *commands, t_shell *shell)
+{
+	t_command *cmd = commands;
+	t_token *delimiter;
+
+	while (cmd)
+	{
+		if (cmd->input && cmd->input->type == HEREDOC)
+		{
+			delimiter = cmd->input->next;
+			if (!delimiter)
+				return false;
+			int fd = handle_heredoc(delimiter->str, shell);
+			if (fd == -1)
+				return false;
+			cmd->in_fd = fd;
+		}
+		cmd = cmd->next;
+	}
+	return true;
+}
+
 // Handle output redirection (>)
-static bool handle_output_redirection(t_command *cmd, t_command *commands,
+static bool handle_output(t_command *cmd, t_command *commands,
 									int saved_fds[][2], int current_cmd)
 {
 	t_token *filename = cmd->output->next;
@@ -93,7 +115,7 @@ static bool handle_output_redirection(t_command *cmd, t_command *commands,
 }
 
 // Handle append redirection (>>)
-static bool handle_append_redirection(t_command *cmd, t_command *commands,
+static bool handle_append(t_command *cmd, t_command *commands,
 									int saved_fds[][2], int current_cmd)
 {
 	t_token *filename = cmd->output->next;
@@ -113,7 +135,7 @@ static bool handle_append_redirection(t_command *cmd, t_command *commands,
 	return true;
 }
 
-bool process_redirections(t_command *commands)
+bool process_redirections(t_command *commands, t_shell *shell)
 {
 	t_command *cmd;
 	t_token *current;
@@ -123,6 +145,8 @@ bool process_redirections(t_command *commands)
 
 	if (!save_original_fds(commands, saved_fds, &cmd_count))
 		return (false);
+	if (!handle_heredoc_redirect(commands, shell))
+		return false;
 	cmd = commands;
 	current_cmd = 0;
 	while (cmd && current_cmd < cmd_count)
@@ -156,7 +180,7 @@ bool process_redirections(t_command *commands)
 		{
 			if (cmd->input->type == INPUT)
 			{
-				if (!handle_input_redirection(cmd, commands, saved_fds, current_cmd))
+				if (!handle_input(cmd, commands, saved_fds, current_cmd))
 					return false;
 			}
 		}
@@ -164,12 +188,12 @@ bool process_redirections(t_command *commands)
 		{
 			if (cmd->output->type == OUTPUT)
 			{
-				if (!handle_output_redirection(cmd, commands, saved_fds, current_cmd))
+				if (!handle_output(cmd, commands, saved_fds, current_cmd))
 					return false;
 			}
 			else if (cmd->output->type == APPEND)
 			{
-				if (!handle_append_redirection(cmd, commands, saved_fds, current_cmd))
+				if (!handle_append(cmd, commands, saved_fds, current_cmd))
 					return false;
 			}
 		}

@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 14:41:34 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/06/28 11:36:44 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/28 17:17:03 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@ volatile sig_atomic_t	g_signal_received = 0;
 
 void	handle_signal_interactive(int sig)
 {
+	printf("interactie singal");
 	g_signal_received = sig;
 	if (sig == SIGINT)
 	{
@@ -38,8 +39,13 @@ void	handle_signal_child(int sig)
 void	handle_signal_heredoc(int sig)
 {
 	g_signal_received = sig;
-	if (sig == SIGINT)
+	if (sig == SIGINT) {
 		write(STDOUT_FILENO, "\n", 1);
+		exit(130);
+		// rl_replace_line("", 0);
+		// rl_done = 1;
+		// rl_event_hook = NULL;
+	}
 }
 
 // Non-blocking signal check function

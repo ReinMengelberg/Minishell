@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/28 13:51:03 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/28 16:29:11 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,9 @@ int	execute_commands(t_command *commands, t_shell *shell)
 		return (1);
 	if (!check_commands(commands))
 		return (free_everything(shell, false), 1);
-	if (!process_heredocs(commands, shell))
-		return (free_everything(shell, false), 130);
-	if (!process_redirections(commands))
+	// if (!process_heredocs(commands, shell))
+	// 	return (free_everything(shell, false), 130);
+	if (!process_redirections(commands, shell))
 		return (free_everything(shell, false), 1);
 	if (!setup_pipes(commands))
 		return (free_everything(shell, false), 1);
@@ -290,12 +290,6 @@ void free_commands(t_command *commands)
 			close(temp->in_fd);
 		if (temp->out_fd > 2)
 			close(temp->out_fd);
-		if (temp->cmd && temp->cmd->str && ft_strcmp(temp->cmd->str, "cat") == 0
-			&& (!temp->args || temp->args == temp->cmd))
-		{
-			free(temp->cmd->str);
-			free(temp->cmd);
-		}
 		free(temp);
 	}
 }

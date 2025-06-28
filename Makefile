@@ -17,7 +17,7 @@ SRCS =	./src/builtin/cd.c \
 		./src/input/token_utils.c \
 		./src/input/tokenizer.c \
 		./src/input/expander.c \
-		./src/input/heredoc.c \
+		./src/input/heredoc_new.c \
 		./src/input/parser.c \
 		./src/execution/execution.c \
 		./src/execution/path.c \

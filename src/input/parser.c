@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/20 14:28:09 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/28 11:33:04 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/28 16:28:10 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,27 +51,6 @@ static void	process_token_type(t_command *cmd, t_token *token)
 		cmd->output = token;
 }
 
-static bool	add_default_cmd(t_command *cmd_head)
-{
-	t_command	*cmd;
-	t_token		*default_cmd;
-
-	cmd = cmd_head;
-	while (cmd)
-	{
-		if (!cmd->cmd && (cmd->input || cmd->output))
-		{
-			default_cmd = create_token("cat", CMD);
-			if (!default_cmd)
-				return (free_commands(cmd_head), false);
-			cmd->cmd = default_cmd;
-			cmd->args = default_cmd;
-		}
-		cmd = cmd->next;
-	}
-	return (true);
-}
-
 t_command	*extract_commands(t_token *tokens)
 {
 	t_command	*cmd_head;
@@ -93,8 +72,6 @@ t_command	*extract_commands(t_token *tokens)
 		process_token_type(current_cmd, current);
 		current = current->next;
 	}
-	if (!add_default_cmd(cmd_head))
-		return (NULL);
 	return (cmd_head);
 }
 
