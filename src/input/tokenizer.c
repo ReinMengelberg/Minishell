@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:11:17 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/24 15:28:10 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/28 13:39:53 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,47 @@ bool	check_input(char *input)
 	if (quote != 0)
 		return (true);
 	return (false);
+}
+
+// Check for valid pipe syntax in the token list
+static bool validate_pipe_syntax(t_token *tokens)
+{
+	t_token *current;
+	bool command_before_pipe = false;
+	bool command_after_pipe = false;
+	t_token * next;
+
+	current = tokens;
+	if (current && current->type == PIPE)
+		return false;
+	while (current)
+	{
+		if (current->type == CMD)
+			command_before_pipe = true;
+		if (current->type == PIPE)
+		{
+			if (!command_before_pipe)
+				return false;
+			command_after_pipe = false;
+			next = current->next;
+			while (next)
+			{
+				if (next->type == CMD)
+				{
+					command_after_pipe = true;
+					break;
+				}
+				else if (next->type == PIPE)
+					return false;
+				next = next->next;
+			}
+			if (!command_after_pipe)
+				return false;
+			command_before_pipe = false;
+		}
+		current = current->next;
+	}
+	return true;
 }
 
 t_token	*create_token(char *str, t_tokentype type)
@@ -258,6 +299,12 @@ t_token	*tokenize(char *input)
 		return (NULL);
 	tokens = create_tokens_from_split(split);
 	ft_free_array(split);
+	if (tokens && !validate_pipe_syntax(tokens))
+	{
+		ft_putstr_fd("minishell: syntax error near unexpected token `|'\n", 2);
+		free_tokens(tokens);
+		return (NULL);
+	}
 	return (tokens);
 }
 

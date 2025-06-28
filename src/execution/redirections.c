@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/27 11:15:53 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/07 16:22:41 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/28 13:27:40 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ static bool handle_input_redirection(t_command *cmd, t_command *commands,
 	cmd->in_fd = open(filename->str, O_RDONLY);
 	if (cmd->in_fd < 0)
 	{
-		perror("INPUT open error");
+		ft_dprintf(2, "minishell: %s: %s\n", filename->str, strerror(errno));
 		cleanup_redirections(commands, saved_fds, current_cmd);
 		return false;
 	}
@@ -116,26 +116,48 @@ static bool handle_append_redirection(t_command *cmd, t_command *commands,
 bool process_redirections(t_command *commands)
 {
 	t_command *cmd;
+	t_token *current;
 	int saved_fds[MAX_COMMANDS][2];
 	int cmd_count;
 	int current_cmd;
 
 	if (!save_original_fds(commands, saved_fds, &cmd_count))
-		return false;
+		return (false);
 	cmd = commands;
 	current_cmd = 0;
 	while (cmd && current_cmd < cmd_count)
 	{
+		current = cmd->cmd;
+		while (current)
+		{
+			if (current->type == OUTPUT && current->next)
+			{
+				int fd = open(current->next->str, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+				if (fd < 0)
+				{
+					ft_dprintf(2, "minishell: %s: %s\n", current->next->str, strerror(errno));
+					return false;
+				}
+				close(fd);
+			}
+			else if (current->type == APPEND && current->next)
+			{
+				int fd = open(current->next->str, O_WRONLY | O_CREAT | O_APPEND, 0644);
+				if (fd < 0)
+				{
+					ft_dprintf(2, "minishell: %s: %s\n", current->next->str, strerror(errno));
+					return false;
+				}
+				close(fd);
+			}
+			current = current->next;
+		}
 		if (cmd->input)
 		{
 			if (cmd->input->type == INPUT)
 			{
 				if (!handle_input_redirection(cmd, commands, saved_fds, current_cmd))
 					return false;
-			}
-			else if (cmd->input->type == HEREDOC)
-			{
-				//gets handled before redirections
 			}
 		}
 		if (cmd->output)
