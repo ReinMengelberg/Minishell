@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 15:59:44 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/06/24 12:17:55 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/28 11:33:35 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,7 @@ int	handle_heredoc(char *delimiter)
 }
 
 static bool	process_heredoc_token(t_token *token, t_command *cmd,
-								t_shell *shell, t_sigstate *prev_state)
+								t_shell *shell, t_state *prev_state)
 {
 	int	heredoc_fd;
 
@@ -106,7 +106,7 @@ static bool	process_heredoc_token(t_token *token, t_command *cmd,
 		heredoc_fd = handle_heredoc(token->next->str);
 		if (heredoc_fd == -1)
 		{
-			shell->sig_state = *prev_state;
+			shell->state = *prev_state;
 			return (false);
 		}
 		if (cmd->in_fd > 2)
@@ -118,7 +118,7 @@ static bool	process_heredoc_token(t_token *token, t_command *cmd,
 }
 
 static bool	process_command_tokens(t_command *cmd, t_shell *shell,
-									t_sigstate *prev_state)
+									t_state *prev_state)
 {
 	t_token	*token;
 	bool	skip_token;
@@ -143,10 +143,10 @@ static bool	process_command_tokens(t_command *cmd, t_shell *shell,
 bool	process_heredocs(t_command *commands, t_shell *shell)
 {
 	t_command	*cmd;
-	t_sigstate	prev_state;
+	t_state	prev_state;
 
-	prev_state = shell->sig_state;
-	shell->sig_state = IN_HEREDOC;
+	prev_state = shell->state;
+	shell->state = IN_HEREDOC;
 	cmd = commands;
 	while (cmd)
 	{
@@ -154,6 +154,6 @@ bool	process_heredocs(t_command *commands, t_shell *shell)
 			return (false);
 		cmd = cmd->next;
 	}
-	shell->sig_state = prev_state;
+	shell->state = prev_state;
 	return (true);
 }
