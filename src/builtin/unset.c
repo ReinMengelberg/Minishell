@@ -6,22 +6,22 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 14:36:57 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/28 13:37:38 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/28 16:45:09 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int exec_unset(t_command *cmd, t_env *env_list)
+int exec_unset(t_command *cmd, t_shell *shell)  // Pass whole shell
 {
     t_token *current_arg;
     int exit_status;
-
-    if (!cmd || !env_list)
+    
+    if (!cmd || !shell || !shell->env)
         return (ERROR_NULL_POINTER);
     if (!cmd->args)
         return (SUCCESS);
-    
+        
     exit_status = SUCCESS;
     current_arg = cmd->args;
     
@@ -34,8 +34,7 @@ int exec_unset(t_command *cmd, t_env *env_list)
         }
         else
         {
-            // Remove the variable (ignore return value - unset succeeds even if var doesn't exist)
-            remove_env_var(env_list, current_arg->str);
+            remove_env_var(&shell->env, current_arg->str);  // Updates original shell->env
         }
         current_arg = current_arg->next;
     }

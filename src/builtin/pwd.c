@@ -6,18 +6,18 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 14:36:59 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/23 17:23:32 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/28 16:55:57 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int exec_pwd(t_command *cmd, t_env *env_list)
+int exec_pwd(t_command *cmd, t_shell *shell)
 {
     char current_dir[PATH_MAX];
     
-    (void)cmd;      // pwd doesn't use arguments
-    (void)env_list; // pwd doesn't need environment variables
+    (void)cmd;   // pwd doesn't use arguments
+    (void)shell; // pwd doesn't need shell data
     
     if (!getcwd(current_dir, sizeof(current_dir)))
     {

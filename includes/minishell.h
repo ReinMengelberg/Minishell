@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/06/28 16:02:32 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/28 17:23:59 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,24 +176,24 @@ int count_commands(t_command *commands);
 void free_commands(t_command *commands);
 
 // builtin
-bool is_builtin(char *cmd);
-int exec_exit(t_command *cmd, t_shell *shell);
-int exec_builtin(t_command *cmd, t_shell *shell);
-int exec_pwd(t_command *cmd, t_env *env_list);
-int exec_cd(t_command *cmd, t_env *env_list);
-int exec_echo(t_command *cmd, t_env *env_list);
-int exec_env(t_command *cmd, t_env *env_list);
-int exec_export(t_command *cmd, t_env *env_list);
-int exec_unset(t_command *cmd, t_env *env_list);
+bool		is_builtin(char *cmd);
+int 		exec_builtin(t_command *cmd, t_shell *shell);
+int 		exec_exit(t_command *cmd, t_shell *shell);
+int			exec_pwd(t_command *cmd, t_shell *shell);
+int			exec_cd(t_command *cmd, t_shell *shell);
+int			exec_echo(t_command *cmd, t_shell *shell);
+int 		exec_env(t_command *cmd, t_shell *shell);
+int			exec_export(t_command *cmd, t_shell *shell);
+int			exec_unset(t_command *cmd, t_shell *shell);
 
 // env
-t_env *create_env(char **environ);
-char *env_get(t_env *head, const char *key);
-void print_env(t_env *head);
-void free_env(t_env *head);
-bool is_valid_var_syntax(const char *name, bool dollar);
-int update_env_var(t_env *env, const char *key, const char *value);
-int remove_env_var(t_env *env_head, const char *key);
+t_env		*create_env(char **environ);
+char		*env_get(t_env *head, const char *key);
+void		print_env(t_env *head);
+void		free_env(t_env *head);
+bool		is_valid_var_syntax(const char *name, bool dollar);
+int			update_env_var(t_env **env_head, const char *key, const char *value);
+int			remove_env_var(t_env **env_head, const char *key);
 
 // free
 void free_commands_without_tokens(t_command *commands);

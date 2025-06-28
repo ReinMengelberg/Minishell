@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 14:36:41 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/24 13:49:58 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/28 16:53:03 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ static int count_args(t_token *args)
 	return (count);
 }
 
-int exec_cd(t_command *cmd, t_env *env)
+int exec_cd(t_command *cmd, t_shell *shell)
 {
 	char *target_dir;
 	char *home_dir;
@@ -43,7 +43,7 @@ int exec_cd(t_command *cmd, t_env *env)
 	char new_dir[PATH_MAX];
 	int arg_count;
 
-	if (!cmd || !env)
+	if (!cmd || !shell)
 		return (ERROR_NULL_POINTER);
 	if (!getcwd(current_dir, sizeof(current_dir)))
 	{
@@ -53,7 +53,7 @@ int exec_cd(t_command *cmd, t_env *env)
 	arg_count = count_args(cmd->args);
 	if (arg_count == 0)
 	{
-		home_dir = env_get(env, "HOME");
+		home_dir = env_get(shell->env, "HOME");
 		if (!home_dir)
 		{
 			fprintf(stderr, "cd: HOME not set\n");
@@ -66,7 +66,7 @@ int exec_cd(t_command *cmd, t_env *env)
 		target_dir = get_first_arg(cmd->args);
 		if (strcmp(target_dir, "-") == 0)
 		{
-			oldpwd = env_get(env, "OLDPWD");
+			oldpwd = env_get(shell->env, "OLDPWD");
 			if (!oldpwd)
 			{
 				fprintf(stderr, "cd: OLDPWD not set\n");
@@ -99,14 +99,14 @@ int exec_cd(t_command *cmd, t_env *env)
 	}
 
 	// Update OLDPWD to previous directory
-	if (update_env_var(env, "OLDPWD", current_dir) != SUCCESS)
+	if (update_env_var(&shell->env, "OLDPWD", current_dir) != SUCCESS)
 	{
 		fprintf(stderr, "cd: failed to update OLDPWD\n");
 		return (FAILURE);
 	}
 
 	// Update PWD to new directory
-	if (update_env_var(env, "PWD", new_dir) != SUCCESS)
+	if (update_env_var(&shell->env, "PWD", new_dir) != SUCCESS)
 	{
 		fprintf(stderr, "cd: failed to update PWD\n");
 		return (FAILURE);

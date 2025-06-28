@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 14:36:50 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/28 13:28:46 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/28 16:51:35 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ static int count_export_args(t_token *args)
     return (count);
 }
 
-int exec_export(t_command *cmd, t_env *env_list)
+int exec_export(t_command *cmd, t_shell *shell)
 {
     t_token *current_arg;
     char *key;
@@ -70,11 +70,11 @@ int exec_export(t_command *cmd, t_env *env_list)
     int exit_status;
     
     exit_status = SUCCESS;
-    if (!cmd || !env_list)
+    if (!cmd || !shell)
         return (ERROR_NULL_POINTER);
     if (count_export_args(cmd->args) == 0)
     {
-        print_export_vars(env_list);
+        print_export_vars(shell->env);
         return (SUCCESS);
     }
     current_arg = cmd->args;
@@ -95,7 +95,7 @@ int exec_export(t_command *cmd, t_env *env_list)
         {
             if (has_equals)
             {
-                if (update_env_var(env_list, key, value) != SUCCESS)
+                if (update_env_var(&shell->env, key, value) != SUCCESS)
                 {
                     ft_dprintf(2, "export: memory allocation error\n");
                     exit_status = ERROR_MEMORY_ALLOCATION;

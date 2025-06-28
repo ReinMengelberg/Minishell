@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 14:36:45 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/28 13:02:15 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/28 16:56:54 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,13 +18,13 @@ static bool is_n_flag(const char *str)
 	return (str && strcmp(str, "-n") == 0);
 }
 
-int exec_echo(t_command *cmd, t_env *env_list)
+int exec_echo(t_command *cmd, t_shell *shell)
 {
 	t_token	*current_arg;
 	bool	newline;
 
 	newline = true;
-	(void)env_list;
+	(void)shell;
 	if (!cmd)
 		return (ERROR_NULL_POINTER);
 	current_arg = cmd->args;
