@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/06/23 17:27:23 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/28 11:12:57 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,12 +34,12 @@
 
 extern volatile sig_atomic_t g_signal_received;
 
-typedef enum e_sigstate
+typedef enum e_state
 {
 	IN_HEREDOC,
 	IN_CHILD,
 	INTERACTIVE
-}	t_sigstate;
+}	t_state;
 
 typedef enum e_tokentype
 {
@@ -127,7 +127,7 @@ typedef struct s_shell
 {
 	int				status;
 	t_env			*env;
-	t_sigstate		sig_state;
+	t_state		state;
 	t_exitstatus	exit_status;
 	t_command		*commands;
 	t_token			*tokens;
@@ -138,7 +138,7 @@ typedef struct s_shell
 // SIGNALS
 void		check_signals(t_shell *shell);
 void		setup_signal_handler(void (*handler)(int));
-void		set_sigstate(t_shell *shell, t_sigstate state);
+void		set_state(t_shell *shell, t_state state);
 
 
 // INPUT

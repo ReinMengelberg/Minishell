@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 14:41:34 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/06/08 13:32:06 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/28 11:12:57 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ void check_signals(t_shell *shell)
             shell->exit_status = 130;
         else if (sig == SIGQUIT)
         {
-            if (shell->sig_state == IN_CHILD)
+            if (shell->state == IN_CHILD)
                 shell->exit_status = 131;
         }
     }
@@ -73,9 +73,9 @@ void setup_signal_handler(void (*handler)(int))
     sigaction(SIGQUIT, &sa, NULL);
 }
 
-void set_sigstate(t_shell *shell, t_sigstate state)
+void set_state(t_shell *shell, t_state state)
 {
-    shell->sig_state = state;
+    shell->state = state;
     
     if (state == INTERACTIVE)
     {
