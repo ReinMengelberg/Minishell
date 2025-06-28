@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/17 17:18:54 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/06/08 15:28:55 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/28 13:42:49 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,11 +67,13 @@ int update_env_var(t_env *env, const char *key, const char *value)
     return (SUCCESS);
 }
 
-
 int remove_env_var(t_env *env_head, const char *key)
 {
-    t_env *current = env_head;
+    t_env *current;
     
+    if (!env_head || !key)
+        return (ERROR_INVALID_INPUT);
+    current = env_head->next;
     while (current)
     {
         if (current->key && ft_strcmp(current->key, key) == 0)
@@ -88,5 +90,6 @@ int remove_env_var(t_env *env_head, const char *key)
         }
         current = current->next;
     }
+	printf("Environment Variable not found: %s\n", key);
     return (ERROR_INVALID_INPUT);
 }
