@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/17 17:18:54 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/06/28 16:49:12 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/28 17:02:37 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ char	*env_get(t_env *head, const char *key)
 	current = head;
 	while (current)
 	{
-		if (strcmp(current->key, key) == 0)
+		if (ft_strcmp(current->key, key) == 0)
 			return (current->value);
 		current = current->next;
 	}
@@ -34,10 +34,10 @@ int update_env_var(t_env **env_head, const char *key, const char *value)
     // Search for existing variable
     while (current)
     {
-        if (strcmp(current->key, key) == 0)
+        if (ft_strcmp(current->key, key) == 0)
         {
             free(current->value);
-            current->value = strdup(value);
+            current->value = ft_strdup(value);
             return (current->value ? SUCCESS : ERROR_MEMORY_ALLOCATION);
         }
         current = current->next;
@@ -48,8 +48,8 @@ int update_env_var(t_env **env_head, const char *key, const char *value)
     if (!new_var)
         return (ERROR_MEMORY_ALLOCATION);
     
-    new_var->key = strdup(key);
-    new_var->value = strdup(value);
+    new_var->key = ft_strdup(key);
+    new_var->value = ft_strdup(value);
     if (!new_var->key || !new_var->value)
     {
         free(new_var->key);
