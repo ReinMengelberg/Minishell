@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/06/28 11:11:12 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/28 13:13:41 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,6 @@ t_shell	*init_shell(void)
 static int	process_input(char *input, t_shell *shell)
 {
 	shell->tokens = tokenize(input);
-	// print_tokens(shell->tokens);
 	shell->tokens = expand_tokens(shell->tokens, shell->env,
 			shell->exit_status);
 	if (!shell->tokens)
@@ -68,7 +67,6 @@ static int	shell_loop(t_shell *shell)
 			add_history(input);
 			process_input(input, shell);
 		}
-		// printf("Exit_status: %d\n", shell->exit_status);
 		free(input);
 	}
 	return (shell->exit_status);

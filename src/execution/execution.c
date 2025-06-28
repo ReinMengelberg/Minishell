@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/28 11:06:37 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/28 13:08:55 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,9 +59,7 @@ int	run_command_pipeline(t_command *commands, t_shell *shell)
 				dup2(cmd->in_fd, STDIN_FILENO);
 			if (cmd->out_fd != STDOUT_FILENO)
 				dup2(cmd->out_fd, STDOUT_FILENO);
-
 			exit_status = exec_builtin(cmd, shell);
-
 			// Restore original stdin/stdout
 			dup2(stdin_save, STDIN_FILENO);
 			dup2(stdout_save, STDOUT_FILENO);
