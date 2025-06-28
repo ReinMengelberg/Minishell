@@ -6,11 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 14:41:34 by rmengelb      #+#    #+#                 */
-<<<<<<< HEAD
-/*   Updated: 2025/06/28 11:12:57 by rmengelb      ########   odam.nl         */
-=======
-/*   Updated: 2025/06/24 12:15:13 by rbagin        ########   odam.nl         */
->>>>>>> origin/main
+/*   Updated: 2025/06/28 11:36:44 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,20 +47,6 @@ void	check_signals(t_shell *shell)
 {
 	int	sig;
 
-<<<<<<< HEAD
-    if (g_signal_received != 0)
-    {
-        sig = g_signal_received;
-        g_signal_received = 0;  // Reset the flag
-        if (sig == SIGINT)
-            shell->exit_status = 130;
-        else if (sig == SIGQUIT)
-        {
-            if (shell->state == IN_CHILD)
-                shell->exit_status = 131;
-        }
-    }
-=======
 	if (g_signal_received != 0)
 	{
 		sig = g_signal_received;
@@ -73,11 +55,10 @@ void	check_signals(t_shell *shell)
 			shell->exit_status = 130;
 		else if (sig == SIGQUIT)
 		{
-			if (shell->sig_state == IN_CHILD)
+			if (shell->state == IN_CHILD)
 				shell->exit_status = 131;
 		}
 	}
->>>>>>> origin/main
 }
 
 void	setup_signal_handler(void (*handler)(int))
@@ -91,29 +72,9 @@ void	setup_signal_handler(void (*handler)(int))
 	sigaction(SIGQUIT, &sa, NULL);
 }
 
-<<<<<<< HEAD
-void set_state(t_shell *shell, t_state state)
+void	set_state(t_shell *shell, t_state state)
 {
-    shell->state = state;
-    
-    if (state == INTERACTIVE)
-    {
-        setup_signal_handler(handle_signal_interactive);
-        signal(SIGQUIT, SIG_IGN);
-    }
-    else if (state == IN_CHILD)
-    {
-        setup_signal_handler(handle_signal_child);
-    }
-    else if (state == IN_HEREDOC)
-    {
-        setup_signal_handler(handle_signal_heredoc);
-        signal(SIGQUIT, SIG_IGN);
-    }
-=======
-void	set_sigstate(t_shell *shell, t_sigstate state)
-{
-	shell->sig_state = state;
+	shell->state = state;
 	if (state == INTERACTIVE)
 	{
 		setup_signal_handler(handle_signal_interactive);
@@ -128,5 +89,4 @@ void	set_sigstate(t_shell *shell, t_sigstate state)
 		setup_signal_handler(handle_signal_heredoc);
 		signal(SIGQUIT, SIG_IGN);
 	}
->>>>>>> origin/main
 }

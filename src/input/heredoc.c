@@ -6,11 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 15:59:44 by rbagin        #+#    #+#                 */
-<<<<<<< HEAD
-/*   Updated: 2025/06/28 11:12:57 by rmengelb      ########   odam.nl         */
-=======
-/*   Updated: 2025/06/24 12:17:55 by rbagin        ########   odam.nl         */
->>>>>>> origin/main
+/*   Updated: 2025/06/28 11:33:35 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
