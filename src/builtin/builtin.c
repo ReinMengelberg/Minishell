@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/08 13:46:21 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/06/24 13:50:32 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/28 16:58:01 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,19 +19,17 @@ int	exec_builtin(t_command *cmd, t_shell *shell)
 	if (strcmp(cmd->cmd->str, "exit") == 0)
 		return exec_exit(cmd, shell);
 	else if (strcmp(cmd->cmd->str, "cd") == 0)
-		return exec_cd(cmd, shell->env);
+		return exec_cd(cmd, shell);
 	else if (strcmp(cmd->cmd->str, "pwd") == 0)
-		return exec_pwd(cmd, shell->env);
+		return exec_pwd(cmd, shell);
 	else if (strcmp(cmd->cmd->str, "echo") == 0)
-		return exec_echo(cmd, shell->env);
+		return exec_echo(cmd, shell);
 	else if (strcmp(cmd->cmd->str, "env") == 0)
-		return exec_env(cmd, shell->env);
+		return exec_env(cmd, shell);
 	else if (strcmp(cmd->cmd->str, "export") == 0)
-		return exec_export(cmd, shell->env);
+		return exec_export(cmd, shell);
 	else if (strcmp(cmd->cmd->str, "unset") == 0)
-		return exec_unset(cmd, shell->env);
-			else if (strcmp(cmd->cmd->str, "unset") == 0)
-		return exec_unset(cmd, shell->env);
+		return exec_unset(cmd, shell);
 	return (1);
 }
 
