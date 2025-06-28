@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/17 17:18:54 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/06/28 13:42:49 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/28 16:49:12 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,11 @@ char	*env_get(t_env *head, const char *key)
 	return (NULL);
 }
 
-int update_env_var(t_env *env, const char *key, const char *value)
+int update_env_var(t_env **env_head, const char *key, const char *value)
 {
-    t_env *current = env;
+    t_env *current = *env_head;
     
+    // Search for existing variable
     while (current)
     {
         if (strcmp(current->key, key) == 0)
@@ -42,7 +43,7 @@ int update_env_var(t_env *env, const char *key, const char *value)
         current = current->next;
     }
     
-	
+    // Variable doesn't exist, create new one
     t_env *new_var = malloc(sizeof(t_env));
     if (!new_var)
         return (ERROR_MEMORY_ALLOCATION);
@@ -57,39 +58,58 @@ int update_env_var(t_env *env, const char *key, const char *value)
         return (ERROR_MEMORY_ALLOCATION);
     }
     
-    // Add to front of list
-    new_var->next = env->next;
-    new_var->prev = env;
-    if (env->next)
-        env->next->prev = new_var;
-    env->next = new_var;
+    new_var->next = NULL;
+    new_var->prev = NULL;
+    
+    // Add to end of list (consistent with env_set)
+    if (!*env_head)
+    {
+        *env_head = new_var;
+    }
+    else
+    {
+        current = *env_head;
+        while (current->next)
+            current = current->next;
+        current->next = new_var;
+        new_var->prev = current;
+    }
     
     return (SUCCESS);
 }
 
-int remove_env_var(t_env *env_head, const char *key)
+int remove_env_var(t_env **env_head, const char *key)
 {
     t_env *current;
     
-    if (!env_head || !key)
+    if (!env_head || !*env_head || !key)
         return (ERROR_INVALID_INPUT);
-    current = env_head->next;
+        
+    current = *env_head;
     while (current)
     {
         if (current->key && ft_strcmp(current->key, key) == 0)
         {
+            // Update head pointer if we're removing the head
+            if (current == *env_head)
+            {
+                *env_head = current->next;
+                if (*env_head)  // If new head exists, clear its prev pointer
+                    (*env_head)->prev = NULL;
+            }
+            
+            // Update linked list pointers
             if (current->prev)
                 current->prev->next = current->next;
             if (current->next)
                 current->next->prev = current->prev;
+                
             free(current->key);
             free(current->value);
             free(current);
-            
             return (SUCCESS);
         }
         current = current->next;
     }
-	printf("Environment Variable not found: %s\n", key);
     return (ERROR_INVALID_INPUT);
 }
