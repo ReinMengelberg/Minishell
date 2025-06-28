@@ -6,54 +6,61 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 14:36:48 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/23 17:26:57 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/28 11:54:58 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+bool	isnum(char *str)
+{
+    int	i;
+    if (!str || !*str)
+        return (false);
+    i = 0;
+    if (str[i] == '-' || str[i] == '+')
+        i++;
+    if (!str[i])
+        return (false);
+    while (str[i])
+    {
+        if (str[i] < '0' || str[i] > '9')
+            return (false);
+        i++;
+    }
+    return (true);
+}
+
+int calc_exit(char* exit_arg)
+{
+    int exit_code;
+
+    exit_code = ft_atoi(exit_arg);
+    exit_code = exit_code % 256;
+    if (exit_code < 0)
+        exit_code += 256;
+    return (exit_code);
+}
+
 int exec_exit(t_command *cmd, t_shell *shell)
 {
     int exit_code = 0;
-    t_token *args = cmd->args;  // This is a token linked list
+    char *exit_arg;
     
-    // If no arguments provided, use the last exit status
-    if (!args)
-    {
+    if (!cmd->args)
         exit_code = shell->exit_status;
-    }
     else
     {
-        // Get the first argument (assuming it's the exit code)
-        char *exit_arg = args->str;  // Assuming t_token has a str field
-        
-        // Parse the exit code from the first argument
-        char *endptr;
-        long temp = strtol(exit_arg, &endptr, 10);
-        
-        // Check if the argument is a valid number
-        if (*endptr != '\0' || exit_arg[0] == '\0')
-        {
-            printf("minishell: exit: %s: numeric argument required\n", exit_arg);
-            exit_code = 2;  // Bash convention for invalid argument
-        }
-        // Check for too many arguments (if there's a second token)
-        else if (args->next)
-        {
-            printf("minishell: exit: too many arguments\n");
-            return (1);  // Don't exit, just return error status
-        }
+        exit_arg = cmd->args->str;
+        if (!isnum(cmd->args->str))
+            exit_code = 2;
+        else if (cmd->args->next)
+            return (printf("minishell: exit: too many arguments\n"), 1);
         else
-        {
-            // Bash uses modulo 256 for exit codes
-            exit_code = (int)(temp % 256);
-            if (exit_code < 0)
-                exit_code += 256;
-        }
+            exit_code = calc_exit(exit_arg);
     }
-    
-    printf("exit\n");
-    shell->status = 0;  // This will terminate the main loop
-    shell->exit_status = exit_code;  // Store the exit code
+    shell->exit_status = exit_code;
+    if (shell->state == INTERACTIVE)
+        shell->status = 0;
     return (exit_code);
 }

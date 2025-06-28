@@ -6,7 +6,11 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
+<<<<<<< HEAD
 /*   Updated: 2025/06/28 13:13:41 by rbagin        ########   odam.nl         */
+=======
+/*   Updated: 2025/06/28 11:34:09 by rmengelb      ########   odam.nl         */
+>>>>>>> f2f0ab9e2bfb48534a773a68acbac1c39ec8386e
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +36,7 @@ t_shell	*init_shell(void)
 	}
 	shell->exit_status = SUCCESS;
 	shell->status = 1;
-	shell->sig_state = INTERACTIVE;
+	shell->state = INTERACTIVE;
 	return (shell);
 }
 
@@ -87,7 +91,7 @@ int	main(void)
 		printf("Error initializing shell\n");
 		return (1);
 	}
-	set_sigstate(shell, INTERACTIVE);
+	set_state(shell, INTERACTIVE);
 	exit_status = shell_loop(shell);
 	free_everything(shell, true);
 	free(shell);
