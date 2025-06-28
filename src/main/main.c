@@ -6,11 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-<<<<<<< HEAD
-/*   Updated: 2025/06/28 13:13:41 by rbagin        ########   odam.nl         */
-=======
-/*   Updated: 2025/06/28 11:34:09 by rmengelb      ########   odam.nl         */
->>>>>>> f2f0ab9e2bfb48534a773a68acbac1c39ec8386e
+/*   Updated: 2025/06/28 13:51:08 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 

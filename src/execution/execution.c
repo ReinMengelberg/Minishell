@@ -6,11 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-<<<<<<< HEAD
-/*   Updated: 2025/06/28 13:08:55 by rbagin        ########   odam.nl         */
-=======
-/*   Updated: 2025/06/28 11:46:16 by rmengelb      ########   odam.nl         */
->>>>>>> f2f0ab9e2bfb48534a773a68acbac1c39ec8386e
+/*   Updated: 2025/06/28 13:51:03 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
