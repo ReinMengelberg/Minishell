@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 14:36:48 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/28 11:47:37 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/28 11:54:58 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,10 @@ bool	isnum(char *str)
     if (!str || !*str)
         return (false);
     i = 0;
+    if (str[i] == '-' || str[i] == '+')
+        i++;
+    if (!str[i])
+        return (false);
     while (str[i])
     {
         if (str[i] < '0' || str[i] > '9')
@@ -25,6 +29,17 @@ bool	isnum(char *str)
         i++;
     }
     return (true);
+}
+
+int calc_exit(char* exit_arg)
+{
+    int exit_code;
+
+    exit_code = ft_atoi(exit_arg);
+    exit_code = exit_code % 256;
+    if (exit_code < 0)
+        exit_code += 256;
+    return (exit_code);
 }
 
 int exec_exit(t_command *cmd, t_shell *shell)
@@ -38,17 +53,11 @@ int exec_exit(t_command *cmd, t_shell *shell)
     {
         exit_arg = cmd->args->str;
         if (!isnum(cmd->args->str))
-        {
-            printf("minishell: exit: %s: numeric argument required\n", exit_arg);
-            return (1);
-        }
+            exit_code = 2;
         else if (cmd->args->next)
-        {
-            printf("minishell: exit: too many arguments\n");
-            return (1);
-        }
+            return (printf("minishell: exit: too many arguments\n"), 1);
         else
-            exit_code = ft_atoi(exit_arg);
+            exit_code = calc_exit(exit_arg);
     }
     shell->exit_status = exit_code;
     if (shell->state == INTERACTIVE)
