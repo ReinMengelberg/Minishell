@@ -46,3 +46,6 @@ minishell: cat: command not found
 
 main
 execution
+
+
+finite state machine

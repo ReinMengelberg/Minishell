@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/08 14:49:42 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/06/28 17:01:44 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/30 17:39:57 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,29 +14,25 @@
 
 bool is_valid_var_syntax(const char *name, bool dollar)
 {
-	if (!name || !*name)
-		return false;
-	if (dollar && *name != '$')
-		return false;
-	else if (dollar)
-		name++;
-	if (!*name)
-		return false;
-	if (*name == '?' && *(name + 1) == '\0')
-		return true;
-	if (!ft_isalpha(*name) && *name != '_')
-		return false;
-	name++;
-	while (*name)
-	{
-		if (!ft_isalnum(*name) && *name != '_')
-			return false;
-		name++;
-	}
-	return true;
+    if (!name || !*name)
+        return false;
+    if (dollar && *name != '$')
+        return false;
+    else if (dollar)
+        name++;
+    if (!*name)
+        return false;
+    if (*name == '?')
+        return true;
+    if (!ft_isalpha(*name) && *name != '_')
+        return false;
+    name++;
+    while (*name && (ft_isalnum(*name) || *name == '_'))
+        name++;
+    return true;
 }
 
-void    print_env(t_env *head)
+void	print_env(t_env *head)
 {
 	t_env	*current;
 

@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:56:21 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/20 13:53:00 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/30 18:47:59 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,84 +121,127 @@ static char	*handle_redirection(char *input, int *pos, int len)
 	return (ft_substr(input, start, len));
 }
 
-static char	*handle_quoted_string(char *input, int *pos)
+static char	*handle_quoted_string(char *input, int *pos, t_quote_state *quote_state)
 {
-	int		start;
-	int		end;
-	char	quote;
-	char	*token;
-	char	*result;
+    int		start;
+    int		end;
+    char	quote;
+    char	*token;
+    char	*result;
 
-	start = *pos;
-	quote = input[start];
-	end = start + 1;
-	while (input[end] && input[end] != quote)
-		end++;
-	if (input[end] == quote)
-		end++;
-	*pos = end;
-	token = ft_substr(input, start, end - start);
-	result = remove_quotes(token);
-	free(token);
-	return (result);
+    start = *pos;
+    quote = input[start];
+    *quote_state = (quote == '\'') ? SINGLE : DOUBLE;
+    end = start + 1;
+    while (input[end] && input[end] != quote)
+        end++;
+    if (input[end] == quote)
+        end++;
+    *pos = end;
+    token = ft_substr(input, start, end - start);
+    result = remove_quotes(token);
+    free(token);
+    return (result);
 }
 
 static char	*handle_regular_token(char *input, int *pos)
 {
 	int		start;
 	int		end;
+	char	quote;
 
 	start = *pos;
 	end = start;
-	while (input[end] && input[end] != ' ' && input[end] != '|'
-		&& input[end] != '<' && input[end] != '>'
-		&& input[end] != '\'' && input[end] != '\"')
+	while (input[end] && input[end] != ' ' && input[end] != '\t'
+		&& input[end] != '<' && input[end] != '>' && input[end] != '|')
+	{
+		if (input[end] == '\'' || input[end] == '\"')
+		{
+			quote = input[end];
+			end++;
+			while (input[end] && input[end] != quote)
+				end++;
+			if (input[end] == quote)
+				end++;
+		}
 		end++;
+	}
 	*pos = end;
 	return (ft_substr(input, start, end - start));
 }
 
-static char	*extract_token(char *input, int *pos)
+static char	*extract_token(char *input, int *pos, t_quote_state *quote_state)
 {
-	if (input[*pos] == '|'
-		|| (input[*pos] == '>' && input[*pos + 1] != '>')
-		|| (input[*pos] == '<' && input[*pos + 1] != '<'))
-		return (handle_redirection(input, pos, 1));
-	else if ((input[*pos] == '>' && input[*pos + 1] == '>')
-		|| (input[*pos] == '<' && input[*pos + 1] == '<'))
-		return (handle_redirection(input, pos, 2));
-	if (input[*pos] == '\'' || input[*pos] == '\"')
-		return (handle_quoted_string(input, pos));
-	return (handle_regular_token(input, pos));
+    char *token;
+    char *result;
+
+    *quote_state = NONE;
+    
+    if (input[*pos] == '|'
+        || (input[*pos] == '>' && input[*pos + 1] != '>')
+        || (input[*pos] == '<' && input[*pos + 1] != '<'))
+        return (handle_redirection(input, pos, 1));
+    else if ((input[*pos] == '>' && input[*pos + 1] == '>')
+        || (input[*pos] == '<' && input[*pos + 1] == '<'))
+        return (handle_redirection(input, pos, 2));
+    
+    // Handle pure quoted strings
+    if (input[*pos] == '\'' || input[*pos] == '\"')
+        return (handle_quoted_string(input, pos, quote_state));
+    
+    // Handle regular tokens (including mixed quotes)
+    token = handle_regular_token(input, pos);
+    if (token && (ft_strchr(token, '\'') || ft_strchr(token, '"')))
+    {
+        // For tokens with quotes, remove quotes but keep quote_state as NONE
+        // This allows expansion for mixed quotes like hello'world'
+        *quote_state = NONE;
+        result = remove_quotes(token);
+        free(token);
+        return (result);
+    }
+    return (token);
 }
 
-char	**ft_split_shell(char *input)
+t_split_result	*ft_split_shell(char *input)
 {
-	int		token_count;
-	char	**result;
-	int		i;
-	int		pos;
+    t_split_result	*result_struct;
+    int				token_count;
+    char			**result;
+    t_quote_state	*quote_states;
+    int				i;
+    int				pos;
 
-	token_count = count_tokens(input);
-	result = (char **)malloc(sizeof(char *) * (token_count + 1));
-	if (!result)
-		return (NULL);
-	i = 0;
-	pos = 0;
-	while (i < token_count)
-	{
-		while (input[pos] && input[pos] == ' ')
-			pos++;
-		result[i] = extract_token(input, &pos);
-		if (!result[i])
-		{
-			ft_free_array(result);
-			return (NULL);
-		}
-		i++;
-	}
-	result[i] = NULL;
-	return (result);
+    token_count = count_tokens(input);
+    result_struct = malloc(sizeof(t_split_result));
+    result = (char **)malloc(sizeof(char *) * (token_count + 1));
+    quote_states = (t_quote_state *)malloc(sizeof(t_quote_state) * token_count);
+    
+    if (!result_struct || !result || !quote_states)
+        return (free(result_struct), free(result), free(quote_states), NULL);
+    
+    i = 0;
+    pos = 0;
+    while (i < token_count)
+    {
+        while (input[pos] && input[pos] == ' ')
+            pos++;
+        result[i] = extract_token(input, &pos, &quote_states[i]);
+        if (!result[i])
+        {
+            ft_free_array(result);
+            free(quote_states);
+            free(result_struct);
+            return (NULL);
+        }
+        i++;
+    }
+    result[i] = NULL;
+    
+    result_struct->tokens = result;
+    result_struct->quote_states = quote_states;
+    result_struct->count = token_count;
+    return (result_struct);
 }
 
 void	ft_free_array(char **arr)

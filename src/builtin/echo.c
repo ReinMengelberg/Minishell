@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 14:36:45 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/28 16:56:54 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/06/30 15:01:31 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,8 @@ int exec_echo(t_command *cmd, t_shell *shell)
 	{
 		printf("%s", current_arg->str);
 		current_arg = current_arg->next;
+		if (current_arg && current_arg->type == ARG)
+			printf(" ");
 	}
 	if (newline)
 		printf("\n");

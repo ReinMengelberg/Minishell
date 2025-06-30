@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:11:17 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/28 13:39:53 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/30 17:36:37 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,6 +148,7 @@ t_token	*create_token(char *str, t_tokentype type)
 		return (NULL);
 	}
 	new->type = type;
+	new->quote_state = NONE;
 	new->next = NULL;
 	new->prev = NULL;
 	return (new);
@@ -259,7 +260,7 @@ t_tokentype	set_token_type(char *token_str)
 			&next_redir_target, &after_redir_file));
 }
 
-static t_token	*create_tokens_from_split(char **split)
+static t_token	*create_tokens_from_split(char **split, t_quote_state *quote_states)
 {
 	t_token		*tokens;
 	t_tokentype	type;
@@ -271,41 +272,49 @@ static t_token	*create_tokens_from_split(char **split)
 	while (split[i])
 	{
 		type = set_token_type(split[i]);
-		token = create_token(split[i++], type);
+		token = create_token(split[i], type);
 		if (!token)
 		{
 			ft_free_array(split);
 			free_tokens(tokens);
 			return (NULL);
 		}
+		token->quote_state = quote_states[i];  // Set quote state
 		add_token(&tokens, token);
+		i++;
 	}
 	return (tokens);
 }
 
 t_token	*tokenize(char *input)
 {
-	t_token	*tokens;
-	char	**split;
+    t_token			*tokens;
+    t_split_result	*split_result;
 
-	set_token_type(NULL);
-	if (check_input(input))
-	{
-		ft_putstr_fd("minishell: syntax error\n", 2);
-		return (NULL);
-	}
-	split = ft_split_shell(input);
-	if (!split)
-		return (NULL);
-	tokens = create_tokens_from_split(split);
-	ft_free_array(split);
-	if (tokens && !validate_pipe_syntax(tokens))
-	{
-		ft_putstr_fd("minishell: syntax error near unexpected token `|'\n", 2);
-		free_tokens(tokens);
-		return (NULL);
-	}
-	return (tokens);
+    set_token_type(NULL);
+    if (check_input(input))
+    {
+        ft_putstr_fd("minishell: syntax error\n", 2);
+        return (NULL);
+    }
+    
+    split_result = ft_split_shell(input);
+    if (!split_result)
+        return (NULL);
+    
+    tokens = create_tokens_from_split(split_result->tokens, split_result->quote_states);
+    
+    ft_free_array(split_result->tokens);
+    free(split_result->quote_states);
+    free(split_result);
+    
+    if (tokens && !validate_pipe_syntax(tokens))
+    {
+        ft_putstr_fd("minishell: syntax error near unexpected token `|'\n", 2);
+        free_tokens(tokens);
+        return (NULL);
+    }
+    return (tokens);
 }
 
 // Debug function - can be removed for final version

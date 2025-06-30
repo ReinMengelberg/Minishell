@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/06/28 17:23:59 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/30 17:47:54 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,11 +70,27 @@ typedef enum e_exitstatus
 	ERROR_MEMORY_ALLOCATION = -3
 } t_exitstatus;
 
+typedef enum e_quote_state
+{
+	NONE = 0,
+	SINGLE = 1,
+	DOUBLE = 2,
+} t_quote_state;
+
+//ft_split in tokenizer.c
+typedef struct s_split_result
+{
+    char **tokens;
+    t_quote_state *quote_states;
+    int count;
+} t_split_result;
+
 // Token Linked List
 typedef struct s_token
 {
 	char *str;
 	t_tokentype type;
+	t_quote_state quote_state;
 	struct s_token *next;
 	struct s_token *prev;
 } t_token;
@@ -146,7 +162,7 @@ void add_token(t_token **tokens, t_token *new);
 t_tokentype get_token_type(char *str);
 t_token *tokenize(char *input);
 int handle_heredoc(char *delimiter, t_shell *shell);
-char **ft_split_shell(char *input);
+t_split_result	*ft_split_shell(char *input);
 void ft_free_array(char **arr);
 void free_tokens(t_token *tokens);
 
