@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/06/28 17:09:23 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/06/30 12:52:41 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,14 +60,21 @@ static int	shell_loop(t_shell *shell)
 	signal_received = false;
 	while (shell->status)
 	{
-		if (g_signal_received == SIGINT)
+		if (shell->exit_status != 130)
 		{
-			signal_received = true;
-			g_signal_received = 0;
-			shell->exit_status = 130;
+			if (g_signal_received == SIGINT)
+			{
+				signal_received = true;
+				g_signal_received = 0;
+				shell->exit_status = 130;
+			}
+			else
+				check_signals(shell);
 		}
 		else
-			check_signals(shell);
+		{
+			shell->exit_status = 0;
+		}
 		if (signal_received)
 			signal_received = false;
 		input = readline(PROMPT);
