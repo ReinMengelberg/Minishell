@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:11:17 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/30 17:36:37 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/06 11:53:26 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,6 +169,27 @@ void	add_token(t_token **tokens, t_token *new)
 	current->next = new;
 	new->prev = current;
 }
+bool	is_expansion(char *str)
+{
+	int	i;
+
+	if (str[0] == '$' && str[1] != '\0')
+    {
+        if (str[1] == '?')
+            return (true);
+        if (ft_isalpha(str[1]) || str[1] == '_')
+        {
+            i = 2;
+            while (str[i] && (ft_isalnum(str[i]) || str[i] == '_'))
+                i++;
+            if (str[i] == '\0')
+                return (true);
+        }
+		if (str[1] == '\0')
+            return (false);
+	}
+	return (false);
+}
 
 t_tokentype	get_token_type(char *str)
 {
@@ -184,7 +205,7 @@ t_tokentype	get_token_type(char *str)
 		return (INPUT);
 	if (ft_strcmp(str, "<<") == 0)
 		return (HEREDOC);
-	if (str[0] == '$' && str[1] != '\0')
+	if (is_expansion)
 		return (EXPANSION);
 	return (CMD);
 }
