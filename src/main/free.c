@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 14:41:27 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/06/28 16:28:30 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/06 16:48:44 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,20 @@
 void	free_commands_without_tokens(t_command *commands)
 {
 	t_command *temp;
+	t_token	*arg_temp;
 
 	while (commands)
 	{
 		temp = commands;
 		commands = commands->next;
+		while (temp->args)
+		{
+			arg_temp = temp->args;
+			temp->args = temp->args->next;
+			if (arg_temp->str)
+				free(arg_temp->str);
+			free(arg_temp);
+		}
 		if (temp->in_fd > 2)
 			close(temp->in_fd);
 		if (temp->out_fd > 2)

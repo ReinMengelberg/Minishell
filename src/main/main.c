@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/07/06 13:30:35 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/06 16:49:35 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,21 +73,14 @@ t_shell	*init_shell(void)
 static int	process_input(char *input, t_shell *shell)
 {
 	shell->tokens = tokenize(input);
-
-	print_tokens(shell->tokens);
-
 	shell->tokens = expand_tokens(shell->tokens, shell->env,
 			shell->exit_status);
-	// print_tokens(shell->tokens);
 	if (!shell->tokens)
 	{
 		shell->exit_status = ERROR_INVALID_INPUT;
 		return (0);
 	}
 	shell->commands = extract_commands(shell->tokens);
-
-	print_commands(shell->commands);
-
 	shell->exit_status = execute_commands(shell->commands, shell);
 	free_everything(shell, false);
 	return (1);

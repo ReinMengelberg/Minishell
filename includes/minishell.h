@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/07/06 13:27:43 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/06 16:03:24 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ typedef enum e_tokentype
 	EMPTY,
 	CMD,
 	ARG,
+	FILENAME,
 	OUTPUT,
 	APPEND,
 	INPUT,

@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/06 13:38:54 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/06 16:49:07 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -282,16 +282,25 @@ int count_commands(t_command *commands)
 
 void free_commands(t_command *commands)
 {
-	t_command *temp;
+    t_command *temp;
+    t_token *arg_temp;
 
-	while (commands)
-	{
-		temp = commands;
-		commands = commands->next;
-		if (temp->in_fd > 2)
-			close(temp->in_fd);
-		if (temp->out_fd > 2)
-			close(temp->out_fd);
-		free(temp);
-	}
+    while (commands)
+    {
+        temp = commands;
+        commands = commands->next;
+        while (temp->args)
+        {
+            arg_temp = temp->args;
+            temp->args = temp->args->next;
+            if (arg_temp->str)
+                free(arg_temp->str);
+            free(arg_temp);
+        }
+        if (temp->in_fd > 2)
+            close(temp->in_fd);
+        if (temp->out_fd > 2)
+            close(temp->out_fd);
+        free(temp);
+    }
 }

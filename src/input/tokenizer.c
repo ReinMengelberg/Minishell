@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:11:17 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/06 13:32:14 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/06 16:32:57 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -268,7 +268,7 @@ static t_tokentype	process_token_type(t_tokentype type, bool *cmd_found,
 	{
 		*next_redir_target = false;
 		*after_redir_file = true;
-		return (ARG);
+		return (FILENAME);
 	}
 	if (handle_redirection_token(type, next_redir_target))
 		return (type);
@@ -321,6 +321,7 @@ t_tokentype	set_tokentype(char *token_str)
 	static bool	cmd_found = false;
 	static bool	next_redir_target = false;
 	static bool	after_redir_file = false;
+	char		*unquoted_str;
 
 	if (token_str == NULL)
 	{
@@ -328,7 +329,9 @@ t_tokentype	set_tokentype(char *token_str)
 			&after_redir_file);
 		return (EMPTY);
 	}
-	type = get_tokentype(remove_quotes(token_str));
+	unquoted_str = remove_quotes(token_str);
+	type = get_tokentype(unquoted_str);
+	free(unquoted_str);
 	return (process_token_type(type, &cmd_found,
 			&next_redir_target, &after_redir_file));
 }
@@ -338,12 +341,15 @@ static t_token	*create_tokens_from_split(char **strings)
 	t_token			*tokens;
 	t_token			*token;
 	int				i;
+	char			*unquoted_str;
 
 	tokens = NULL;
 	i = 0;
 	while (strings[i])
 	{
-		token = create_token(remove_quotes(strings[i]), set_tokentype(strings[i]), set_quotestate(strings[i]));
+		unquoted_str = remove_quotes(strings[i]);
+		token = create_token(unquoted_str, set_tokentype(strings[i]), set_quotestate(strings[i]));
+		free(unquoted_str);
 		if (!token)
 		{
 			ft_free_array(strings);
@@ -374,7 +380,7 @@ t_token	*tokenize(char *input)
     
     tokens = create_tokens_from_split(token_strings);
     
-    free(token_strings);
+    ft_free_array(token_strings);
     
     if (tokens && !validate_pipe_syntax(tokens))
     {
@@ -389,19 +395,20 @@ t_token	*tokenize(char *input)
 void	print_tokens(t_token *tokens)
 {
 	t_token	*current;
-	char	*type_names[10];
+	char	*type_names[11];
 	char	*quotestate[3];
 
 	type_names[0] = "HEREDOC";
 	type_names[1] = "EMPTY";
 	type_names[2] = "CMD";
 	type_names[3] = "ARG";
-	type_names[4] = "OUTPUT";
-	type_names[5] = "APPEND";
-	type_names[6] = "INPUT";
-	type_names[7] = "PIPE";
-	type_names[8] = "END";
-	type_names[9] = "EXPANSION";
+	type_names[4] = "FILENAME";
+	type_names[5] = "OUTPUT";
+	type_names[6] = "APPEND";
+	type_names[7] = "INPUT";
+	type_names[8] = "PIPE";
+	type_names[9] = "END";
+	type_names[10] = "EXPANSION";
 
 	quotestate[0] = "NONE";
 	quotestate[1] = "SINGLE";

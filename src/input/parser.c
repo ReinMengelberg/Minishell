@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/20 14:28:09 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/06 13:31:19 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/06 16:06:44 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,9 +41,7 @@ static void	process_token_type(t_command *cmd, t_token *token)
 {
 	if (token->type == CMD)
 		cmd->cmd = token;
-	else if (token->type == ARG && !(token->prev && \
-		(token->prev->type == INPUT || token->prev->type == OUTPUT || \
-		token->prev->type == APPEND || token->prev->type == HEREDOC)))
+	else if (token->type == ARG)
 		add_to_args(cmd, token);
 	else if (token->type == INPUT || token->type == HEREDOC)
 		cmd->input = token;
@@ -161,8 +159,29 @@ t_command	*create_command(void)
 
 void	add_to_args(t_command *cmd, t_token *arg_token)
 {
-	if (!cmd->args)
-		cmd->args = arg_token;
+    t_token	*new_token;
+    t_token	*current;
+    
+    // Create a copy of the token
+    new_token = create_token(arg_token->str, arg_token->type, arg_token->quotestate);
+    if (!new_token)
+        return;
+    
+    if (!cmd->args)
+    {
+        cmd->args = new_token;
+    }
+    else
+    {
+        // Find the last argument in the chain
+        current = cmd->args;
+        while (current->next)
+            current = current->next;
+        
+        // Link the new argument to the end
+        current->next = new_token;
+        new_token->prev = current;
+    }
 }
 
 bool	setup_pipes(t_command *commands)

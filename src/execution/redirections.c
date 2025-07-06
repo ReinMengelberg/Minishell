@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/27 11:15:53 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/28 16:18:12 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/06 16:28:58 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,18 +56,28 @@ static bool handle_input(t_command *cmd, t_command *commands,
 {
 	t_token *filename = cmd->input->next;
 
-	if (!filename)
+	printf("DEBUG: handle_input called\n");
+    printf("DEBUG: filename: %s, type: %d\n", 
+           filename ? filename->str : "NULL", 
+           filename ? filename->type : -1);
+
+	if (!filename || filename->type != FILENAME)
 	{
+		printf("DEBUG: filename check failed\n");
 		cleanup_redirections(commands, saved_fds, current_cmd);
 		return false;
 	}
+	
+	printf("DEBUG: Opening file: %s\n", filename->str);
 	cmd->in_fd = open(filename->str, O_RDONLY);
 	if (cmd->in_fd < 0)
 	{
+		printf("DEBUG: open failed: %s\n", strerror(errno));
 		ft_dprintf(2, "minishell: %s: %s\n", filename->str, strerror(errno));
 		cleanup_redirections(commands, saved_fds, current_cmd);
 		return false;
 	}
+	printf("DEBUG: File opened successfully, fd: %d\n", cmd->in_fd);
 	return true;
 }
 
@@ -81,7 +91,7 @@ static bool handle_heredoc_redirect(t_command *commands, t_shell *shell)
 		if (cmd->input && cmd->input->type == HEREDOC)
 		{
 			delimiter = cmd->input->next;
-			if (!delimiter)
+			if (!delimiter || delimiter->type != FILENAME)
 				return false;
 			int fd = handle_heredoc(delimiter->str, shell);
 			if (fd == -1)
@@ -99,7 +109,7 @@ static bool handle_output(t_command *cmd, t_command *commands,
 {
 	t_token *filename = cmd->output->next;
 
-	if (!filename)
+	if (!filename || filename->type != FILENAME)
 	{
 		cleanup_redirections(commands, saved_fds, current_cmd);
 		return false;
@@ -120,7 +130,7 @@ static bool handle_append(t_command *cmd, t_command *commands,
 {
 	t_token *filename = cmd->output->next;
 
-	if (!filename)
+	if (!filename || filename->type != FILENAME)
 	{
 		cleanup_redirections(commands, saved_fds, current_cmd);
 		return false;
@@ -138,7 +148,6 @@ static bool handle_append(t_command *cmd, t_command *commands,
 bool process_redirections(t_command *commands, t_shell *shell)
 {
 	t_command *cmd;
-	t_token *current;
 	int saved_fds[MAX_COMMANDS][2];
 	int cmd_count;
 	int current_cmd;
@@ -151,31 +160,6 @@ bool process_redirections(t_command *commands, t_shell *shell)
 	current_cmd = 0;
 	while (cmd && current_cmd < cmd_count)
 	{
-		current = cmd->cmd;
-		while (current)
-		{
-			if (current->type == OUTPUT && current->next)
-			{
-				int fd = open(current->next->str, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-				if (fd < 0)
-				{
-					ft_dprintf(2, "minishell: %s: %s\n", current->next->str, strerror(errno));
-					return false;
-				}
-				close(fd);
-			}
-			else if (current->type == APPEND && current->next)
-			{
-				int fd = open(current->next->str, O_WRONLY | O_CREAT | O_APPEND, 0644);
-				if (fd < 0)
-				{
-					ft_dprintf(2, "minishell: %s: %s\n", current->next->str, strerror(errno));
-					return false;
-				}
-				close(fd);
-			}
-			current = current->next;
-		}
 		if (cmd->input)
 		{
 			if (cmd->input->type == INPUT)
