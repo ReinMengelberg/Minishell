@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/06 13:20:09 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/06 13:38:54 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ int	run_command_pipeline(t_command *commands, t_shell *shell)
 		return (1);
 	while (cmd)
 	{
-		if (is_builtin(cmd->cmd->str) && cmd_count == 1)
+		if (is_builtin(cmd->cmd->str) && cmd_count == 1 && !cmd->is_piped)
 		{
 			int stdin_save = dup(STDIN_FILENO);
 			int stdout_save = dup(STDOUT_FILENO);

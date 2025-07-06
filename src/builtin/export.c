@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 14:36:50 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/06 12:57:44 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/06 13:34:28 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,13 +69,6 @@ int exec_export(t_command *cmd, t_shell *shell)
     bool has_equals;
     int exit_status;
 
-	printf("DEBUG: export arguments:\n");
-    t_token *debug = cmd->args;
-    while (debug)
-    {
-        printf("DEBUG: arg='%s' type=%d\n", debug->str, debug->type);
-        debug = debug->next;
-    }
     exit_status = SUCCESS;
     if (!cmd || !shell)
         return (ERROR_NULL_POINTER);

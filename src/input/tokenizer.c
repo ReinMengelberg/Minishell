@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:11:17 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/06 13:29:46 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/06 13:32:14 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,8 +149,7 @@ t_token	*create_token(char *str, t_tokentype type, t_quotestate quote)
 	new->type = type;
 	new->quotestate = quote;
 	new->next = NULL;
-	new->prev = NULL;Test  48: ✅ exit "-100" 
-Test  49: ❌ exit -"100" 
+	new->prev = NULL;
 	return (new);
 }
 
