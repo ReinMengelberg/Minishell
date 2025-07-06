@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/06/30 17:47:54 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/06 11:26:39 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -210,6 +210,9 @@ void		free_env(t_env *head);
 bool		is_valid_var_syntax(const char *name, bool dollar);
 int			update_env_var(t_env **env_head, const char *key, const char *value);
 int			remove_env_var(t_env **env_head, const char *key);
+
+// helpers
+int count_args(t_token *args);
 
 // free
 void free_commands_without_tokens(t_command *commands);
