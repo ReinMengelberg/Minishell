@@ -149,7 +149,8 @@ t_token	*create_token(char *str, t_tokentype type, t_quotestate quote)
 	new->type = type;
 	new->quotestate = quote;
 	new->next = NULL;
-	new->prev = NULL;
+	new->prev = NULL;Test  48: ✅ exit "-100" 
+Test  49: ❌ exit -"100" 
 	return (new);
 }
 
@@ -167,6 +168,27 @@ void	add_token(t_token **tokens, t_token *new)
 		current = current->next;
 	current->next = new;
 	new->prev = current;
+}
+bool	is_expansion(char *str)
+{
+	int	i;
+
+	if (str[0] == '$' && str[1] != '\0')
+    {
+        if (str[1] == '?')
+            return (true);
+        if (ft_isalpha(str[1]) || str[1] == '_')
+        {
+            i = 2;
+            while (str[i] && (ft_isalnum(str[i]) || str[i] == '_'))
+                i++;
+            if (str[i] == '\0')
+                return (true);
+        }
+		if (str[1] == '\0')
+            return (false);
+	}
+	return (false);
 }
 
 t_quotestate set_quotestate(char *string)
