@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/27 11:15:53 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/06 16:28:58 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/06 16:51:13 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,28 +56,18 @@ static bool handle_input(t_command *cmd, t_command *commands,
 {
 	t_token *filename = cmd->input->next;
 
-	printf("DEBUG: handle_input called\n");
-    printf("DEBUG: filename: %s, type: %d\n", 
-           filename ? filename->str : "NULL", 
-           filename ? filename->type : -1);
-
 	if (!filename || filename->type != FILENAME)
 	{
-		printf("DEBUG: filename check failed\n");
 		cleanup_redirections(commands, saved_fds, current_cmd);
 		return false;
 	}
-	
-	printf("DEBUG: Opening file: %s\n", filename->str);
 	cmd->in_fd = open(filename->str, O_RDONLY);
 	if (cmd->in_fd < 0)
 	{
-		printf("DEBUG: open failed: %s\n", strerror(errno));
 		ft_dprintf(2, "minishell: %s: %s\n", filename->str, strerror(errno));
 		cleanup_redirections(commands, saved_fds, current_cmd);
 		return false;
 	}
-	printf("DEBUG: File opened successfully, fd: %d\n", cmd->in_fd);
 	return true;
 }
 
