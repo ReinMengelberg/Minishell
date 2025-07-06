@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 14:36:50 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/28 16:51:35 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/06 12:57:44 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ static int count_export_args(t_token *args)
     int count = 0;
     t_token *current = args;
     
-    while (current)
+    while (current && current->type == ARG)
     {
         count++;
         current = current->next;
@@ -68,7 +68,14 @@ int exec_export(t_command *cmd, t_shell *shell)
     char *value;
     bool has_equals;
     int exit_status;
-    
+
+	printf("DEBUG: export arguments:\n");
+    t_token *debug = cmd->args;
+    while (debug)
+    {
+        printf("DEBUG: arg='%s' type=%d\n", debug->str, debug->type);
+        debug = debug->next;
+    }
     exit_status = SUCCESS;
     if (!cmd || !shell)
         return (ERROR_NULL_POINTER);
@@ -78,7 +85,7 @@ int exec_export(t_command *cmd, t_shell *shell)
         return (SUCCESS);
     }
     current_arg = cmd->args;
-    while (current_arg)
+    while (current_arg && current_arg->type == ARG)
     {
         if (!parse_export_arg(current_arg->str, &key, &value, &has_equals))
         {

@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/24 15:16:33 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/06/30 18:31:36 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/06 13:03:56 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 static bool	should_expand_variable(t_token *token)
 {
-    if (token->quote_state == SINGLE)
+    if (token->quotestate == SINGLE)
         return (false);
     return (ft_strchr(token->str, '$') != NULL);
 }
@@ -83,25 +83,57 @@ t_token	*expand_token(t_token *token, t_env *env, t_exitstatus status)
 
 bool	valid_expansions(t_token *token_head)
 {
-	t_token	*current;
+    t_token	*current;
+    char	*str;
+    int		i;
 
-	if (!token_head)
-		return (true);
-	current = token_head;
-	while (current != NULL)
-	{
-		if (current->type == EXPANSION)
-		{
-			if (!is_valid_var_syntax(current->str, true))
-			{
-				ft_dprintf(2, "minishell: invalid variable: %s\n",
-					current->str);
-				return (false);
-			}
-		}
-		current = current->next;
-	}
-	return (true);
+    if (!token_head)
+        return (true);
+    current = token_head;
+    while (current != NULL)
+    {
+        if (current->type == EXPANSION && should_expand_variable(current))
+        {
+            str = current->str;
+            i = 0;
+            while (str[i])
+            {
+                if (str[i] == '$' && str[i + 1] != '\0')
+                {
+                    i++; // Skip $
+                    if (str[i] == '?')
+                    {
+                        i++; // Valid special variable
+                    }
+                    else if (ft_isalnum(str[i]) || str[i] == '_')
+                    {
+                        int start = i;
+                        while (str[i] && (ft_isalnum(str[i]) || str[i] == '_'))
+                            i++;
+                        char *var_name = ft_substr(str, start, i - start);
+                        if (!is_valid_var_syntax(var_name, false))
+                        {
+                            ft_dprintf(2, "minishell: invalid variable: %s\n", var_name);
+                            free(var_name);
+                            return (false);
+                        }
+                        free(var_name);
+                    }
+                    else
+                    {
+                        // Skip invalid $ followed by non-variable characters
+                        i++;
+                    }
+                }
+                else
+                {
+                    i++;
+                }
+            }
+        }
+        current = current->next;
+    }
+    return (true);
 }
 
 t_token	*expand_tokens(t_token *token, t_env *env_head, t_exitstatus status)

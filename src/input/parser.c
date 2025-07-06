@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/20 14:28:09 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/28 16:28:10 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/06 13:31:19 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,23 +192,6 @@ bool	setup_pipes(t_command *commands)
 	return (true);
 }
 
-static int	count_args(t_token *cmd, t_token *args)
-{
-	int		count;
-	t_token	*arg;
-
-	count = 0;
-	if (cmd)
-		count++;
-	arg = args;
-	while (arg && arg->type == ARG)
-	{
-		count++;
-		arg = arg->next;
-	}
-	return (count);
-}
-
 static void	free_arg_array(char **result, int index)
 {
 	int	i;
@@ -247,7 +230,7 @@ char	**tokens_to_args(t_token *cmd, t_token *args)
 	char	**result;
 	int		i;
 
-	count = count_args(cmd, args);
+	count =  1 + count_args(args);
 	result = malloc(sizeof(char *) * (count + 1));
 	if (!result)
 		return (NULL);

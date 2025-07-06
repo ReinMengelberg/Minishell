@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/28 16:29:11 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/06 13:20:09 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,6 @@ int	run_command_pipeline(t_command *commands, t_shell *shell)
 	int		exit_status;
 	int		cmd_index;
 	t_command	*cmd;
-	bool	has_external_commands = false;
 
 	cmd_count = count_commands(commands);
 	exit_status = 0;
@@ -50,7 +49,7 @@ int	run_command_pipeline(t_command *commands, t_shell *shell)
 		return (1);
 	while (cmd)
 	{
-		if (is_builtin(cmd->cmd->str) && cmd->next == NULL && !cmd->is_piped)
+		if (is_builtin(cmd->cmd->str) && cmd_count == 1)
 		{
 			int stdin_save = dup(STDIN_FILENO);
 			int stdout_save = dup(STDOUT_FILENO);
@@ -67,32 +66,35 @@ int	run_command_pipeline(t_command *commands, t_shell *shell)
 			close(stdin_save);
 			close(stdout_save);
 		}
-        else
-        {
-            has_external_commands = true;
-            shell->pids[cmd_index] = fork();
-            if (shell->pids[cmd_index] == 0)
-            {
-                close_unused_pipes(commands, cmd);
-                setup_command_redirections(cmd);
-                execute_external_command(cmd, shell->env);
-                exit(127);
-            }
-            else if (shell->pids[cmd_index] < 0)
-            {
-                perror("fork failed");
-                exit_status = 1;
-            }
-        }
-        cmd_index++;
-        cmd = cmd->next;
-    }
-    close_all_pipes(commands);
-    if (has_external_commands)
-        exit_status = wait_for_children(shell->pids, cmd_count);
-    free(shell->pids);
-    shell->pids = NULL;
-    return (exit_status);
+		else
+		{
+			shell->pids[cmd_index] = fork();
+			if (shell->pids[cmd_index] == 0)
+			{
+				close_unused_pipes(commands, cmd);
+				setup_command_redirections(cmd);
+				if (is_builtin(cmd->cmd->str))
+					exit(exec_builtin(cmd, shell));
+				else
+				{
+					execute_external_command(cmd, shell->env);
+					exit(127);
+				}
+			}
+			else if (shell->pids[cmd_index] < 0)
+			{
+				perror("fork failed");
+				exit_status = 1;
+			}
+		}
+		cmd_index++;
+		cmd = cmd->next;
+	}
+	close_all_pipes(commands);
+	exit_status = wait_for_children(shell->pids, cmd_count);
+	free(shell->pids);
+	shell->pids = NULL;
+	return (exit_status);
 }
 
 void	close_unused_pipes(t_command *commands, t_command *current_cmd)
@@ -171,7 +173,7 @@ int	execute_external_command(t_command *cmd, t_env *env_list)
 	if (find_command_path(args[0], envp, path))
 	{
 		execve(path, args, envp);
-		perror("execve failed");
+		ft_dprintf(2, "minishell: %s: %s\n", args[0], strerror(errno));
 	}
 	else
 		ft_dprintf(2, "minishell: %s: command not found\n", args[0]);

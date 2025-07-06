@@ -28,6 +28,7 @@ SRCS =	./src/builtin/cd.c \
 		./src/main/main.c \
 		./src/main/signals.c \
 		./src/main/free.c \
+		./src/main/helpers.c \
 
 OBJ_DIR = objs
 OBJS = $(patsubst ./src/%.c,$(OBJ_DIR)/%.o,$(SRCS))

@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:11:17 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/06 11:42:05 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/06 13:29:46 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ static bool	is_unsupported_expansion(char *input, int i, char quote)
 		return (false);
 	if (input[i] == '$' && input[i + 1] == '(' && input[i + 2] == '(')
 		return (true);
-	if ((input[i] == '*' || (input[i] == '?' && input[i + 1] != '\0')))
+	if (input[i] == '*')
 		return (true);
 	if (input[i] == '~' && (i == 0 || input[i - 1] == ' '))
 		return (true);
@@ -93,7 +93,6 @@ bool	check_input(char *input)
 	return (false);
 }
 
-// Check for valid pipe syntax in the token list
 static bool validate_pipe_syntax(t_token *tokens)
 {
 	t_token *current;
@@ -134,7 +133,7 @@ static bool validate_pipe_syntax(t_token *tokens)
 	return true;
 }
 
-t_token	*create_token(char *str, t_tokentype type)
+t_token	*create_token(char *str, t_tokentype type, t_quotestate quote)
 {
 	t_token	*new;
 
@@ -148,9 +147,10 @@ t_token	*create_token(char *str, t_tokentype type)
 		return (NULL);
 	}
 	new->type = type;
-	new->quote_state = NONE;
+	new->quotestate = quote;
 	new->next = NULL;
-	new->prev = NULL;
+	new->prev = NULL;Test  48: ✅ exit "-100" 
+Test  49: ❌ exit -"100" 
 	return (new);
 }
 
@@ -169,7 +169,6 @@ void	add_token(t_token **tokens, t_token *new)
 	current->next = new;
 	new->prev = current;
 }
-
 bool	is_expansion(char *str)
 {
 	int	i;
@@ -192,7 +191,25 @@ bool	is_expansion(char *str)
 	return (false);
 }
 
-t_tokentype	get_token_type(char *str)
+t_quotestate set_quotestate(char *string)
+{
+    int	len;
+    
+    if (!string || !*string)
+        return (NONE);
+    
+    len = ft_strlen(string);
+    
+    if (len >= 2 && string[0] == '\'' && string[len - 1] == '\'')
+        return (SINGLE);
+    
+    if (len >= 2 && string[0] == '"' && string[len - 1] == '"')
+        return (DOUBLE);
+    
+    return (NONE);
+}
+
+t_tokentype	get_tokentype(char *str)
 {
 	if (!str || !*str)
 		return (EMPTY);
@@ -206,7 +223,7 @@ t_tokentype	get_token_type(char *str)
 		return (INPUT);
 	if (ft_strcmp(str, "<<") == 0)
 		return (HEREDOC);
-	if (is_expansion(str))
+	if (ft_strchr(str, '$') != NULL)
 		return (EXPANSION);
 	return (CMD);
 }
@@ -264,7 +281,42 @@ static t_tokentype	process_token_type(t_tokentype type, bool *cmd_found,
 	return (handle_cmd_arg_token(type, cmd_found, after_redir_file));
 }
 
-t_tokentype	set_token_type(char *token_str)
+static void	handle_quote_char(char c, char *quote)
+{
+	if (*quote == c)
+		*quote = 0;
+	else
+		*quote = c;
+}
+
+static char	*remove_quotes(char *str)
+{
+	int		i;
+	int		j;
+	int		len;
+	char	*result;
+	char	quote;
+
+	len = ft_strlen(str);
+	result = malloc(len + 1);
+	quote = 0;
+	if (!result)
+		return (NULL);
+	i = 0;
+	j = 0;
+	while (i < len)
+	{
+		if ((str[i] == '\'' || str[i] == '\"') && (!quote || quote == str[i]))
+			handle_quote_char(str[i], &quote);
+		else
+			result[j++] = str[i];
+		i++;
+	}
+	result[j] = '\0';
+	return (result);
+}
+
+t_tokentype	set_tokentype(char *token_str)
 {
 	t_tokentype	type;
 	static bool	cmd_found = false;
@@ -277,31 +329,28 @@ t_tokentype	set_token_type(char *token_str)
 			&after_redir_file);
 		return (EMPTY);
 	}
-	type = get_token_type(token_str);
+	type = get_tokentype(remove_quotes(token_str));
 	return (process_token_type(type, &cmd_found,
 			&next_redir_target, &after_redir_file));
 }
 
-static t_token	*create_tokens_from_split(char **split, t_quote_state *quote_states)
+static t_token	*create_tokens_from_split(char **strings)
 {
-	t_token		*tokens;
-	t_tokentype	type;
-	t_token		*token;
-	int			i;
+	t_token			*tokens;
+	t_token			*token;
+	int				i;
 
 	tokens = NULL;
 	i = 0;
-	while (split[i])
+	while (strings[i])
 	{
-		type = set_token_type(split[i]);
-		token = create_token(split[i], type);
+		token = create_token(remove_quotes(strings[i]), set_tokentype(strings[i]), set_quotestate(strings[i]));
 		if (!token)
 		{
-			ft_free_array(split);
+			ft_free_array(strings);
 			free_tokens(tokens);
 			return (NULL);
 		}
-		token->quote_state = quote_states[i];  // Set quote state
 		add_token(&tokens, token);
 		i++;
 	}
@@ -311,24 +360,22 @@ static t_token	*create_tokens_from_split(char **split, t_quote_state *quote_stat
 t_token	*tokenize(char *input)
 {
     t_token			*tokens;
-    t_split_result	*split_result;
+    char			**token_strings;
 
-    set_token_type(NULL);
+    set_tokentype(NULL);
     if (check_input(input))
     {
         ft_putstr_fd("minishell: syntax error\n", 2);
         return (NULL);
     }
     
-    split_result = ft_split_shell(input);
-    if (!split_result)
+    token_strings = ft_split_shell(input);
+    if (!token_strings)
         return (NULL);
     
-    tokens = create_tokens_from_split(split_result->tokens, split_result->quote_states);
+    tokens = create_tokens_from_split(token_strings);
     
-    ft_free_array(split_result->tokens);
-    free(split_result->quote_states);
-    free(split_result);
+    free(token_strings);
     
     if (tokens && !validate_pipe_syntax(tokens))
     {
@@ -344,6 +391,7 @@ void	print_tokens(t_token *tokens)
 {
 	t_token	*current;
 	char	*type_names[10];
+	char	*quotestate[3];
 
 	type_names[0] = "HEREDOC";
 	type_names[1] = "EMPTY";
@@ -355,11 +403,16 @@ void	print_tokens(t_token *tokens)
 	type_names[7] = "PIPE";
 	type_names[8] = "END";
 	type_names[9] = "EXPANSION";
+
+	quotestate[0] = "NONE";
+	quotestate[1] = "SINGLE";
+	quotestate[2] = "DOUBLE";
+
 	current = tokens;
 	while (current)
 	{
-		printf("Token: '%s', Type: %s\n", current->str,
-			type_names[current->type]);
+		printf("Token: '%s', Type: %s, Quote: %s\n", current->str,
+			type_names[current->type], quotestate[current->quotestate]);
 		current = current->next;
 	}
 }
