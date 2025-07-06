@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:11:17 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/30 17:36:37 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/06 11:38:32 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ static bool	is_unsupported_expansion(char *input, int i, char quote)
 		return (false);
 	if (input[i] == '$' && input[i + 1] == '(' && input[i + 2] == '(')
 		return (true);
-	if ((input[i] == '*' || (input[i] == '?' && input[i + 1] != '\0')))
+	if (input[i] == '*')
 		return (true);
 	if (input[i] == '~' && (i == 0 || input[i - 1] == ' '))
 		return (true);
