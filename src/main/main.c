@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/06/30 12:52:41 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/06 13:01:26 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ static int	process_input(char *input, t_shell *shell)
 	shell->tokens = tokenize(input);
 	shell->tokens = expand_tokens(shell->tokens, shell->env,
 			shell->exit_status);
+	// print_tokens(shell->tokens);
 	if (!shell->tokens)
 	{
 		shell->exit_status = ERROR_INVALID_INPUT;

@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/07/06 11:28:11 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/06 12:45:04 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,27 +70,19 @@ typedef enum e_exitstatus
 	ERROR_MEMORY_ALLOCATION = -3
 }								t_exitstatus;
 
-typedef enum e_quote_state
+typedef enum e_quotestate
 {
 	NONE = 0,
 	SINGLE = 1,
 	DOUBLE = 2,
-}								t_quote_state;
-
-// ft_split in tokenizer.c
-typedef struct s_split_result
-{
-	char						**tokens;
-	t_quote_state				*quote_states;
-	int							count;
-}								t_split_result;
+}								t_quotestate;
 
 // Token Linked List
 typedef struct s_token
 {
 	char						*str;
 	t_tokentype					type;
-	t_quote_state				quote_state;
+	t_quotestate				quotestate;
 	struct s_token				*next;
 	struct s_token				*prev;
 }								t_token;
@@ -157,12 +149,13 @@ void							setup_signal_handler(void (*handler)(int));
 void							set_state(t_shell *shell, t_state state);
 
 // INPUT
-t_token							*create_token(char *str, t_tokentype type);
+t_token							*create_token(char *str, t_tokentype type, t_quotestate quote);
 void							add_token(t_token **tokens, t_token *new);
-t_tokentype						get_token_type(char *str);
+t_tokentype						get_tokentype(char *str);
+t_quotestate					get_quotestate(char *str);
 t_token							*tokenize(char *input);
 int								handle_heredoc(char *delimiter, t_shell *shell);
-t_split_result					*ft_split_shell(char *input);
+char							**ft_split_shell(char *input);
 void							ft_free_array(char **arr);
 void							free_tokens(t_token *tokens);
 
