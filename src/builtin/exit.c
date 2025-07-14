@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 14:36:48 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/06 13:17:15 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/14 12:00:36 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,9 +53,16 @@ int exec_exit(t_command *cmd, t_shell *shell)
     {
         exit_arg = cmd->args->str;
         if (!isnum(cmd->args->str))
+        {
+            ft_dprintf(2, "minishell: exit: numeric argument required\n");
             exit_code = 2;
+        }
         else if (cmd->args->next)
-            return (printf("minishell: exit: too many arguments\n"), 1);
+        {
+            ft_dprintf(2, "minishell: exit: too many arguments\n");
+            shell->exit_status = 1;
+            return (1);
+        }
         else
             exit_code = calc_exit(exit_arg);
     }

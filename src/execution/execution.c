@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/06 16:49:07 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/14 12:06:39 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,66 +35,72 @@ int	execute_commands(t_command *commands, t_shell *shell)
 
 int	run_command_pipeline(t_command *commands, t_shell *shell)
 {
-	int	cmd_count;
-	int		exit_status;
-	int		cmd_index;
-	t_command	*cmd;
+    int	cmd_count;
+    int		exit_status;
+    int		cmd_index;
+    t_command	*cmd;
 
-	cmd_count = count_commands(commands);
-	exit_status = 0;
-	cmd_index = 0;
-	cmd = commands;
-	shell->pids = ft_calloc(cmd_count, sizeof(pid_t));
-	if (!shell->pids)
-		return (1);
-	while (cmd)
-	{
-		if (is_builtin(cmd->cmd->str) && cmd_count == 1 && !cmd->is_piped)
-		{
-			int stdin_save = dup(STDIN_FILENO);
-			int stdout_save = dup(STDOUT_FILENO);
+    cmd_count = count_commands(commands);
+    exit_status = 0;
+    cmd_index = 0;
+    cmd = commands;
+    shell->pids = ft_calloc(cmd_count, sizeof(pid_t));
+    if (!shell->pids)
+        return (1);
+    while (cmd)
+    {
+        if (is_builtin(cmd->cmd->str) && cmd_count == 1 && !cmd->is_piped)
+        {
+            int stdin_save = dup(STDIN_FILENO);
+            int stdout_save = dup(STDOUT_FILENO);
 
-			// Set up redirections for builtin
-			if (cmd->in_fd != STDIN_FILENO)
-				dup2(cmd->in_fd, STDIN_FILENO);
-			if (cmd->out_fd != STDOUT_FILENO)
-				dup2(cmd->out_fd, STDOUT_FILENO);
-			exit_status = exec_builtin(cmd, shell);
-			// Restore original stdin/stdout
-			dup2(stdin_save, STDIN_FILENO);
-			dup2(stdout_save, STDOUT_FILENO);
-			close(stdin_save);
-			close(stdout_save);
-		}
-		else
-		{
-			shell->pids[cmd_index] = fork();
-			if (shell->pids[cmd_index] == 0)
-			{
-				close_unused_pipes(commands, cmd);
-				setup_command_redirections(cmd);
-				if (is_builtin(cmd->cmd->str))
-					exit(exec_builtin(cmd, shell));
-				else
-				{
-					execute_external_command(cmd, shell->env);
-					exit(127);
-				}
-			}
-			else if (shell->pids[cmd_index] < 0)
-			{
-				perror("fork failed");
-				exit_status = 1;
-			}
-		}
-		cmd_index++;
-		cmd = cmd->next;
-	}
-	close_all_pipes(commands);
-	exit_status = wait_for_children(shell->pids, cmd_count);
-	free(shell->pids);
-	shell->pids = NULL;
-	return (exit_status);
+            // Set up redirections for builtin
+            if (cmd->in_fd != STDIN_FILENO)
+                dup2(cmd->in_fd, STDIN_FILENO);
+            if (cmd->out_fd != STDOUT_FILENO)
+                dup2(cmd->out_fd, STDOUT_FILENO);
+            exit_status = exec_builtin(cmd, shell);
+            // Restore original stdin/stdout
+            dup2(stdin_save, STDIN_FILENO);
+            dup2(stdout_save, STDOUT_FILENO);
+            close(stdin_save);
+            close(stdout_save);
+        }
+        else
+        {
+            shell->pids[cmd_index] = fork();
+            if (shell->pids[cmd_index] == 0)
+            {
+                close_unused_pipes(commands, cmd);
+                setup_command_redirections(cmd);
+                if (is_builtin(cmd->cmd->str))
+                    exit(exec_builtin(cmd, shell));
+                else
+                {
+                    execute_external_command(cmd, shell->env);
+                    exit(127);
+                }
+            }
+            else if (shell->pids[cmd_index] < 0)
+            {
+                perror("fork failed");
+                // Don't override exit code if shell is exiting
+                if (shell->status != 0)
+                    exit_status = 1;
+            }
+        }
+        cmd_index++;
+        cmd = cmd->next;
+    }
+    close_all_pipes(commands);
+    // Don't override exit code if shell is exiting
+    if (shell->status != 0)
+        exit_status = wait_for_children(shell->pids, cmd_count);
+    else
+        wait_for_remain(shell->pids, cmd_count);  // Just wait, don't override
+    free(shell->pids);
+    shell->pids = NULL;
+    return (exit_status);
 }
 
 void	close_unused_pipes(t_command *commands, t_command *current_cmd)
