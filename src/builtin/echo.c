@@ -6,19 +6,19 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 14:36:45 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/30 15:01:31 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/14 13:55:54 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
 // Helper function to check if a string is exactly "-n"
-static bool is_n_flag(const char *str)
+static bool	is_n_flag(const char *str)
 {
 	return (str && strcmp(str, "-n") == 0);
 }
 
-int exec_echo(t_command *cmd, t_shell *shell)
+int	exec_echo(t_command *cmd, t_shell *shell)
 {
 	t_token	*current_arg;
 	bool	newline;
@@ -44,4 +44,3 @@ int exec_echo(t_command *cmd, t_shell *shell)
 		printf("\n");
 	return (SUCCESS);
 }
-
