@@ -26,7 +26,8 @@ SRCS =	./src/builtin/cd.c \
 		./src/env/env_service.c \
 		./src/env/env_utils.c \
 		./src/main/main.c \
-		./src/main/signals.c \
+		./src/main/signalhandlers.c \
+		./src/main/signalsetup.c \
 		./src/main/free.c \
 		./src/main/helpers.c \
 

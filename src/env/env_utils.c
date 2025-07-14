@@ -6,30 +6,30 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/08 14:49:42 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/07/14 12:26:24 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/14 15:36:02 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-bool is_valid_var_syntax(const char *name, bool dollar)
+bool	is_valid_var_syntax(const char *name, bool dollar)
 {
-    if (!name || !*name)
-        return false;
-    if (dollar && *name != '$')
-        return false;
-    else if (dollar)
-        name++;
-    if (!*name)
-        return false;
-    if (*name == '?')
-        return true;
-    if (!ft_isalpha(*name) && *name != '_')
-        return false;
-    name++;
-    while (*name && (ft_isalnum(*name) || *name == '_'))
-        name++;
-    return (*name == '\0');
+	if (!name || !*name)
+		return (false);
+	if (dollar && *name != '$')
+		return (false);
+	else if (dollar)
+		name++;
+	if (!*name)
+		return (false);
+	if (*name == '?')
+		return (true);
+	if (!ft_isalpha(*name) && *name != '_')
+		return (false);
+	name++;
+	while (*name && (ft_isalnum(*name) || *name == '_'))
+		name++;
+	return (*name == '\0');
 }
 
 void	print_env(t_env *head)

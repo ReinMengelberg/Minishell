@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/07/06 16:03:24 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/14 15:50:20 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -229,6 +229,11 @@ void							print_tokens(t_token *tokens);
 // expander
 t_token							*expand_tokens(t_token *token_head,
 									t_env *env_head, t_exitstatus status);
+
+//SIGNAL FUCKERS
+void	handle_signal_interactive(int sig);
+void	handle_signal_child(int sig);
+void	handle_signal_heredoc(int sig);
 
 #endif
 
