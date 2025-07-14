@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/14 12:06:39 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/14 12:23:54 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,11 +93,13 @@ int	run_command_pipeline(t_command *commands, t_shell *shell)
         cmd = cmd->next;
     }
     close_all_pipes(commands);
-    // Don't override exit code if shell is exiting
-    if (shell->status != 0)
-        exit_status = wait_for_children(shell->pids, cmd_count);
-    else
-        wait_for_remain(shell->pids, cmd_count);  // Just wait, don't override
+	if (!(cmd_count == 1 && is_builtin(commands->cmd->str) && !commands->is_piped))
+	{
+		if (shell->status != 0)
+			exit_status = wait_for_children(shell->pids, cmd_count);
+		else
+			wait_for_remain(shell->pids, cmd_count);
+	}
     free(shell->pids);
     shell->pids = NULL;
     return (exit_status);

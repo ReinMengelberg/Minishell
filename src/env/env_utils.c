@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/08 14:49:42 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/06/30 17:39:57 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/14 12:26:24 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ bool is_valid_var_syntax(const char *name, bool dollar)
     name++;
     while (*name && (ft_isalnum(*name) || *name == '_'))
         name++;
-    return true;
+    return (*name == '\0');
 }
 
 void	print_env(t_env *head)
