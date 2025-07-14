@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/14 13:26:06 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/14 16:37:16 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,41 +14,56 @@
 
 int	execute_commands(t_command *commands, t_shell *shell)
 {
+	int	saved_fds[MAX_COMMANDS][2];
+	int	command_count;
+
 	if (!commands)
 		return (1);
 	if (!check_commands(commands))
 		return (free_everything(shell, false), 1);
-	// if (!process_heredocs(commands, shell))
-	// 	return (free_everything(shell, false), 130);
-	if (!process_redirections(commands, shell))
-		return (free_everything(shell, false), 1);
+	command_count = count_commands(commands);
+	save_original_fds(commands, saved_fds, &command_count);
+	process_redirections(commands, shell);
 	if (!setup_pipes(commands))
+	{
+		cleanup_redirections(commands, saved_fds, command_count);
 		return (free_everything(shell, false), 1);
+	}
 	if (shell->pids)
 	{
 		free(shell->pids);
 		shell->pids = NULL;
 	}
 	shell->exit_status = run_command_pipeline(commands, shell);
+	cleanup_redirections(commands, saved_fds, command_count);
 	return (shell->exit_status);
 }
 
 int	run_command_pipeline(t_command *commands, t_shell *shell)
 {
-    int	cmd_count;
+    int		cmd_count;
     int		exit_status;
     int		cmd_index;
     t_command	*cmd;
+	bool	has_failed_redirections;
 
     cmd_count = count_commands(commands);
     exit_status = 0;
     cmd_index = 0;
     cmd = commands;
+	has_failed_redirections = false;
     shell->pids = ft_calloc(cmd_count, sizeof(pid_t));
     if (!shell->pids)
         return (1);
     while (cmd)
     {
+		if (cmd->in_fd == -2 || cmd->out_fd == -2)
+        {
+			has_failed_redirections = true;
+            cmd_index++;
+            cmd = cmd->next;
+            continue;
+        }
         if (is_builtin(cmd->cmd->str) && cmd_count == 1 && !cmd->is_piped)
         {
             int stdin_save = dup(STDIN_FILENO);
@@ -96,7 +111,11 @@ int	run_command_pipeline(t_command *commands, t_shell *shell)
 	if (!(cmd_count == 1 && is_builtin(commands->cmd->str) && !commands->is_piped))
 	{
 		if (shell->status != 0)
+		{
 			exit_status = wait_for_children(shell->pids, cmd_count);
+			if (has_failed_redirections)
+				exit_status = 1;
+		}
 		else
 			wait_for_remain(shell->pids, cmd_count);
 	}
@@ -143,12 +162,12 @@ void	setup_command_redirections(t_command *cmd)
 	int	max_fd;
 	int	i;
 
-	if (cmd->in_fd != STDIN_FILENO)
+	if (cmd->in_fd != STDIN_FILENO && cmd->in_fd >= 0)
 	{
 		if (dup2(cmd->in_fd, STDIN_FILENO) == -1)
 			return(perror("dup2 failed for in_fd"));
 	}
-	if (cmd->out_fd != STDOUT_FILENO)
+	if (cmd->out_fd != STDOUT_FILENO && cmd->out_fd >=0)
 	{
 		if (dup2(cmd->out_fd, STDOUT_FILENO) == -1)
 			return(perror("dup2 failed for out_fd"));
@@ -301,6 +320,22 @@ void free_commands(t_command *commands)
         {
             arg_temp = temp->args;
             temp->args = temp->args->next;
+            if (arg_temp->str)
+                free(arg_temp->str);
+            free(arg_temp);
+        }
+		while (temp->input_list)
+        {
+            arg_temp = temp->input_list;
+            temp->input_list = temp->input_list->next;
+            if (arg_temp->str)
+                free(arg_temp->str);
+            free(arg_temp);
+        }
+        while (temp->output_list)
+        {
+            arg_temp = temp->output_list;
+            temp->output_list = temp->output_list->next;
             if (arg_temp->str)
                 free(arg_temp->str);
             free(arg_temp);

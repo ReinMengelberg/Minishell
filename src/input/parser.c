@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/20 14:28:09 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/14 13:30:57 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/14 15:49:05 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,15 @@ static void	process_token_type(t_command *cmd, t_token *token)
 	else if (token->type == ARG)
 		add_to_args(cmd, token);
 	else if (token->type == INPUT || token->type == HEREDOC)
+	{
 		cmd->input = token;
+		add_to_input_list(cmd, token);
+	}
 	else if (token->type == OUTPUT || token->type == APPEND)
+	{
 		cmd->output = token;
+		add_to_output_list(cmd, token);
+	}
 }
 
 t_command	*extract_commands(t_token *tokens)

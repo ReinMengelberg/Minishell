@@ -6,7 +6,11 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 14:41:27 by rmengelb      #+#    #+#                 */
+<<<<<<< Updated upstream
 /*   Updated: 2025/07/14 15:47:23 by rmengelb      ########   odam.nl         */
+=======
+/*   Updated: 2025/07/14 15:46:27 by rbagin        ########   odam.nl         */
+>>>>>>> Stashed changes
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +33,22 @@ void	free_commands_without_tokens(t_command *commands)
 				free(arg_temp->str);
 			free(arg_temp);
 		}
+		while (temp->input_list)
+        {
+            arg_temp = temp->input_list;
+            temp->input_list = temp->input_list->next;
+            if (arg_temp->str)
+                free(arg_temp->str);
+            free(arg_temp);
+        }
+        while (temp->output_list)
+        {
+            arg_temp = temp->output_list;
+            temp->output_list = temp->output_list->next;
+            if (arg_temp->str)
+                free(arg_temp->str);
+            free(arg_temp);
+        }
 		if (temp->in_fd > 2)
 			close(temp->in_fd);
 		if (temp->out_fd > 2)

@@ -6,7 +6,11 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
+<<<<<<< Updated upstream
 /*   Updated: 2025/07/14 16:47:43 by rbagin        ########   odam.nl         */
+=======
+/*   Updated: 2025/07/14 15:27:10 by rbagin        ########   odam.nl         */
+>>>>>>> Stashed changes
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,6 +124,8 @@ typedef struct s_command
 	t_token						*args;
 	t_token						*input;
 	t_token						*output;
+	t_token						*input_list;
+	t_token						*output_list;
 	int							in_fd;
 	int							out_fd;
 	bool						is_piped;
@@ -174,8 +180,12 @@ char							**tokens_to_args(t_token *cmd, t_token *args);
 bool							check_commands(t_command *cmd_head);
 void							cleanup_redirections(t_command *commands,
 									int saved_fds[][2], int cmd_count);
+bool							save_original_fds(t_command *commands,
+									int saved_fds[][2], int *cmd_count);
 bool							find_command_path(char *cmd, char **env,
 									char *path_buffer);
+void	add_to_input_list(t_command *cmd, t_token *token);
+void	add_to_output_list(t_command *cmd, t_token *token);
 
 // EXECUTION
 int								execute_commands(t_command *commands,
