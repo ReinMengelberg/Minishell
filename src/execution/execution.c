@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/14 18:34:26 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/14 19:09:58 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,13 +95,21 @@ int	run_command_pipeline(t_command *commands, t_shell *shell)
         any_command_executed = true;
         if (is_builtin(cmd->cmd->str) && cmd_count == 1 && !cmd->is_piped)
         {
+            // Check for failed redirections before executing builtin
+            if (cmd->in_fd == -2 || cmd->out_fd == -2)
+            {
+                cmd_index++;
+                cmd = cmd->next;
+                continue;
+            }
+            
             int stdin_save = dup(STDIN_FILENO);
             int stdout_save = dup(STDOUT_FILENO);
 
             // Set up redirections for builtin
-            if (cmd->in_fd != STDIN_FILENO)
+            if (cmd->in_fd != STDIN_FILENO && cmd->in_fd >= 0)
                 dup2(cmd->in_fd, STDIN_FILENO);
-            if (cmd->out_fd != STDOUT_FILENO)
+            if (cmd->out_fd != STDOUT_FILENO && cmd->out_fd >= 0)
                 dup2(cmd->out_fd, STDOUT_FILENO);
             exit_status = exec_builtin(cmd, shell);
             // Restore original stdin/stdout
