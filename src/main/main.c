@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/07/14 17:13:25 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/14 18:25:45 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ static int	process_input(char *input, t_shell *shell)
 		shell->exit_status = ERROR_INVALID_INPUT;
 		return (0);
 	}
+	// print_tokens(shell->tokens);
 	shell->commands = extract_commands(shell->tokens);
 	shell->exit_status = execute_commands(shell->commands, shell);
 	free_everything(shell, false);

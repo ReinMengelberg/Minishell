@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/24 15:16:33 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/07/06 13:03:56 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/14 18:10:31 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,21 +139,39 @@ bool	valid_expansions(t_token *token_head)
 t_token	*expand_tokens(t_token *token, t_env *env_head, t_exitstatus status)
 {
     t_token	*current;
+    bool	expect_cmd;
 
     if (!valid_expansions(token))
         return (NULL);
     current = token;
+    expect_cmd = true; // First token or token after pipe/redirect is typically CMD
     while (current != NULL)
     {
         if (current->type == EXPANSION && should_expand_variable(current))
         {
             current = expand_token(current, env_head, status);
-            current->type = ARG;
+            // Determine if this should be CMD or ARG based on context
+            if (expect_cmd)
+                current->type = CMD;
+            else
+                current->type = ARG;
         }
         else if (current->type == EXPANSION)
         {
-            current->type = ARG;
+            if (expect_cmd)
+                current->type = CMD;
+            else
+                current->type = ARG;
         }
+        
+        // Update expect_cmd based on current token type
+        if (current->type == PIPE)
+            expect_cmd = true; // Next token should be CMD
+        else if (current->type == CMD || current->type == ARG)
+            expect_cmd = false; // Subsequent tokens are typically ARGs
+        else if (current->type == INPUT || current->type == OUTPUT || 
+                 current->type == APPEND || current->type == HEREDOC)
+            expect_cmd = false; // Next token is a filename, not a command
         current = current->next;
     }
     return (token);
