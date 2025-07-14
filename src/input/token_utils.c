@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:56:21 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/06 12:26:48 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/14 17:12:35 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,23 +41,32 @@ static int	handle_special_chars(char *input, int i)
 
 static int	process_next_token(char *input, int *i)
 {
-	char	quote;
+    char	quote;
 
-	if (input[*i] == '\'' || input[*i] == '\"')
-	{
-		quote = input[*i];
-		*i = handle_quoted_token(input, *i, quote);
-	}
-	else if (input[*i] == '|' || input[*i] == '<' || input[*i] == '>')
-		*i = handle_special_chars(input, *i);
-	else
-	{
-		while (input[*i] && input[*i] != ' ' && input[*i] != '|'
-			&& input[*i] != '<' && input[*i] != '>'
-			&& input[*i] != '\'' && input[*i] != '\"')
-			(*i)++;
-	}
-	return (1);
+    if (input[*i] == '|' || input[*i] == '<' || input[*i] == '>')
+    {
+        *i = handle_special_chars(input, *i);
+        return (1);
+    }
+    
+    // Handle consecutive quoted/unquoted sections as one token
+    while (input[*i] && input[*i] != ' ' && input[*i] != '\t'
+        && input[*i] != '|' && input[*i] != '<' && input[*i] != '>')
+    {
+        if (input[*i] == '\'' || input[*i] == '\"')
+        {
+            quote = input[*i];
+            *i = handle_quoted_token(input, *i, quote);
+        }
+        else
+        {
+            while (input[*i] && input[*i] != ' ' && input[*i] != '\t'
+                && input[*i] != '|' && input[*i] != '<' && input[*i] != '>'
+                && input[*i] != '\'' && input[*i] != '\"')
+                (*i)++;
+        }
+    }
+    return (1);
 }
 
 static int	count_tokens(char *input)
@@ -86,49 +95,49 @@ static char	*handle_redirection(char *input, int *pos, int len)
 	return (ft_substr(input, start, len));
 }
 
-
 static char	*handle_regular_token(char *input, int *pos)
-{
-	int		start;
-	int		end;
-	char	quote;
-
-	start = *pos;
-	end = start;
-	while (input[end] && input[end] != ' ' && input[end] != '\t'
-		&& input[end] != '<' && input[end] != '>' && input[end] != '|')
-	{
-		if (input[end] == '\'' || input[end] == '\"')
-		{
-			quote = input[end];
-			end++;
-			while (input[end] && input[end] != quote)
-				end++;
-			if (input[end] == quote)
-				end++;
-		}
-		end++;
-	}
-	*pos = end;
-	return (ft_substr(input, start, end - start));
-}
-
-static char	*handle_quoted_string_with_quotes(char *input, int *pos)
 {
     int		start;
     int		end;
     char	quote;
 
     start = *pos;
-    quote = input[start];
-    end = start + 1;
-    while (input[end] && input[end] != quote)
-        end++;
-    if (input[end] == quote)
-        end++;
+    end = start;
+    while (input[end] && input[end] != ' ' && input[end] != '\t'
+        && input[end] != '<' && input[end] != '>' && input[end] != '|')
+    {
+        if (input[end] == '\'' || input[end] == '\"')
+        {
+            quote = input[end];
+            end++;
+            while (input[end] && input[end] != quote)
+                end++;
+            if (input[end] == quote)
+                end++;
+        }
+        else
+            end++;
+    }
     *pos = end;
     return (ft_substr(input, start, end - start));
 }
+
+// static char	*handle_quoted_string_with_quotes(char *input, int *pos)
+// {
+//     int		start;
+//     int		end;
+//     char	quote;
+
+//     start = *pos;
+//     quote = input[start];
+//     end = start + 1;
+//     while (input[end] && input[end] != quote)
+//         end++;
+//     if (input[end] == quote)
+//         end++;
+//     *pos = end;
+//     return (ft_substr(input, start, end - start));
+// }
 
 static char	*extract_token(char *input, int *pos)
 {
@@ -140,11 +149,8 @@ static char	*extract_token(char *input, int *pos)
         || (input[*pos] == '<' && input[*pos + 1] == '<'))
         return (handle_redirection(input, pos, 2));
     
-    // Handle pure quoted strings (keep quotes)
-    if (input[*pos] == '\'' || input[*pos] == '\"')
-        return (handle_quoted_string_with_quotes(input, pos));
-    
-    // Handle regular tokens (including mixed quotes, keep quotes)
+    // Always use handle_regular_token for non-redirection tokens
+    // It properly handles consecutive quoted/unquoted sections
     return (handle_regular_token(input, pos));
 }
 
