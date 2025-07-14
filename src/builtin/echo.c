@@ -6,14 +6,14 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 14:36:45 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/14 12:13:32 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/14 16:47:57 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
 // Helper function to check if a string is exactly "-n"
-static bool is_n_flag(const char *str)
+static bool	is_n_flag(const char *str)
 {
 	int	i;
 
@@ -31,7 +31,7 @@ static bool is_n_flag(const char *str)
 	return (i > 1);
 }
 
-int exec_echo(t_command *cmd, t_shell *shell)
+int	exec_echo(t_command *cmd, t_shell *shell)
 {
 	t_token	*current_arg;
 	bool	newline;
@@ -57,4 +57,3 @@ int exec_echo(t_command *cmd, t_shell *shell)
 		printf("\n");
 	return (SUCCESS);
 }
-

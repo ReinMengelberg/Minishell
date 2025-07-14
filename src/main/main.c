@@ -6,47 +6,21 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/07/06 16:49:35 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/14 15:55:14 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
+
+/*
+**	Note: This project uses the readline library which has known memory leaks.
+**	These leaks are expected and allowed by the project subject.
+**	To test without readline leak noise:
+**	valgrind --leak-check=full --show-leak-kinds=definite,indirect
+**	--suppressions=readline.supp ./minishell
+*/
 
 #include "minishell.h"
 
 extern char	**environ;
-
-// Print command structure
-void print_commands(t_command *cmd)
-{
-	int cmd_num = 1;
-
-	while (cmd)
-	{
-		printf("Command %d:\n", cmd_num++);
-		printf("  Command: %s\n", cmd->cmd ? cmd->cmd->str : "NULL");
-
-		printf("  Arguments: ");
-		t_token *arg = cmd->args;
-		while (arg && arg->type == ARG)
-		{
-			printf("'%s' ", arg->str);
-			arg = arg->next;
-		}
-		printf("\n");
-
-		printf("  Input: %s\n", cmd->input ? cmd->input->str : "No token(STDIN)");
-		if (cmd->input && cmd->input->next)
-			printf("  Input File: %s\n", cmd->input->next->str);
-
-		printf("  Output: %s\n", cmd->output ? cmd->output->str : "No token(STDOUT)");
-		if (cmd->output && cmd->output->next)
-			printf("  Output File: %s\n", cmd->output->next->str);
-
-		printf("  Is Piped: %s\n", cmd->is_piped ? "Yes" : "No");
-		printf("  FDs: in=%d, out=%d\n", cmd->in_fd, cmd->out_fd);
-
-		cmd = cmd->next;
-	}
-}
 
 t_shell	*init_shell(void)
 {
@@ -86,6 +60,25 @@ static int	process_input(char *input, t_shell *shell)
 	return (1);
 }
 
+static void	handle_signals_and_input(t_shell *shell, bool *signal_received)
+{
+	if (shell->exit_status != 130)
+	{
+		if (g_signal_received == SIGINT)
+		{
+			*signal_received = true;
+			g_signal_received = 0;
+			shell->exit_status = 130;
+		}
+		else
+			check_signals(shell);
+	}
+	else
+		shell->exit_status = 0;
+	if (*signal_received)
+		*signal_received = false;
+}
+
 static int	shell_loop(t_shell *shell)
 {
 	char	*input;
@@ -94,23 +87,7 @@ static int	shell_loop(t_shell *shell)
 	signal_received = false;
 	while (shell->status)
 	{
-		if (shell->exit_status != 130)
-		{
-			if (g_signal_received == SIGINT)
-			{
-				signal_received = true;
-				g_signal_received = 0;
-				shell->exit_status = 130;
-			}
-			else
-				check_signals(shell);
-		}
-		else
-		{
-			shell->exit_status = 0;
-		}
-		if (signal_received)
-			signal_received = false;
+		handle_signals_and_input(shell, &signal_received);
 		input = readline(PROMPT);
 		if (!input)
 			break ;
@@ -123,11 +100,7 @@ static int	shell_loop(t_shell *shell)
 	}
 	return (shell->exit_status);
 }
-/*	Note: This project uses the readline library which has known memory leaks.
-	These leaks are expected and allowed by the project subject.
-	To test without readline leak noise:
-	valgrind --leak-check=full --show-leak-kinds=definite,indirect
-	--suppressions=readline.supp ./minishell*/
+
 int	main(void)
 {
 	t_shell	*shell;
