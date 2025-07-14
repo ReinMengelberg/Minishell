@@ -1,164 +1,110 @@
-// /* ************************************************************************** */
-// /*                                                                            */
-// /*                                                        ::::::::            */
-// /*   heredoc.c                                          :+:    :+:            */
-// /*                                                     +:+                    */
-// /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
-// /*                                                   +#+                      */
-// /*   Created: 2025/06/07 15:59:44 by rbagin        #+#    #+#                 */
-// /*   Updated: 2025/06/28 14:39:01 by rbagin        ########   odam.nl         */
-// /*                                                                            */
-// /* ************************************************************************** */
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        ::::::::            */
+/*   heredoc_new.c                                      :+:    :+:            */
+/*                                                     +:+                    */
+/*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
+/*                                                   +#+                      */
+/*   Created: 2025/06/07 15:59:44 by rbagin        #+#    #+#                 */
+/*   Updated: 2025/06/30 13:11:27 by rbagin        ########   odam.nl         */
+/*                                                                            */
+/* ************************************************************************** */
 
-// #include "minishell.h"
+#include "minishell.h"
 
-// // Global flag for heredoc signal handling
-// volatile sig_atomic_t	g_heredoc_signal = 0;
+// This function will run in the child process and collect heredoc input
+static void	collect_heredoc_input(int fd, char *delimiter)
+{
+	char	*line;
+	size_t	delimiter_len;
 
-// // Special signal handler for heredoc mode
-// static void	heredoc_signal_handler(int sig)
-// {
-// 	if (sig == SIGINT)
-// 	{
-// 		g_heredoc_signal = 1;
-// 		write(STDERR_FILENO, "\n", 1);
-// 		close(STDIN_FILENO);
-// 	}
-// }
+	delimiter_len = ft_strlen(delimiter);
+	// Need to explicitly reset this at the start of each heredoc
+	g_signal_received = 0;
+	while (1)
+	{
+		// Use a proper prompt with readline instead of writing directly
+		line = readline("> ");
+		// Check for CTRL+D (EOF) first
+		if (!line)
+		{
+			write(STDOUT_FILENO, "\n", 1);
+			close(fd);
+			exit(1);
+		}
+		// Check for CTRL+C separately - heredoc handler sets this flag
+		if (g_signal_received == SIGINT)
+		{
+			free(line);
+			close(fd);
+			exit(130); // Standard SIGINT exit code
+		}
+		// Check for delimiter match
+		if (ft_strncmp(line, delimiter, delimiter_len) == 0 &&
+			line[delimiter_len] == '\0')
+		{
+			free(line);
+			break ;
+		}
+		// Write line to pipe with newline
+		write(fd, line, ft_strlen(line));
+		write(fd, "\n", 1);
+		free(line);
+	}
+	close(fd);
+	exit(0);
+}
 
-// static int	setup_heredoc_pipe(struct sigaction *sa_new,
-// 								struct sigaction *sa_old)
-// {
-// 	int	pipe_fd[2];
+// Updated to take shell parameter instead of get_shell_instance()
+int	handle_heredoc(char *delimiter, t_shell *shell)
+{
+	pid_t	pid;
+	int		pipe_fd[2];
+	int		status;
 
-// 	if (pipe(pipe_fd) == -1)
-// 	{
-// 		perror("pipe");
-// 		return (-1);
-// 	}
-// 	memset(sa_new, 0, sizeof(*sa_new));
-// 	sa_new->sa_handler = heredoc_signal_handler;
-// 	sigaction(SIGINT, sa_new, sa_old);
-// 	g_heredoc_signal = 0;
-// 	return (0);
-// }
-
-// static int	read_heredoc_line(int *pipe_fd, char *delimiter,
-// 								size_t delimiter_len, struct sigaction *sa_old)
-// {
-// 	char	*line;
-
-// 	write(STDOUT_FILENO, "> ", 2);
-// 	line = readline("");
-// 	// if (line[0] == '\0')
-// 	// 	return (-1);
-// 	if (g_heredoc_signal || !line)
-// 	{
-// 		if (line)
-// 			free(line);
-// 		close(pipe_fd[1]);
-// 		close(pipe_fd[0]);
-// 		sigaction(SIGINT, sa_old, NULL);
-// 		return (-1);
-// 	}
-// 	if (ft_strncmp(line, delimiter, delimiter_len) == 0
-// 		&& line[delimiter_len] == '\0')
-// 	{
-// 		free(line);
-// 		return (1);
-// 	}
-// 	write(pipe_fd[1], line, ft_strlen(line));
-// 	write(pipe_fd[1], "\n", 1);
-// 	free(line);
-// 	return (0);
-// }
-
-// int	handle_heredoc(char *delimiter)
-// {
-// 	int					pipe_fd[2];
-// 	struct sigaction	sa_old;
-// 	struct sigaction	sa_new;
-// 	size_t				delimiter_len;
-// 	int					result;
-
-// 	if (pipe(pipe_fd) == -1)
-// 		return (-1);
-// 	if (setup_heredoc_pipe(&sa_new, &sa_old) == -1)
-// 		return (-1);
-// 	delimiter_len = ft_strlen(delimiter);
-// 	while (1)
-// 	{
-// 		write(STDOUT_FILENO, "> ", 2);
-// 		line = readline("");
-// 		result = read_heredoc_line(pipe_fd, delimiter, delimiter_len, &sa_old);
-// 		if (result == -1)
-// 			return (-1);
-// 		if (result == 1)
-// 			break ;
-// 	}
-// 	sigaction(SIGINT, &sa_old, NULL);
-// 	close(pipe_fd[1]);
-// 	return (pipe_fd[0]);
-// }
-
-// static bool	process_heredoc_token(t_token *token, t_command *cmd,
-// 								t_shell *shell, t_state *prev_state)
-// {
-// 	int	heredoc_fd;
-
-// 	if (token->type == HEREDOC && token->next)
-// 	{
-// 		heredoc_fd = handle_heredoc(token->next->str);
-// 		if (heredoc_fd == -1)
-// 		{
-// 			shell->state = *prev_state;
-// 			return (false);
-// 		}
-// 		if (cmd->in_fd > 2)
-// 			close(cmd->in_fd);
-// 		cmd->in_fd = heredoc_fd;
-// 		return (true);
-// 	}
-// 	return (false);
-// }
-
-// static bool	process_command_tokens(t_command *cmd, t_shell *shell,
-// 									t_state *prev_state)
-// {
-// 	t_token	*token;
-// 	bool	skip_token;
-
-// 	token = cmd->input;
-// 	while (token)
-// 	{
-// 		skip_token = false;
-// 		if (token->type == HEREDOC && token->next)
-// 		{
-// 			if (!process_heredoc_token(token, cmd, shell, prev_state))
-// 				return (false);
-// 			token = token->next;
-// 			skip_token = true;
-// 		}
-// 		if (token && !skip_token)
-// 			token = token->next;
-// 	}
-// 	return (true);
-// }
-
-// bool	process_heredocs(t_command *commands, t_shell *shell)
-// {
-// 	t_command	*cmd;
-// 	t_state	prev_state;
-
-// 	prev_state = shell->state;
-// 	shell->state = IN_HEREDOC;
-// 	cmd = commands;
-// 	while (cmd)
-// 	{
-// 		if (!process_command_tokens(cmd, shell, &prev_state))
-// 			return (false);
-// 		cmd = cmd->next;
-// 	}
-// 	shell->state = prev_state;
-// 	return (true);
-// }
+	sigset_t orig_mask, block_mask;
+	// Create pipe for communication
+	if (pipe(pipe_fd) == -1)
+		return (-1);
+	// Block signals in parent
+	sigemptyset(&block_mask);
+	sigaddset(&block_mask, SIGINT);
+	sigaddset(&block_mask, SIGQUIT);
+	sigprocmask(SIG_BLOCK, &block_mask, &orig_mask);
+	pid = fork();
+	if (pid == -1)
+	{
+		close(pipe_fd[0]);
+		close(pipe_fd[1]);
+		sigprocmask(SIG_SETMASK, &orig_mask, NULL);
+		return (-1);
+	}
+	if (pid == 0)
+	{
+		// Child process
+		close(pipe_fd[0]);
+		// Unblock signals in child process
+		sigprocmask(SIG_SETMASK, &orig_mask, NULL);
+		set_state(shell, IN_HEREDOC);
+		collect_heredoc_input(pipe_fd[1], delimiter);
+	}
+	// Parent process
+	close(pipe_fd[1]);
+	waitpid(pid, &status, 0);
+	// Restore original signal mask
+	sigprocmask(SIG_SETMASK, &orig_mask, NULL);
+	// Check if heredoc was interrupted
+	if (WIFSIGNALED(status))
+	{
+		close(pipe_fd[0]);
+		g_signal_received = WTERMSIG(status);
+		shell->exit_status = 130;
+		return (-1);
+	}
+	else if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
+	{
+		close(pipe_fd[0]);
+		return (-1);
+	}
+	return (pipe_fd[0]);
+}

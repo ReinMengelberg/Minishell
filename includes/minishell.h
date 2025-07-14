@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/07/06 16:03:24 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/14 13:33:15 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,7 +162,8 @@ void							free_tokens(t_token *tokens);
 
 // PARSING
 t_command						*extract_commands(t_token *tokens);
-t_command						*create_command(void);
+t_command						*create_new_command_node(t_command **cmd_head,
+										t_command **current_cmd);
 void							add_to_args(t_command *cmd, t_token *arg_token);
 bool							process_redirections(t_command *commands,
 									t_shell *shell);

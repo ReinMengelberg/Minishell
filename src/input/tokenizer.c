@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 15:11:17 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/06 16:32:57 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/14 13:36:27 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -238,7 +238,7 @@ static bool	handle_redirection_token(t_tokentype type,
 	return (false);
 }
 
-static t_tokentype	handle_cmd_arg_token(t_tokentype type, bool *cmd_found,
+t_tokentype	handle_cmd_arg_token(t_tokentype type, bool *cmd_found,
 					bool *after_redir_file)
 {
 	if (*after_redir_file && !*cmd_found && type == CMD)
@@ -254,14 +254,14 @@ static t_tokentype	handle_cmd_arg_token(t_tokentype type, bool *cmd_found,
 	return (type);
 }
 
-static void	reset_token_state(bool *cmd_found, bool *next_arg, bool *after_file)
+void	reset_token_state(bool *cmd_found, bool *next_arg, bool *after_file)
 {
 	*cmd_found = false;
 	*next_arg = false;
 	*after_file = false;
 }
 
-static t_tokentype	process_token_type(t_tokentype type, bool *cmd_found,
+t_tokentype	process_token_type(t_tokentype type, bool *cmd_found,
 					bool *next_redir_target, bool *after_redir_file)
 {
 	if (*next_redir_target)
@@ -280,7 +280,7 @@ static t_tokentype	process_token_type(t_tokentype type, bool *cmd_found,
 	return (handle_cmd_arg_token(type, cmd_found, after_redir_file));
 }
 
-static void	handle_quote_char(char c, char *quote)
+void	handle_quote_char(char c, char *quote)
 {
 	if (*quote == c)
 		*quote = 0;
@@ -288,7 +288,7 @@ static void	handle_quote_char(char c, char *quote)
 		*quote = c;
 }
 
-static char	*remove_quotes(char *str)
+char	*remove_quotes(char *str)
 {
 	int		i;
 	int		j;
@@ -336,7 +336,7 @@ t_tokentype	set_tokentype(char *token_str)
 			&next_redir_target, &after_redir_file));
 }
 
-static t_token	*create_tokens_from_split(char **strings)
+t_token	*create_tokens_from_split(char **strings)
 {
 	t_token			*tokens;
 	t_token			*token;
@@ -409,11 +409,9 @@ void	print_tokens(t_token *tokens)
 	type_names[8] = "PIPE";
 	type_names[9] = "END";
 	type_names[10] = "EXPANSION";
-
 	quotestate[0] = "NONE";
 	quotestate[1] = "SINGLE";
 	quotestate[2] = "DOUBLE";
-
 	current = tokens;
 	while (current)
 	{

@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 14:36:45 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/06/30 15:01:31 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/14 12:13:32 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,20 @@
 // Helper function to check if a string is exactly "-n"
 static bool is_n_flag(const char *str)
 {
-	return (str && strcmp(str, "-n") == 0);
+	int	i;
+
+	if (!str || str[0] != '-')
+		return (false);
+	if (str[1] != 'n')
+		return (false);
+	i = 1;
+	while (str[i])
+	{
+		if (str[i] != 'n')
+			return (false);
+		i++;
+	}
+	return (i > 1);
 }
 
 int exec_echo(t_command *cmd, t_shell *shell)
@@ -28,7 +41,7 @@ int exec_echo(t_command *cmd, t_shell *shell)
 	if (!cmd)
 		return (ERROR_NULL_POINTER);
 	current_arg = cmd->args;
-	if (current_arg && is_n_flag(current_arg->str))
+	while (current_arg && is_n_flag(current_arg->str))
 	{
 		newline = false;
 		current_arg = current_arg->next;

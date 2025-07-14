@@ -17,7 +17,8 @@ SRCS =	./src/builtin/cd.c \
 		./src/input/token_utils.c \
 		./src/input/tokenizer.c \
 		./src/input/expander.c \
-		./src/input/heredoc_new.c \
+		./src/input/heredoc.c \
+		./src/input/parser_utils.c \
 		./src/input/parser.c \
 		./src/execution/execution.c \
 		./src/execution/path.c \
@@ -32,27 +33,6 @@ SRCS =	./src/builtin/cd.c \
 
 OBJ_DIR = objs
 OBJS = $(patsubst ./src/%.c,$(OBJ_DIR)/%.o,$(SRCS))
-
-TEST_SRCS = ./src/testing/test_tokenizer_to_cmd.c \
-			./src/input/tokenizer.c \
-			./src/input/token_utils.c \
-			./src/input/parser.c \
-			./src/execution/redirections.c \
-			./src/env/env_init.c
-
-TEST_OBJS = $(patsubst ./src/%.c,$(OBJ_DIR)/%.o,$(TEST_SRCS))
-
-INTEGRATION_SRCS =	./src/input/tokenizer.c \
-					./src/input/token_utils.c \
-					./src/input/parser.c \
-					./src/execution/execution.c \
-					./src/execution/redirections.c \
-					./src/execution/path.c \
-					./src/env/env_init.c \
-					./src/env/env_service.c \
-					./src/testing/test_integration.c \
-
-INTEGRATION_OBJS = $(patsubst ./src/%.c,$(OBJ_DIR)/%.o,$(INTEGRATION_SRCS))
 
 # Configure readline library based on OS
 ifeq ($(shell uname), Darwin)
@@ -79,14 +59,6 @@ $(LIBFT):
 $(OBJ_DIR)/%.o: ./src/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-test: $(OBJ_DIR) $(TEST_OBJS) $(LIBFT)
-	$(CC) $(CFLAGS) $(TEST_OBJS) $(LIBFT) $(INCLUDES) $(LIBS) -o tokenizer_test
-	@echo "Token test program built. Run with ./tokenizer_test"
-
-integration_test: $(OBJ_DIR) $(INTEGRATION_OBJS) $(LIBFT)
-	$(CC) $(CFLAGS) $(INTEGRATION_OBJS) $(LIBFT) $(INCLUDES) $(LIBS) -o integration_test
-	@echo "Integration test program built. Run with ./integration_test"
 
 clean:
 	@rm -rf $(OBJ_DIR)
