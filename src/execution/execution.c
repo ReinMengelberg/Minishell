@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/14 16:37:16 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/14 18:34:26 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,25 +45,54 @@ int	run_command_pipeline(t_command *commands, t_shell *shell)
     int		exit_status;
     int		cmd_index;
     t_command	*cmd;
-	bool	has_failed_redirections;
+    bool	has_failed_redirections;
+	bool	any_command_executed;
 
     cmd_count = count_commands(commands);
     exit_status = 0;
     cmd_index = 0;
     cmd = commands;
-	has_failed_redirections = false;
+	any_command_executed =false;
+    has_failed_redirections = false;
+    
+    // Check if all commands are empty
+    t_command *temp_cmd = commands;
+    bool all_empty = true;
+    while (temp_cmd)
+    {
+        if (temp_cmd->cmd && temp_cmd->cmd->str && temp_cmd->cmd->str[0] != '\0')
+        {
+            all_empty = false;
+            break;
+        }
+        temp_cmd = temp_cmd->next;
+    }
+    
+    // If all commands are empty, return 0
+    if (all_empty)
+        return (0);
+    
     shell->pids = ft_calloc(cmd_count, sizeof(pid_t));
     if (!shell->pids)
         return (1);
     while (cmd)
     {
-		if (cmd->in_fd == -2 || cmd->out_fd == -2)
+        if (cmd->in_fd == -2 || cmd->out_fd == -2)
         {
-			has_failed_redirections = true;
+            has_failed_redirections = true;
             cmd_index++;
             cmd = cmd->next;
             continue;
         }
+        
+        // Skip empty commands
+        if (!cmd->cmd || !cmd->cmd->str || cmd->cmd->str[0] == '\0')
+        {
+            cmd_index++;
+            cmd = cmd->next;
+            continue;
+        }
+        any_command_executed = true;
         if (is_builtin(cmd->cmd->str) && cmd_count == 1 && !cmd->is_piped)
         {
             int stdin_save = dup(STDIN_FILENO);
@@ -108,19 +137,17 @@ int	run_command_pipeline(t_command *commands, t_shell *shell)
         cmd = cmd->next;
     }
     close_all_pipes(commands);
-	if (!(cmd_count == 1 && is_builtin(commands->cmd->str) && !commands->is_piped))
-	{
-		if (shell->status != 0)
-		{
-			exit_status = wait_for_children(shell->pids, cmd_count);
-			if (has_failed_redirections)
-				exit_status = 1;
-		}
-		else
-			wait_for_remain(shell->pids, cmd_count);
-	}
+    if (!(cmd_count == 1 && is_builtin(commands->cmd->str) && !commands->is_piped))
+    {
+        if (shell->status != 0)
+            exit_status = wait_for_children(shell->pids, cmd_count);
+        else
+            wait_for_remain(shell->pids, cmd_count);
+    }
     free(shell->pids);
     shell->pids = NULL;
+	if (has_failed_redirections && !any_command_executed)
+		return (1);
     return (exit_status);
 }
 
@@ -184,29 +211,69 @@ void	setup_command_redirections(t_command *cmd)
 
 int	execute_external_command(t_command *cmd, t_env *env_list)
 {
-	char	**args;
-	char	**envp;
-	char	path[PATH_MAX];
+    char	**args;
+    char	**envp;
+    char	path[PATH_MAX];
+    struct stat	path_stat;
 
-	args = tokens_to_args(cmd->cmd, cmd->args);
-	if (!args)
-		exit(127);
-	envp = env_to_array(env_list);
-	if (!envp)
-	{
-		ft_free_array(args);
-		exit(127);
-	}
-	if (find_command_path(args[0], envp, path))
-	{
-		execve(path, args, envp);
-		ft_dprintf(2, "minishell: %s: %s\n", args[0], strerror(errno));
-	}
-	else
-		ft_dprintf(2, "minishell: %s: command not found\n", args[0]);
-	ft_free_array(args);
-	ft_free_array(envp);
-	exit(127);
+    args = tokens_to_args(cmd->cmd, cmd->args);
+    if (!args)
+        exit(127);
+    envp = env_to_array(env_list);
+    if (!envp)
+    {
+        ft_free_array(args);
+        exit(127);
+    }
+    
+    // Check if it's an absolute or relative path first
+    if (strchr(args[0], '/'))
+    {
+        if (stat(args[0], &path_stat) == 0)
+        {
+            if (S_ISDIR(path_stat.st_mode))
+            {
+                ft_dprintf(2, "minishell: %s: Is a directory\n", args[0]);
+                ft_free_array(args);
+                ft_free_array(envp);
+                exit(126);
+            }
+            if (access(args[0], X_OK) != 0)
+            {
+                ft_dprintf(2, "minishell: %s: Permission denied\n", args[0]);
+                ft_free_array(args);
+                ft_free_array(envp);
+                exit(126);
+            }
+            execve(args[0], args, envp);
+            ft_dprintf(2, "minishell: %s: %s\n", args[0], strerror(errno));
+        }
+        else
+        {
+            ft_dprintf(2, "minishell: %s: No such file or directory\n", args[0]);
+            ft_free_array(args);
+            ft_free_array(envp);
+            exit(127);
+        }
+    }
+    else if (find_command_path(args[0], envp, path))
+    {
+        // Check if the path is a directory
+        if (stat(path, &path_stat) == 0 && S_ISDIR(path_stat.st_mode))
+        {
+            ft_dprintf(2, "minishell: %s: Is a directory\n", args[0]);
+            ft_free_array(args);
+            ft_free_array(envp);
+            exit(126);
+        }
+        execve(path, args, envp);
+        ft_dprintf(2, "minishell: %s: %s\n", args[0], strerror(errno));
+    }
+    else
+        ft_dprintf(2, "minishell: %s: command not found\n", args[0]);
+    ft_free_array(args);
+    ft_free_array(envp);
+    exit(127);
 }
 
 int	wait_for_children(pid_t *pids, int count)
