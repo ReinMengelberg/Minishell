@@ -6,27 +6,32 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/07/14 18:25:03 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/15 15:13:47 by rein          ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef MINISHELL_H
 # define MINISHELL_H
 
+# ifdef __linux__
+#  include <linux/limits.h>
+# elif __APPLE__
+#  include <sys/syslimits.h>
+# endif
+
 # include "libft.h"
 # include <dirent.h>
 # include <errno.h>
 # include <fcntl.h>
-# include <linux/limits.h>
 # include <readline/history.h>
 # include <readline/readline.h>
 # include <signal.h>
 # include <stdio.h>
 # include <stdlib.h>
 # include <string.h>
+# include <sys/stat.h>
 # include <sys/wait.h>
 # include <unistd.h>
-# include <sys/stat.h>
 
 # define MAX_COMMANDS 128
 # define MAX_ARGS 64
@@ -110,9 +115,9 @@ typedef struct s_sig
 // Expansion voor env variables
 typedef struct s_expansion
 {
-	char *arg; // New Argument
-	int oi;    // Old index
-	int ni;    // New index
+	char						*arg;
+	int							oi;
+	int							ni;
 }								t_expansion;
 
 typedef struct s_command
@@ -153,7 +158,8 @@ void							setup_signal_handler(void (*handler)(int));
 void							set_state(t_shell *shell, t_state state);
 
 // INPUT
-t_token							*create_token(char *str, t_tokentype type, t_quotestate quote);
+t_token							*create_token(char *str, t_tokentype type,
+									t_quotestate quote);
 void							add_token(t_token **tokens, t_token *new);
 t_tokentype						get_tokentype(char *str);
 t_quotestate					get_quotestate(char *str);
@@ -166,7 +172,7 @@ void							free_tokens(t_token *tokens);
 // PARSING
 t_command						*extract_commands(t_token *tokens);
 t_command						*create_new_command_node(t_command **cmd_head,
-										t_command **current_cmd);
+									t_command **current_cmd);
 void							add_to_args(t_command *cmd, t_token *arg_token);
 bool							process_redirections(t_command *commands,
 									t_shell *shell);
@@ -181,8 +187,10 @@ bool							save_original_fds(t_command *commands,
 									int saved_fds[][2], int *cmd_count);
 bool							find_command_path(char *cmd, char **env,
 									char *path_buffer);
-void	add_to_input_list(t_command *cmd, t_token *token);
-void	add_to_output_list(t_command *cmd, t_token *token);
+void							add_to_input_list(t_command *cmd,
+									t_token *token);
+void							add_to_output_list(t_command *cmd,
+									t_token *token);
 
 // EXECUTION
 int								execute_commands(t_command *commands,
@@ -228,7 +236,8 @@ int								remove_env_var(t_env **env_head,
 int								count_args(t_token *args);
 
 // free
-void							free_commands_without_tokens(t_command *commands);
+void							free_commands_without_tokens(
+									t_command *commands);
 void							free_everything(t_shell *shell, bool on_exit);
 
 // for testing
@@ -238,10 +247,10 @@ void							print_tokens(t_token *tokens);
 t_token							*expand_tokens(t_token *token_head,
 									t_env *env_head, t_exitstatus status);
 
-//SIGNAL FUCKERS
-void	handle_signal_interactive(int sig);
-void	handle_signal_child(int sig);
-void	handle_signal_heredoc(int sig);
+// SIGNAL FUCKERS
+void							handle_signal_interactive(int sig);
+void							handle_signal_child(int sig);
+void							handle_signal_heredoc(int sig);
 
 #endif
 
