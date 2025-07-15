@@ -6,45 +6,37 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 14:41:27 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/07/14 16:50:56 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/15 15:55:40 by rein          ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+static void	free_token_list(t_token **list)
+{
+	t_token	*temp;
+
+	while (*list)
+	{
+		temp = *list;
+		*list = (*list)->next;
+		if (temp->str)
+			free(temp->str);
+		free(temp);
+	}
+}
+
 void	free_commands_without_tokens(t_command *commands)
 {
 	t_command	*temp;
-	t_token		*arg_temp;
 
 	while (commands)
 	{
 		temp = commands;
 		commands = commands->next;
-		while (temp->args)
-		{
-			arg_temp = temp->args;
-			temp->args = temp->args->next;
-			if (arg_temp->str)
-				free(arg_temp->str);
-			free(arg_temp);
-		}
-		while (temp->input_list)
-        {
-            arg_temp = temp->input_list;
-            temp->input_list = temp->input_list->next;
-            if (arg_temp->str)
-                free(arg_temp->str);
-            free(arg_temp);
-        }
-        while (temp->output_list)
-        {
-            arg_temp = temp->output_list;
-            temp->output_list = temp->output_list->next;
-            if (arg_temp->str)
-                free(arg_temp->str);
-            free(arg_temp);
-        }
+		free_token_list(&temp->args);
+		free_token_list(&temp->input_list);
+		free_token_list(&temp->output_list);
 		if (temp->in_fd > 2)
 			close(temp->in_fd);
 		if (temp->out_fd > 2)

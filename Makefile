@@ -21,8 +21,13 @@ SRCS =	./src/builtin/cd.c \
 		./src/input/parser_utils.c \
 		./src/input/parser.c \
 		./src/execution/execution.c \
+		./src/execution/execution_utils.c \
+		./src/execution/pipeline.c \
+		./src/execution/command_utils.c \
+		./src/execution/cleanup.c \
 		./src/execution/path.c \
 		./src/execution/redirections.c \
+		./src/execution/redirections_utils.c \
 		./src/env/env_init.c \
 		./src/env/env_service.c \
 		./src/env/env_utils.c \
@@ -37,11 +42,15 @@ OBJS = $(patsubst ./src/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 
 # Configure readline library based on OS
 ifeq ($(shell uname), Darwin)
-	BREW_PREFIX = $(shell brew --prefix 2>/dev/null || echo "/usr/local")
-	INCLUDES += -I$(BREW_PREFIX)/include
-	LIBS += -L$(BREW_PREFIX)/lib -lreadline
+    BREW_PREFIX = $(shell brew --prefix 2>/dev/null || echo "/opt/homebrew")
+    READLINE_PREFIX = $(BREW_PREFIX)/opt/readline
+    INCLUDES += -I$(READLINE_PREFIX)/include
+    LIBS += -L$(READLINE_PREFIX)/lib -lreadline
+    $(info Using BREW_PREFIX: $(BREW_PREFIX))
+    $(info Using READLINE_PREFIX: $(READLINE_PREFIX))
+    $(info Using LIBS: $(LIBS))
 else
-	LIBS += -lreadline
+    LIBS += -lreadline
 endif
 
 all: $(NAME)
