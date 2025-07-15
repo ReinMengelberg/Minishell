@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/07/15 15:13:47 by rein          ########   odam.nl         */
+/*   Updated: 2025/07/15 15:49:14 by rein          ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,6 +134,14 @@ typedef struct s_command
 	struct s_command			*next;
 }								t_command;
 
+typedef struct s_command_data
+{
+	int							cmd_count;
+	int							cmd_index;
+	bool						has_failed_redirections;
+	bool						any_command_executed;
+}								t_command_data;
+
 typedef struct s_validator
 {
 	bool						valid;
@@ -152,12 +160,23 @@ typedef struct s_shell
 	pid_t						*pids;
 }								t_shell;
 
-// SIGNALS
+// main/helpers
+int								count_args(t_token *args);
+void							print_tokens(t_token *tokens);
+
+// main/free
+void							free_commands_without_tokens(t_command *commands);
+void							free_everything(t_shell *shell, bool on_exit);
+
+// main/signals
 void							check_signals(t_shell *shell);
 void							setup_signal_handler(void (*handler)(int));
 void							set_state(t_shell *shell, t_state state);
+void							handle_signal_interactive(int sig);
+void							handle_signal_child(int sig);
+void							handle_signal_heredoc(int sig);
 
-// INPUT
+// input
 t_token							*create_token(char *str, t_tokentype type,
 									t_quotestate quote);
 void							add_token(t_token **tokens, t_token *new);
@@ -169,7 +188,7 @@ char							**ft_split_shell(char *input);
 void							ft_free_array(char **arr);
 void							free_tokens(t_token *tokens);
 
-// PARSING
+// parsing
 t_command						*extract_commands(t_token *tokens);
 t_command						*create_new_command_node(t_command **cmd_head,
 									t_command **current_cmd);
@@ -192,24 +211,51 @@ void							add_to_input_list(t_command *cmd,
 void							add_to_output_list(t_command *cmd,
 									t_token *token);
 
+// parsing/expansions
+t_token							*expand_tokens(t_token *token_head,
+									t_env *env_head, t_exitstatus status);
+
 // EXECUTION
+/* Main execution functions */
 int								execute_commands(t_command *commands,
 									t_shell *shell);
 int								run_command_pipeline(t_command *commands,
 									t_shell *shell);
+/* Process management functions */
+int								wait_for_children(pid_t *pids, int count);
+void							wait_for_remain(pid_t *pids, int count);
+int								finalize_pipeline(t_shell *shell, t_command *commands,
+									t_command_data *data, int exit_status);
+/* Command execution functions */
+bool							check_all_commands_empty(t_command *commands);
+int								process_single_command(t_command *cmd, t_shell *shell,
+									t_command *commands, t_command_data *data);
+int								execute_external_command(t_command *cmd,
+									t_env *env_list);
+void							setup_command_redirections(t_command *cmd);
+/* Pipe and file descriptor management */
 void							close_unused_pipes(t_command *commands,
 									t_command *current_cmd);
 void							close_all_pipes(t_command *commands);
-void							setup_command_redirections(t_command *cmd);
-int								execute_external_command(t_command *cmd,
-									t_env *env_list);
-int								wait_for_children(pid_t *pids, int count);
-void							wait_for_remain(pid_t *pids, int count);
+/* Utility functions */
 char							**env_to_array(t_env *env_list);
 int								count_commands(t_command *commands);
 void							free_commands(t_command *commands);
 
-// builtin
+
+// execution/redirections
+void							cleanup_redirections(t_command *commands,
+									int saved_fds[][2], int cmd_count);
+bool							save_original_fds(t_command *commands,
+									int saved_fds[][2], int *cmd_count);
+int								open_input_file(t_token *filename,
+									t_command *cmd);
+int								open_output_file(t_token *filename,
+									t_command *cmd, int flags);
+bool							handle_heredoc_redirect(t_command *commands,
+									t_shell *shell);
+
+// execution/builtin
 bool							is_builtin(char *cmd);
 int								exec_builtin(t_command *cmd, t_shell *shell);
 int								exec_exit(t_command *cmd, t_shell *shell);
@@ -220,7 +266,7 @@ int								exec_env(t_command *cmd, t_shell *shell);
 int								exec_export(t_command *cmd, t_shell *shell);
 int								exec_unset(t_command *cmd, t_shell *shell);
 
-// env
+// execution/env
 t_env							*create_env(char **environ);
 char							*env_get(t_env *head, const char *key);
 void							print_env(t_env *head);
@@ -231,27 +277,4 @@ int								update_env_var(t_env **env_head,
 									const char *key, const char *value);
 int								remove_env_var(t_env **env_head,
 									const char *key);
-
-// helpers
-int								count_args(t_token *args);
-
-// free
-void							free_commands_without_tokens(
-									t_command *commands);
-void							free_everything(t_shell *shell, bool on_exit);
-
-// for testing
-void							print_tokens(t_token *tokens);
-
-// expander
-t_token							*expand_tokens(t_token *token_head,
-									t_env *env_head, t_exitstatus status);
-
-// SIGNAL FUCKERS
-void							handle_signal_interactive(int sig);
-void							handle_signal_child(int sig);
-void							handle_signal_heredoc(int sig);
-
 #endif
-
-// echo hello > temp1 > temp2 > temp3
