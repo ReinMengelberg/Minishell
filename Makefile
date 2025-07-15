@@ -15,10 +15,20 @@ SRCS =	./src/builtin/cd.c \
 		./src/builtin/env.c \
 		./src/builtin/builtin.c \
 		./src/input/token_utils.c \
+		./src/input/token_utils2.c \
+		./src/input/token_utils3.c \
 		./src/input/tokenizer.c \
+		./src/input/tokenizer_creation.c \
+		./src/input/tokenizer_types.c \
+		./src/input/tokenizer_utils.c \
+		./src/input/tokenizer_validation.c \
 		./src/input/expander.c \
+		./src/input/expander_utils.c \
+		./src/input/expander_utils2.c \
 		./src/input/heredoc.c \
+		./src/input/heredoc_utils.c \
 		./src/input/parser_utils.c \
+		./src/input/parser_utils2.c \
 		./src/input/parser.c \
 		./src/execution/execution.c \
 		./src/execution/execution_utils.c \

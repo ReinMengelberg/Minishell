@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/07/15 16:00:20 by rein          ########   odam.nl         */
+/*   Updated: 2025/07/15 16:57:55 by rein          ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,6 +120,12 @@ typedef struct s_expansion
 	int							ni;
 }								t_expansion;
 
+typedef struct s_expand_context
+{
+	t_env						*env;
+	t_exitstatus				status;
+}								t_expand_context;
+
 typedef struct s_command
 {
 	t_token						*cmd;
@@ -177,7 +183,7 @@ void							handle_signal_interactive(int sig);
 void							handle_signal_child(int sig);
 void							handle_signal_heredoc(int sig);
 
-// input
+// INPUT
 t_token							*create_token(char *str, t_tokentype type,
 									t_quotestate quote);
 void							add_token(t_token **tokens, t_token *new);
@@ -188,8 +194,6 @@ int								handle_heredoc(char *delimiter, t_shell *shell);
 char							**ft_split_shell(char *input);
 void							ft_free_array(char **arr);
 void							free_tokens(t_token *tokens);
-
-// parsing
 t_command						*extract_commands(t_token *tokens);
 t_command						*create_new_command_node(t_command **cmd_head,
 									t_command **current_cmd);
@@ -211,10 +215,58 @@ void							add_to_input_list(t_command *cmd,
 									t_token *token);
 void							add_to_output_list(t_command *cmd,
 									t_token *token);
-
-// parsing/expansions
 t_token							*expand_tokens(t_token *token_head,
 									t_env *env_head, t_exitstatus status);
+int								count_tokens(char *input);
+char							*extract_token(char *input, int *pos);
+int								handle_quoted_token(char *input, int i,
+									char quote);
+bool							check_input(char *input);
+t_token							*create_tokens_from_split(char **strings);
+char							*remove_quotes(char *str);
+t_tokentype						set_tokentype(char *token_str);
+bool							validate_expansion_in_token(t_token *token);
+t_quotestate					set_quotestate(char *string);
+bool							validate_pipe_syntax(t_token *tokens);
+bool							is_expansion(char *str);
+bool							is_unsupported_char(char c);
+bool							is_unsupported_syntax(char *input, int i,
+									char quote);
+bool							is_unsupported_expansion(char *input, int i,
+									char quote);
+void							update_quote_status(char input_char,
+									char *quote);
+void							handle_quote_char(char c, char *quote);
+t_command						*create_command(void);
+void							collect_heredoc_input(int fd, char *delimiter);
+int								handle_child_process(int *pipe_fd,
+									char *delimiter, t_shell *shell);
+int								handle_parent_process(int *pipe_fd, pid_t pid,
+									t_shell *shell);
+t_token							*expand_token(t_token *token, t_env *env,
+									t_exitstatus status);
+bool							valid_expansions(t_token *token_head);
+bool							validate_variable_name(char *str, int *i);
+bool							should_expand_variable(t_token *token);
+char							*handle_exit_status(char *result,
+									t_exitstatus status);
+char							*handle_variable_expansion(char *result,
+									char *original, int *i, t_env *env);
+char							*process_dollar_expansion(char *result,
+									char *original, int *i,
+									t_expand_context *ctx);
+
+t_token							*create_tokens_from_split(char **strings);
+t_tokentype						set_tokentype(char *token_str);
+char							*remove_quotes(char *str);
+void							handle_quote_char(char c, char *quote);
+t_tokentype						process_token_type(t_tokentype type,
+									bool *cmd_found, bool *next_redir_target,
+									bool *after_redir_file);
+void							reset_token_state(bool *cmd_found,
+									bool *next_arg, bool *after_file);
+t_tokentype						handle_cmd_arg_token(t_tokentype type,
+									bool *cmd_found, bool *after_redir_file);
 
 // EXECUTION
 /* Main execution functions */
@@ -223,8 +275,7 @@ int								execute_commands(t_command *commands,
 int								run_command_pipeline(t_command *commands,
 									t_shell *shell);
 /* Process management functions */
-int								wait_for_children(pid_t *pids,
-									int count);
+int								wait_for_children(pid_t *pids, int count);
 void							wait_for_remain(pid_t *pids, int count);
 int								finalize_pipeline(t_shell *shell,
 									t_command *commands, t_command_data *data,

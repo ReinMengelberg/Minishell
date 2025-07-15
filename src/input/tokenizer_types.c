@@ -6,13 +6,13 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/07/15 16:03:00 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/15 15:57:54 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/07/15 16:56:20 by rein          ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-static bool	handle_redirection_token(t_tokentype type, bool *next_redir_target)
+bool	handle_redirection_token(t_tokentype type, bool *next_redir_target)
 {
 	if (type == INPUT || type == OUTPUT || type == HEREDOC || type == APPEND)
 	{
@@ -22,7 +22,7 @@ static bool	handle_redirection_token(t_tokentype type, bool *next_redir_target)
 	return (false);
 }
 
-static t_tokentype	handle_cmd_arg_token(t_tokentype type, bool *cmd_found,
+t_tokentype	handle_cmd_arg_token(t_tokentype type, bool *cmd_found,
 		bool *after_redir_file)
 {
 	if (*after_redir_file && !*cmd_found && type == CMD)
@@ -38,14 +38,14 @@ static t_tokentype	handle_cmd_arg_token(t_tokentype type, bool *cmd_found,
 	return (type);
 }
 
-static void	reset_token_state(bool *cmd_found, bool *next_arg, bool *after_file)
+void	reset_token_state(bool *cmd_found, bool *next_arg, bool *after_file)
 {
 	*cmd_found = false;
 	*next_arg = false;
 	*after_file = false;
 }
 
-static t_tokentype	process_token_type(t_tokentype type, bool *cmd_found,
+t_tokentype	process_token_type(t_tokentype type, bool *cmd_found,
 		bool *next_redir_target, bool *after_redir_file)
 {
 	if (*next_redir_target)

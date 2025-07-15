@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/24 15:16:33 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/07/15 15:42:02 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/07/15 16:46:11 by rein          ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,17 +26,20 @@ static char	*handle_regular_char(char *result, char c)
 
 t_token	*expand_token(t_token *token, t_env *env, t_exitstatus status)
 {
-	char	*orig;
-	char	*result;
-	int		i;
+	char				*orig;
+	char				*result;
+	int					i;
+	t_expand_context	ctx;
 
+	ctx.env = env;
+	ctx.status = status;
 	orig = token->str;
 	result = ft_strdup("");
 	i = 0;
 	while (orig[i])
 	{
 		if (orig[i] == '$' && orig[i + 1] != '\0')
-			result = process_dollar_expansion(result, orig, &i, env, status);
+			result = process_dollar_expansion(result, orig, &i, &ctx);
 		else
 		{
 			result = handle_regular_char(result, orig[i]);
@@ -48,7 +51,7 @@ t_token	*expand_token(t_token *token, t_env *env, t_exitstatus status)
 	return (token);
 }
 
-static bool	validate_expansion_in_token(t_token *token)
+bool	validate_expansion_in_token(t_token *token)
 {
 	char	*str;
 	int		i;
