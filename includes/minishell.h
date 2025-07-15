@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/07/15 15:49:14 by rein          ########   odam.nl         */
+/*   Updated: 2025/07/15 16:00:20 by rein          ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,7 +165,8 @@ int								count_args(t_token *args);
 void							print_tokens(t_token *tokens);
 
 // main/free
-void							free_commands_without_tokens(t_command *commands);
+void							free_commands_without_tokens(
+									t_command *commands);
 void							free_everything(t_shell *shell, bool on_exit);
 
 // main/signals
@@ -222,14 +223,17 @@ int								execute_commands(t_command *commands,
 int								run_command_pipeline(t_command *commands,
 									t_shell *shell);
 /* Process management functions */
-int								wait_for_children(pid_t *pids, int count);
+int								wait_for_children(pid_t *pids,
+									int count);
 void							wait_for_remain(pid_t *pids, int count);
-int								finalize_pipeline(t_shell *shell, t_command *commands,
-									t_command_data *data, int exit_status);
+int								finalize_pipeline(t_shell *shell,
+									t_command *commands, t_command_data *data,
+									int exit_status);
 /* Command execution functions */
 bool							check_all_commands_empty(t_command *commands);
-int								process_single_command(t_command *cmd, t_shell *shell,
-									t_command *commands, t_command_data *data);
+int								process_single_command(t_command *cmd,
+									t_shell *shell, t_command *commands,
+									t_command_data *data);
 int								execute_external_command(t_command *cmd,
 									t_env *env_list);
 void							setup_command_redirections(t_command *cmd);
@@ -241,7 +245,6 @@ void							close_all_pipes(t_command *commands);
 char							**env_to_array(t_env *env_list);
 int								count_commands(t_command *commands);
 void							free_commands(t_command *commands);
-
 
 // execution/redirections
 void							cleanup_redirections(t_command *commands,
