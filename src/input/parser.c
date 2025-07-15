@@ -6,13 +6,13 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/20 14:28:09 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/14 15:49:05 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/15 16:55:42 by rein          ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-static void	process_token_type(t_command *cmd, t_token *token)
+static void	process_token(t_command *cmd, t_token *token)
 {
 	if (token->type == CMD)
 		cmd->cmd = token;
@@ -48,7 +48,7 @@ t_command	*extract_commands(t_token *tokens)
 			if (!current || !create_new_command_node(&cmd_head, &current_cmd))
 				return (NULL);
 		}
-		process_token_type(current_cmd, current);
+		process_token(current_cmd, current);
 		current = current->next;
 	}
 	return (cmd_head);
