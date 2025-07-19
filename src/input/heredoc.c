@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 15:59:44 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/07/15 15:26:36 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/07/19 11:34:21 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,19 +22,24 @@ static int	check_delimiter(char *line, char *delimiter, size_t delimiter_len)
 
 static int	handle_readline_input(char *line, int fd)
 {
-	if (!line)
-	{
-		write(STDOUT_FILENO, "\n", 1);
-		close(fd);
-		exit(1);
-	}
-	if (g_signal_received == SIGINT)
-	{
-		free(line);
-		close(fd);
-		exit(130);
-	}
-	return (0);
+    if (!line)
+    {
+        if (g_signal_received == SIGINT)
+        {
+            close(fd);
+            exit(130);
+        }
+        write(STDOUT_FILENO, "\n", 1);
+        close(fd);
+        exit(1);
+    }
+    if (g_signal_received == SIGINT)
+    {
+        free(line);
+        close(fd);
+        exit(130);
+    }
+    return (0);
 }
 
 static void	write_line_to_fd(int fd, char *line)
