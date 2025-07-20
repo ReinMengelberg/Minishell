@@ -24,20 +24,10 @@ static int	handle_readline_input(char *line, int fd)
 {
     if (!line)
     {
+        close(fd);
         if (g_signal_received == SIGINT)
-        {
-            close(fd);
             exit(130);
-        }
-        write(STDOUT_FILENO, "\n", 1);
-        close(fd);
         exit(1);
-    }
-    if (g_signal_received == SIGINT)
-    {
-        free(line);
-        close(fd);
-        exit(130);
     }
     return (0);
 }
@@ -50,25 +40,29 @@ static void	write_line_to_fd(int fd, char *line)
 
 void	collect_heredoc_input(int fd, char *delimiter)
 {
-	char	*line;
-	size_t	delimiter_len;
+    char	*line;
+    size_t	delimiter_len;
 
-	delimiter_len = ft_strlen(delimiter);
-	g_signal_received = 0;
-	while (1)
-	{
-		line = readline("> ");
-		handle_readline_input(line, fd);
-		if (check_delimiter(line, delimiter, delimiter_len))
-		{
-			free(line);
-			break ;
-		}
-		write_line_to_fd(fd, line);
-		free(line);
-	}
-	close(fd);
-	exit(0);
+    delimiter_len = ft_strlen(delimiter);
+    g_signal_received = 0;
+    while (1)
+    {
+        line = readline("> ");
+        
+        // Handle readline returning NULL (EOF or signal)
+        if (handle_readline_input(line, fd) != 0)
+            break;
+        
+        if (check_delimiter(line, delimiter, delimiter_len))
+        {
+            free(line);
+            break ;
+        }
+        write_line_to_fd(fd, line);
+        free(line);
+    }
+    close(fd);
+    exit(0);
 }
 
 int	handle_heredoc(char *delimiter, t_shell *shell)

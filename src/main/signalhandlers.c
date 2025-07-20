@@ -41,6 +41,6 @@ void	handle_signal_heredoc(int sig)
     if (sig == SIGINT)
     {
         write(STDOUT_FILENO, "\n", 1);
-        close(STDIN_FILENO);  // This will cause readline to return NULL
+        close(STDIN_FILENO);  // Force readline to return NULL
     }
 }

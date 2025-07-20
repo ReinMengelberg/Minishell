@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/07/15 15:38:30 by rein          #+#    #+#                 */
-/*   Updated: 2025/07/15 15:50:34 by rein          ########   odam.nl         */
+/*   Updated: 2025/07/20 10:24:22 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,6 +115,7 @@ int	wait_for_children(pid_t *pids, int count)
 	int	status;
 	int	exit_code;
 	int	last_cmd_index;
+	int	sig;
 
 	exit_code = 0;
 	last_cmd_index = count - 1;
@@ -130,7 +131,18 @@ int	wait_for_children(pid_t *pids, int count)
 			if (WIFEXITED(status))
 				exit_code = WEXITSTATUS(status);
 			else if (WIFSIGNALED(status))
-				exit_code = 128 + WTERMSIG(status);
+			{
+				sig = WTERMSIG(status);
+				if (sig == SIGINT)
+					exit_code = 130;
+				else if (sig == SIGQUIT)
+				{
+					exit_code = 131;
+					write(STDERR_FILENO, "Quit (core dumped)\n", 19);
+				}
+				else
+					exit_code = 128 + sig;
+			}
 			else
 				exit_code = 1;
 		}
