@@ -23,6 +23,7 @@ SRCS =	./src/builtin/cd.c \
 		./src/input/tokenizer_utils.c \
 		./src/input/tokenizer_validation.c \
 		./src/input/expander.c \
+		./src/input/expand_variable.c \
 		./src/input/expander_utils.c \
 		./src/input/expander_utils2.c \
 		./src/input/heredoc.c \

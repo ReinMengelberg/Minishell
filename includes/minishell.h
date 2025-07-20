@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/07/20 13:16:28 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/20 14:55:40 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ extern volatile sig_atomic_t	g_signal_received;
 typedef enum e_state
 {
 	IN_CHILD,
+	IN_HEREDOC,
 	INTERACTIVE
 }								t_state;
 
@@ -216,6 +217,7 @@ void							add_to_output_list(t_command *cmd,
 									t_token *token);
 t_token							*expand_tokens(t_token *token_head,
 									t_env *env_head, t_exitstatus status);
+char							*expand_variable(char *str, int *i, t_expand_context *ctx);
 int								count_tokens(char *input);
 char							*extract_token(char *input, int *pos);
 int								handle_quoted_token(char *input, int i,

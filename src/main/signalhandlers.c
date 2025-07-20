@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 14:41:34 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/07/20 13:10:25 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/20 14:47:02 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,4 +34,3 @@ void	handle_signal_child(int sig)
 	else if (sig == SIGQUIT)
 		write(STDERR_FILENO, "Quit: 3\n", 8);
 }
-

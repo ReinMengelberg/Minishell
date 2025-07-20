@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 15:59:44 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/07/20 14:10:37 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/20 14:53:44 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,8 @@ static char *get_delim(char *delim, int *quotes)
 static void heredoc_sigint_handler(int sig)
 {
     (void)sig;
+    // Clean exit without affecting parent's readline
+    write(STDOUT_FILENO, "\n", 1);
     exit(130);
 }
 
@@ -68,16 +70,15 @@ static int fill_heredoc(char *delimiter, int fd, t_shell *shell, int quotes)
     ctx.env = shell->env;
     ctx.status = shell->exit_status;
     
-    // Set up custom signal handling for heredoc
-    signal(SIGINT, heredoc_sigint_handler);  // Custom handler
+    // Completely isolate signal handling in child
+    signal(SIGINT, heredoc_sigint_handler);
     signal(SIGQUIT, SIG_IGN);
     
     while (1)
     {
         line = readline("> ");
-        if (!line)  // EOF 
+        if (!line)  // EOF (Ctrl+D)
         {
-            // EOF (Ctrl+D) reached
             ft_dprintf(2, "minishell: warning: here-document delimited by end-of-file (wanted `%s')\n", delimiter);
             break;
         }
@@ -88,26 +89,17 @@ static int fill_heredoc(char *delimiter, int fd, t_shell *shell, int quotes)
             break;
         }
         
-        // Handle variable expansion if not quoted delimiter
-        if (!quotes && ft_strchr(line, '$'))
+        // Handle expansion if no quotes around delimiter
+        if (!quotes)
         {
-            expanded_line = ft_strdup("");
+            expanded_line = ft_strdup(line);
             i = 0;
-            while (line[i])
+            while (expanded_line && expanded_line[i])
             {
-                if (line[i] == '$' && line[i + 1] != '\0')
-                    expanded_line = process_dollar_expansion(expanded_line, line, &i, &ctx);
+                if (expanded_line[i] == '$')
+                    expanded_line = expand_variable(expanded_line, &i, &ctx);
                 else
-                {
-                    char temp_str[2];
-                    char *temp;
-                    temp_str[0] = line[i];
-                    temp_str[1] = '\0';
-                    temp = ft_strjoin(expanded_line, temp_str);
-                    free(expanded_line);
-                    expanded_line = temp;
                     i++;
-                }
             }
             write(fd, expanded_line, ft_strlen(expanded_line));
             free(expanded_line);
@@ -147,23 +139,29 @@ int handle_heredoc(char *delimiter, t_shell *shell)
         return (-1);
     }
     
+    // Parent: ignore signals during heredoc to prevent interference
+    signal(SIGINT, SIG_IGN);
+    signal(SIGQUIT, SIG_IGN);
+    
     pid = fork();
     if (pid == -1)
     {
         perror("fork");
         free(filename);
         free(clean_delimiter);
+        // Restore parent signals
+        set_state(shell, shell->state);
         return (-1);
     }
     
     if (pid == 0)
     {
-        // Child process
+        // Child process - completely independent signal handling
         fd = open(filename, O_CREAT | O_WRONLY | O_TRUNC, 0644);
         if (fd == -1)
             exit(1);
         if (fill_heredoc(clean_delimiter, fd, shell, quotes) == -1)
-            exit(130);  // Signal interrupted
+            exit(130);
         close(fd);
         exit(0);
     }
@@ -172,6 +170,9 @@ int handle_heredoc(char *delimiter, t_shell *shell)
         // Parent process
         waitpid(pid, &status, 0);
         free(clean_delimiter);
+        
+        // Restore parent's signal handling
+        set_state(shell, shell->state);
         
         // Check if child was interrupted
         if (WIFSIGNALED(status) && WTERMSIG(status) == SIGINT)
@@ -183,6 +184,14 @@ int handle_heredoc(char *delimiter, t_shell *shell)
         }
         
         // Check if child exited with error
+        if (WIFEXITED(status) && WEXITSTATUS(status) == 130)
+        {
+            unlink(filename);
+            free(filename);
+            shell->exit_status = 130;
+            return (-1);
+        }
+        
         if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
         {
             unlink(filename);
@@ -199,7 +208,7 @@ int handle_heredoc(char *delimiter, t_shell *shell)
             return (-1);
         }
         
-        // Note: filename memory is leaked here - you should store it for cleanup
+        // Store filename for cleanup
         return (fd);
     }
 }
