@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/07/14 15:49:05 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/07/14 15:51:32 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/20 10:55:26 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,8 @@ void	set_state(t_shell *shell, t_state state)
 	}
 	else if (state == IN_CHILD)
 	{
-		setup_signal_handler(handle_signal_child);
+		signal(SIGINT, SIG_DFL);
+		signal(SIGQUIT, SIG_DFL);
 	}
 	else if (state == IN_HEREDOC)
 	{

@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/21 13:24:51 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/15 15:52:33 by rein          ########   odam.nl         */
+/*   Updated: 2025/07/20 10:20:23 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,7 @@ static int	fork_and_execute(t_command *cmd, t_shell *shell,
 	{
 		close_unused_pipes(commands, cmd);
 		setup_command_redirections(cmd);
+		set_state(shell, IN_CHILD);
 		if (is_builtin(cmd->cmd->str))
 			exit(exec_builtin(cmd, shell));
 		else

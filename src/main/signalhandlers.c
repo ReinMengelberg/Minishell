@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 14:41:34 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/07/15 15:11:03 by rein          ########   odam.nl         */
+/*   Updated: 2025/07/20 10:44:55 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,7 @@ void	handle_signal_interactive(int sig)
 		write(STDOUT_FILENO, "\n", 1);
 		rl_on_new_line();
 		rl_replace_line("", 0);
-		if (rl_line_buffer != NULL && rl_line_buffer[0] != '\0')
-			rl_redisplay();
+		rl_redisplay();
 	}
 }
 
@@ -38,9 +37,10 @@ void	handle_signal_child(int sig)
 
 void	handle_signal_heredoc(int sig)
 {
-	g_signal_received = sig;
-	if (sig == SIGINT)
-	{
-		exit(130);
-	}
+    g_signal_received = sig;
+    if (sig == SIGINT)
+    {
+        write(STDOUT_FILENO, "\n", 1);
+        close(STDIN_FILENO);
+    }
 }
