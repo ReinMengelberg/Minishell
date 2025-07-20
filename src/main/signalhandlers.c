@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 14:41:34 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/07/20 10:44:55 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/20 13:10:25 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,12 +35,3 @@ void	handle_signal_child(int sig)
 		write(STDERR_FILENO, "Quit: 3\n", 8);
 }
 
-void	handle_signal_heredoc(int sig)
-{
-    g_signal_received = sig;
-    if (sig == SIGINT)
-    {
-        write(STDOUT_FILENO, "\n", 1);
-        close(STDIN_FILENO);
-    }
-}

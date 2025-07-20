@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/07/20 12:12:11 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/20 13:16:28 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,6 @@ extern volatile sig_atomic_t	g_signal_received;
 
 typedef enum e_state
 {
-	IN_HEREDOC,
 	IN_CHILD,
 	INTERACTIVE
 }								t_state;
