@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/07/15 15:38:30 by rein          #+#    #+#                 */
-/*   Updated: 2025/07/20 15:06:43 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/20 15:20:50 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,52 +108,4 @@ int	execute_external_command(t_command *cmd, t_env *env_list)
 	ft_free_array(args);
 	ft_free_array(envp);
 	exit(127);
-}
-
-int	wait_for_children(pid_t *pids, int count)
-{
-	int	status;
-	int	exit_code;
-	int	last_cmd_index;
-	int	sig;
-
-	signal(SIGINT, SIG_IGN);
-	signal(SIGQUIT, SIG_IGN);
-	exit_code = 0;
-	last_cmd_index = count - 1;
-	if (last_cmd_index >= 0 && pids[last_cmd_index] > 0)
-	{
-		if (waitpid(pids[last_cmd_index], &status, 0) == -1)
-		{
-			perror("waitpid failed for last command");
-			exit_code = 1;
-		}
-		else
-		{
-			if (WIFEXITED(status))
-				exit_code = WEXITSTATUS(status);
-			else if (WIFSIGNALED(status))
-			{
-				sig = WTERMSIG(status);
-				if (sig == SIGINT)
-				{
-					write(STDOUT_FILENO, "\n", 1);
-					exit_code = 130;
-				}
-				else if (sig == SIGQUIT)
-				{
-					write(STDERR_FILENO, "Quit (core dumped)\n", 19);
-					exit_code = 131;
-				}
-				else
-					exit_code = 128 + sig;
-			}
-			else
-				exit_code = 1;
-		}
-		pids[last_cmd_index] = -1;
-	}
-	setup_signal_handler(handle_signal_interactive);
-	signal(SIGQUIT, SIG_IGN);
-	return (wait_for_remain(pids, count), exit_code);
 }

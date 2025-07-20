@@ -6,13 +6,14 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/27 11:15:53 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/20 13:43:50 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/20 15:24:20 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-static bool	process_heredoc_token(t_command *cmd, t_token *current, t_shell *shell)
+static bool	process_heredoc_token(t_command *cmd, t_token *current,
+		t_shell *shell)
 {
 	t_token	*delimiter;
 	int		fd;
@@ -53,68 +54,13 @@ static bool	process_input_token(t_command *cmd, t_token *current)
 	return (false);
 }
 
-static bool	process_single_input(t_command *cmd, t_token *current, t_shell *shell)
+bool	process_single_input(t_command *cmd, t_token *current,
+		t_shell *shell)
 {
 	if (current->type == INPUT)
 		return (process_input_token(cmd, current));
 	else if (current->type == HEREDOC)
 		return (process_heredoc_token(cmd, current, shell));
-	return (false);
-}
-
-static bool	process_output_token(t_command *cmd, t_token *current)
-{
-	t_token	*filename;
-	int		flags;
-
-	filename = current->next;
-	if (!filename || filename->type != FILENAME)
-	{
-		cmd->out_fd = -2;
-		return (true);
-	}
-	if (current->type == OUTPUT)
-		flags = O_WRONLY | O_CREAT | O_TRUNC;
-	else
-		flags = O_WRONLY | O_CREAT | O_APPEND;
-	if (open_output_file(filename, cmd, flags) == -1)
-		return (true);
-	return (false);
-}
-
-static bool	handle_all_inputs(t_command *cmd, t_shell *shell)
-{
-	t_token	*current;
-
-	current = cmd->input_list;
-	while (current)
-	{
-		if (process_single_input(cmd, current, shell))
-		{
-			return (true);
-		}
-			if (current->next && current->next->type == FILENAME)
-			current = current->next->next;
-		else
-			current = current->next;
-	}
-	return (false);
-}
-
-static bool	handle_all_outputs(t_command *cmd)
-{
-	t_token	*current;
-
-	current = cmd->output_list;
-	while (current)
-	{
-		if (process_output_token(cmd, current))
-			return (true);
-		if (current->next && current->next->type == FILENAME)
-			current = current->next->next;
-		else
-			current = current->next;
-	}
 	return (false);
 }
 

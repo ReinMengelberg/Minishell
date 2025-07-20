@@ -32,12 +32,14 @@ SRCS =	./src/builtin/cd.c \
 		./src/input/parser.c \
 		./src/execution/execution.c \
 		./src/execution/execution_utils.c \
+		./src/execution/execution_wait.c \
 		./src/execution/pipeline.c \
 		./src/execution/command_utils.c \
 		./src/execution/cleanup.c \
 		./src/execution/path.c \
-		./src/execution/redirections.c \
 		./src/execution/redirections_utils.c \
+		./src/execution/redirections_handlers.c \
+		./src/execution/redirections.c \
 		./src/env/env_init.c \
 		./src/env/env_service.c \
 		./src/env/env_utils.c \
