@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 14:41:34 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/07/19 11:34:07 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/20 10:44:55 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,6 @@ void	handle_signal_heredoc(int sig)
     if (sig == SIGINT)
     {
         write(STDOUT_FILENO, "\n", 1);
-        close(STDIN_FILENO);  // Force readline to return NULL
+        close(STDIN_FILENO);
     }
 }
