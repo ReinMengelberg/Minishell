@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/07/15 16:57:55 by rein          ########   odam.nl         */
+/*   Updated: 2025/07/20 12:12:11 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -239,10 +239,6 @@ void							update_quote_status(char input_char,
 void							handle_quote_char(char c, char *quote);
 t_command						*create_command(void);
 void							collect_heredoc_input(int fd, char *delimiter);
-int								handle_child_process(int *pipe_fd,
-									char *delimiter, t_shell *shell);
-int								handle_parent_process(int *pipe_fd, pid_t pid,
-									t_shell *shell);
 t_token							*expand_token(t_token *token, t_env *env,
 									t_exitstatus status);
 bool							valid_expansions(t_token *token_head);
