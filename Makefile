@@ -27,6 +27,8 @@ SRCS =	./src/builtin/cd.c \
 		./src/input/expander_utils.c \
 		./src/input/expander_utils2.c \
 		./src/input/heredoc.c \
+		./src/input/heredoc_utils.c \
+		./src/input/heredoc_process.c \
 		./src/input/parser_utils.c \
 		./src/input/parser_utils2.c \
 		./src/input/parser.c \
