@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/07/14 15:49:05 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/07/20 10:24:55 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/20 10:55:26 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ void	setup_signal_handler(void (*handler)(int))
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = SA_RESTART;
 	sigaction(SIGINT, &sa, NULL);
+	sigaction(SIGQUIT, &sa, NULL);
 }
 
 void	check_signals(t_shell *shell)

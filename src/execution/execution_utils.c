@@ -112,41 +112,53 @@ int	execute_external_command(t_command *cmd, t_env *env_list)
 
 int	wait_for_children(pid_t *pids, int count)
 {
-	int	status;
-	int	exit_code;
-	int	last_cmd_index;
-	int	sig;
+    int	status;
+    int	exit_code;
+    int	last_cmd_index;
+    int	sig;
 
-	exit_code = 0;
-	last_cmd_index = count - 1;
-	if (last_cmd_index >= 0 && pids[last_cmd_index] > 0)
-	{
-		if (waitpid(pids[last_cmd_index], &status, 0) == -1)
-		{
-			perror("waitpid failed for last command");
-			exit_code = 1;
-		}
-		else
-		{
-			if (WIFEXITED(status))
-				exit_code = WEXITSTATUS(status);
-			else if (WIFSIGNALED(status))
-			{
-				sig = WTERMSIG(status);
-				if (sig == SIGINT)
-					exit_code = 130;
-				else if (sig == SIGQUIT)
-				{
-					exit_code = 131;
-					write(STDERR_FILENO, "Quit (core dumped)\n", 19);
-				}
-				else
-					exit_code = 128 + sig;
-			}
-			else
-				exit_code = 1;
-		}
-		pids[last_cmd_index] = -1;
-	}
-	return (wait_for_remain(pids, count), exit_code);
+    // Temporarily ignore signals in parent while waiting
+    signal(SIGINT, SIG_IGN);
+    signal(SIGQUIT, SIG_IGN);
+    
+    exit_code = 0;
+    last_cmd_index = count - 1;
+    if (last_cmd_index >= 0 && pids[last_cmd_index] > 0)
+    {
+        if (waitpid(pids[last_cmd_index], &status, 0) == -1)
+        {
+            perror("waitpid failed for last command");
+            exit_code = 1;
+        }
+        else
+        {
+            if (WIFEXITED(status))
+                exit_code = WEXITSTATUS(status);
+            else if (WIFSIGNALED(status))
+            {
+                sig = WTERMSIG(status);
+                if (sig == SIGINT)
+                {
+                    write(STDOUT_FILENO, "\n", 1);  // Print newline for ^C
+                    exit_code = 130;
+                }
+                else if (sig == SIGQUIT)
+                {
+                    write(STDERR_FILENO, "Quit (core dumped)\n", 19);
+                    exit_code = 131;
+                }
+                else
+                    exit_code = 128 + sig;
+            }
+            else
+                exit_code = 1;
+        }
+        pids[last_cmd_index] = -1;
+    }
+    
+    // Restore interactive signal handling
+    setup_signal_handler(handle_signal_interactive);
+    signal(SIGQUIT, SIG_IGN);
+    
+    return (wait_for_remain(pids, count), exit_code);
 }
