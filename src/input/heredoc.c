@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 15:59:44 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/07/20 13:38:28 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/20 14:10:37 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,31 +51,22 @@ static char *get_delim(char *delim, int *quotes)
     return (ft_strdup(delim));
 }
 
-static void cleanup_readline_after_interrupt(void)
-{
-    // Clear readline's internal line buffer
-    rl_replace_line("", 0);
-    
-    // Reset readline to a clean state
-    rl_on_new_line();
-    
-    // Reset readline's "done" flag
-    rl_done = 0;
-    
-    // Force readline to refresh/redisplay
-    rl_redisplay();
-}
-
 static void heredoc_sigint_handler(int sig)
 {
     (void)sig;
-    write(STDOUT_FILENO, "\n", 1);  // Print newline after ^C
-    exit(130);  // Exit with SIGINT status
+    exit(130);
 }
 
 static int fill_heredoc(char *delimiter, int fd, t_shell *shell, int quotes)
 {
     char *line;
+    char *expanded_line;
+    t_expand_context ctx;
+    int i;
+    
+    // Set up expansion context
+    ctx.env = shell->env;
+    ctx.status = shell->exit_status;
     
     // Set up custom signal handling for heredoc
     signal(SIGINT, heredoc_sigint_handler);  // Custom handler
@@ -100,10 +91,32 @@ static int fill_heredoc(char *delimiter, int fd, t_shell *shell, int quotes)
         // Handle variable expansion if not quoted delimiter
         if (!quotes && ft_strchr(line, '$'))
         {
-            // Add your variable expansion function here
+            expanded_line = ft_strdup("");
+            i = 0;
+            while (line[i])
+            {
+                if (line[i] == '$' && line[i + 1] != '\0')
+                    expanded_line = process_dollar_expansion(expanded_line, line, &i, &ctx);
+                else
+                {
+                    char temp_str[2];
+                    char *temp;
+                    temp_str[0] = line[i];
+                    temp_str[1] = '\0';
+                    temp = ft_strjoin(expanded_line, temp_str);
+                    free(expanded_line);
+                    expanded_line = temp;
+                    i++;
+                }
+            }
+            write(fd, expanded_line, ft_strlen(expanded_line));
+            free(expanded_line);
+        }
+        else
+        {
+            write(fd, line, ft_strlen(line));
         }
         
-        write(fd, line, ft_strlen(line));
         write(fd, "\n", 1);
         free(line);
     }
