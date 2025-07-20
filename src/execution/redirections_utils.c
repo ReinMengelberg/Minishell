@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/07/15 15:19:28 by rein          #+#    #+#                 */
-/*   Updated: 2025/07/20 13:13:16 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/20 13:47:14 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,28 +84,4 @@ int	open_output_file(t_token *filename, t_command *cmd, int flags)
 	}
 	cmd->out_fd = fd;
 	return (0);
-}
-
-bool	handle_heredoc_redirect(t_command *commands, t_shell *shell)
-{
-	t_command	*cmd;
-	t_token		*delimiter;
-	int			fd;
-
-	cmd = commands;
-	while (cmd)
-	{
-		if (cmd->input && cmd->input->type == HEREDOC)
-		{
-			delimiter = cmd->input->next;
-			if (!delimiter || delimiter->type != FILENAME)
-				return (false);
-			fd = handle_heredoc(delimiter->str, shell);
-			if (fd == -1)
-				return (false);
-			cmd->in_fd = fd;
-		}
-		cmd = cmd->next;
-	}
-	return (true);
 }

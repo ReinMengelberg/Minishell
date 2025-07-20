@@ -66,23 +66,31 @@ static void cleanup_readline_after_interrupt(void)
     rl_redisplay();
 }
 
+static void heredoc_sigint_handler(int sig)
+{
+    (void)sig;
+    write(STDOUT_FILENO, "\n", 1);  // Print newline after ^C
+    exit(130);  // Exit with SIGINT status
+}
+
 static int fill_heredoc(char *delimiter, int fd, t_shell *shell, int quotes)
 {
     char *line;
     
-    // Set signal handling for heredoc input
-    signal(SIGINT, SIG_DFL);  // Default behavior (terminate)
-    signal(SIGQUIT, SIG_IGN); // Ignore SIGQUIT
+    // Set up custom signal handling for heredoc
+    signal(SIGINT, heredoc_sigint_handler);  // Custom handler
+    signal(SIGQUIT, SIG_IGN);
     
     while (1)
     {
         line = readline("> ");
-        if (!line)
+        if (!line)  // EOF 
         {
             // EOF (Ctrl+D) reached
             ft_dprintf(2, "minishell: warning: here-document delimited by end-of-file (wanted `%s')\n", delimiter);
             break;
         }
+        
         if (check_delimiter(line, delimiter))
         {
             free(line);
@@ -93,7 +101,6 @@ static int fill_heredoc(char *delimiter, int fd, t_shell *shell, int quotes)
         if (!quotes && ft_strchr(line, '$'))
         {
             // Add your variable expansion function here
-            // line = expand_variables(line, shell);
         }
         
         write(fd, line, ft_strlen(line));
@@ -104,98 +111,22 @@ static int fill_heredoc(char *delimiter, int fd, t_shell *shell, int quotes)
     return (0);
 }
 
-static int handle_child_process(char *filename, char *delimiter, t_shell *shell, int quotes)
-{
-    int fd;
-    
-    fd = open(filename, O_CREAT | O_WRONLY | O_TRUNC, 0644);
-    if (fd == -1)
-    {
-        perror("open");
-        exit(1);
-    }
-    
-    fill_heredoc(delimiter, fd, shell, quotes);
-    close(fd);
-    exit(0);
-}
-
-static int handle_parent_process(pid_t pid, t_shell *shell, char *filename)
-{
-    int status;
-    int fd;
-
-    (void)shell;  // Will be used for variable expansion
-    
-    // Wait for child process
-    if (waitpid(pid, &status, 0) == -1)
-    {
-        unlink(filename);
-        return (-1);
-    }
-    
-    // Check if child was interrupted by signal
-    if (WIFSIGNALED(status))
-    {
-        int sig = WTERMSIG(status);
-        unlink(filename);
-        
-        if (sig == SIGINT)
-        {
-            shell->exit_status = 130;
-            
-            // CRITICAL: Clean up readline state after interrupt
-            cleanup_readline_after_interrupt();
-            
-            // Print newline to match bash behavior
-            write(STDOUT_FILENO, "\n", 1);
-            
-            // Set global signal state
-            g_signal_received = SIGINT;
-        }
-        return (-1);
-    }
-    
-    // Check exit status
-    if (WIFEXITED(status))
-    {
-        int exit_code = WEXITSTATUS(status);
-        if (exit_code != 0)
-        {
-            unlink(filename);  // Clean up temp file
-            return (-1);
-        }
-    }
-    
-    // Open the temp file for reading
-    fd = open(filename, O_RDONLY);
-    if (fd == -1)
-    {
-        perror("open");
-        unlink(filename);  // Clean up temp file
-        return (-1);
-    }
-    
-    return (fd);
-}
-
 int handle_heredoc(char *delimiter, t_shell *shell)
 {
     pid_t pid;
     char *filename;
     char *clean_delimiter;
     int quotes;
-    int result_fd;
+    int status;
+    int fd;
     
     if (!delimiter)
         return (-1);
     
-    // Generate unique temp filename
     filename = get_heredoc_name();
     if (!filename)
         return (-1);
     
-    // Clean delimiter and check for quotes
     clean_delimiter = get_delim(delimiter, &quotes);
     if (!clean_delimiter)
     {
@@ -214,37 +145,48 @@ int handle_heredoc(char *delimiter, t_shell *shell)
     
     if (pid == 0)
     {
-        // Child process - collect input and write to temp file
-        handle_child_process(filename, clean_delimiter, shell, quotes);
-        // Never returns due to exit() in handle_child_process
+        // Child process
+        fd = open(filename, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+        if (fd == -1)
+            exit(1);
+        if (fill_heredoc(clean_delimiter, fd, shell, quotes) == -1)
+            exit(130);  // Signal interrupted
+        close(fd);
+        exit(0);
     }
     else
     {
-        // Parent process - wait for child and open temp file
-        result_fd = handle_parent_process(pid, shell, filename);
-        
-        // Note: Don't unlink the file here if successful!
-        // The file needs to persist until the command is executed
-        // You should unlink it after the command finishes executing
-        
+        // Parent process
+        waitpid(pid, &status, 0);
         free(clean_delimiter);
         
-        if (result_fd != -1)
+        // Check if child was interrupted
+        if (WIFSIGNALED(status) && WTERMSIG(status) == SIGINT)
         {
-            // Store filename in shell structure for later cleanup
-            // You might want to add this to your shell/command structure
-            // shell->heredoc_files = add_to_list(shell->heredoc_files, filename);
-        }
-        else
-        {
+            unlink(filename);
             free(filename);
+            shell->exit_status = 130;
+            return (-1);
         }
         
-        return (result_fd);
+        // Check if child exited with error
+        if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
+        {
+            unlink(filename);
+            free(filename);
+            return (-1);
+        }
+        
+        // Open file for reading
+        fd = open(filename, O_RDONLY);
+        if (fd == -1)
+        {
+            unlink(filename);
+            free(filename);
+            return (-1);
+        }
+        
+        // Note: filename memory is leaked here - you should store it for cleanup
+        return (fd);
     }
-    
-    // Should never reach here
-    free(filename);
-    free(clean_delimiter);
-    return (-1);
 }
