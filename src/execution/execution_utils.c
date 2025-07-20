@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/07/15 15:38:30 by rein          #+#    #+#                 */
-/*   Updated: 2025/07/20 15:04:40 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/20 15:06:43 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,6 @@ int	wait_for_children(pid_t *pids, int count)
 	int	last_cmd_index;
 	int	sig;
 
-	// Temporarily ignore signals in parent while waiting
 	signal(SIGINT, SIG_IGN);
 	signal(SIGQUIT, SIG_IGN);
 	exit_code = 0;
@@ -138,7 +137,7 @@ int	wait_for_children(pid_t *pids, int count)
 				sig = WTERMSIG(status);
 				if (sig == SIGINT)
 				{
-					write(STDOUT_FILENO, "\n", 1); // Print newline for ^C
+					write(STDOUT_FILENO, "\n", 1);
 					exit_code = 130;
 				}
 				else if (sig == SIGQUIT)
@@ -154,7 +153,6 @@ int	wait_for_children(pid_t *pids, int count)
 		}
 		pids[last_cmd_index] = -1;
 	}
-	// Restore interactive signal handling
 	setup_signal_handler(handle_signal_interactive);
 	signal(SIGQUIT, SIG_IGN);
 	return (wait_for_remain(pids, count), exit_code);
