@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/27 11:15:53 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/20 15:24:20 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/22 10:40:01 by rein          ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ static bool	process_heredoc_token(t_command *cmd, t_token *current,
 	}
 	if (cmd->in_fd > 2)
 		close(cmd->in_fd);
-	fd = handle_heredoc(delimiter->str, shell);
+	fd = handle_heredoc(delimiter, shell);
 	if (fd == -1)
 	{
 		cmd->in_fd = -2;

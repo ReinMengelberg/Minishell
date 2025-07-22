@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/07/22 10:16:57 by rein          ########   odam.nl         */
+/*   Updated: 2025/07/22 10:43:19 by rein          ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -300,7 +300,6 @@ void							update_quote_status(char input_char,
 									char *quote);
 void							handle_quote_char(char c, char *quote);
 t_command						*create_command(void);
-void							collect_heredoc_input(int fd, char *delimiter);
 t_token							*expand_token(t_token *token, t_env *env,
 									t_exitstatus status);
 char							*expand_variable(char *str, int *i,
@@ -319,9 +318,9 @@ char							*process_dollar_expansion(char *result,
 									t_expand_context *ctx);
 
 // Heredoc handling
-int								handle_heredoc(char *delimiter, t_shell *shell);
+int								handle_heredoc(t_token *delimiter,
+									t_shell *shell);
 char							*get_heredoc_name(void);
-char							*get_delim(char *delim, int *quotes);
 void							heredoc_sigint_handler(int sig);
 char							*expand_heredoc_line(char *line,
 									t_expand_context *ctx);

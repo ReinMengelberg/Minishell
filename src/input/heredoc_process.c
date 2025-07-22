@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/07/20 15:14:41 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/07/20 15:18:58 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/22 10:42:36 by rein          ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,10 @@ int	setup_heredoc_child(char *filename, char *clean_delimiter, t_shell *shell,
 	if (fd == -1)
 		exit(1);
 	if (fill_heredoc(clean_delimiter, fd, shell, quotes) == -1)
+	{
+		close(fd);
 		exit(130);
+	}
 	close(fd);
 	exit(0);
 }
