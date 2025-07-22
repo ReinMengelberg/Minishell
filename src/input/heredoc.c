@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/06/07 15:59:44 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/07/20 15:17:59 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/22 10:42:19 by rein          ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,11 +49,9 @@ int	create_heredoc_process(char *filename, char *clean_delimiter,
 	return (fd);
 }
 
-int	handle_heredoc(char *delimiter, t_shell *shell)
+int	handle_heredoc(t_token *delimiter, t_shell *shell)
 {
 	char	*filename;
-	char	*clean_delimiter;
-	int		quotes;
 	int		fd;
 
 	if (!delimiter)
@@ -61,14 +59,8 @@ int	handle_heredoc(char *delimiter, t_shell *shell)
 	filename = get_heredoc_name();
 	if (!filename)
 		return (-1);
-	clean_delimiter = get_delim(delimiter, &quotes);
-	if (!clean_delimiter)
-	{
-		free(filename);
-		return (-1);
-	}
-	fd = create_heredoc_process(filename, clean_delimiter, shell, quotes);
-	free(clean_delimiter);
+	fd = create_heredoc_process(filename, delimiter->str,
+			shell, delimiter->quotestate);
 	free(filename);
 	return (fd);
 }

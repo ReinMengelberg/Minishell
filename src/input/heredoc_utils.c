@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/07/20 15:09:25 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/07/20 15:18:13 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/22 10:37:12 by rein          ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,21 +32,6 @@ char	*get_heredoc_name(void)
 	free(number);
 	i++;
 	return (name);
-}
-
-char	*get_delim(char *delim, int *quotes)
-{
-	int	len;
-
-	len = ft_strlen(delim) - 1;
-	if ((delim[0] == '\"' && delim[len] == '\"')
-		|| (delim[0] == '\'' && delim[len] == '\''))
-	{
-		*quotes = 1;
-		return (ft_strtrim(delim, "\'\""));
-	}
-	*quotes = 0;
-	return (ft_strdup(delim));
 }
 
 void	heredoc_sigint_handler(int sig)
