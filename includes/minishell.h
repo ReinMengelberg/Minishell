@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/07/20 15:37:41 by rmengelb      ########   odam.nl         */
+/*   Updated: 2025/07/22 10:16:57 by rein          ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,10 @@
 # include <dirent.h>
 # include <errno.h>
 # include <fcntl.h>
+# include <stdio.h>
 # include <readline/history.h>
 # include <readline/readline.h>
 # include <signal.h>
-# include <stdio.h>
 # include <stdlib.h>
 # include <string.h>
 # include <sys/stat.h>
@@ -93,9 +93,9 @@ typedef enum e_exitstatus
 {
 	SUCCESS = 0,
 	FAILURE = 1,
-	ERROR_NULL_POINTER = -1,
-	ERROR_INVALID_INPUT = -2,
-	ERROR_MEMORY_ALLOCATION = -3
+	ERROR_NULL_POINTER = 1,
+	ERROR_INVALID_INPUT = 2,
+	ERROR_MEMORY_ALLOCATION = 3
 }								t_exitstatus;
 
 typedef enum e_quotestate
