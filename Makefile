@@ -9,6 +9,7 @@ LIBS =
 SRCS =	./src/builtin/cd.c \
 		./src/builtin/echo.c \
 		./src/builtin/exit.c \
+		./src/builtin/exit_utils.c \
 		./src/builtin/export.c \
 		./src/builtin/pwd.c \
 		./src/builtin/unset.c \

@@ -6,7 +6,7 @@
 /*   By: rbagin <rbagin@student.codam.nl>             +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 14:54:53 by rbagin        #+#    #+#                 */
-/*   Updated: 2025/07/22 10:43:19 by rein          ########   odam.nl         */
+/*   Updated: 2025/07/22 21:19:30 by rein          ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -396,13 +396,15 @@ bool							handle_all_outputs(t_command *cmd);
 // execution/builtin
 bool							is_builtin(char *cmd);
 int								exec_builtin(t_command *cmd, t_shell *shell);
-int								exec_exit(t_command *cmd, t_shell *shell);
 int								exec_pwd(t_command *cmd, t_shell *shell);
 int								exec_cd(t_command *cmd, t_shell *shell);
 int								exec_echo(t_command *cmd, t_shell *shell);
 int								exec_env(t_command *cmd, t_shell *shell);
 int								exec_export(t_command *cmd, t_shell *shell);
 int								exec_unset(t_command *cmd, t_shell *shell);
+int								exec_exit(t_command *cmd, t_shell *shell);
+int								calc_exit(char *exit_arg);
+bool							is_valid_exit_num(char *str);
 
 /* ----------------------------- ENVIRONMENT ------------------------------- */
 

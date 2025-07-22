@@ -6,7 +6,7 @@
 /*   By: rein <rein@student.codam.nl>                 +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/10 15:21:53 by rein          #+#    #+#                 */
-/*   Updated: 2025/07/15 15:54:16 by rein          ########   odam.nl         */
+/*   Updated: 2025/07/22 21:35:55 by rein          ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,19 +62,14 @@ static int	process_input(char *input, t_shell *shell)
 
 static void	handle_signals_and_input(t_shell *shell, bool *signal_received)
 {
-	if (shell->exit_status != 130)
+	if (g_signal_received == SIGINT)
 	{
-		if (g_signal_received == SIGINT)
-		{
-			*signal_received = true;
-			g_signal_received = 0;
-			shell->exit_status = 130;
-		}
-		else
-			check_signals(shell);
+		*signal_received = true;
+		g_signal_received = 0;
+		shell->exit_status = 130;
 	}
 	else
-		shell->exit_status = 0;
+		check_signals(shell);
 	if (*signal_received)
 		*signal_received = false;
 }
