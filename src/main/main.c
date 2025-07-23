@@ -20,9 +20,7 @@
 
 #include "minishell.h"
 
-extern char	**environ;
-
-t_shell	*init_shell(void)
+t_shell	*init_shell(char **envp)
 {
 	t_shell	*shell;
 
@@ -32,7 +30,7 @@ t_shell	*init_shell(void)
 	shell->commands = NULL;
 	shell->tokens = NULL;
 	shell->pids = NULL;
-	shell->env = create_env(environ);
+	shell->env = create_env(envp);
 	if (!shell->env)
 	{
 		free(shell);
@@ -96,12 +94,14 @@ static int	shell_loop(t_shell *shell)
 	return (shell->exit_status);
 }
 
-int	main(void)
+int	main(int argc, char **argv, char **envp)
 {
 	t_shell	*shell;
 	int		exit_status;
 
-	shell = init_shell();
+	(void)argc;
+	(void)argv;
+	shell = init_shell(envp);
 	if (!shell)
 	{
 		printf("Error initializing shell\n");
