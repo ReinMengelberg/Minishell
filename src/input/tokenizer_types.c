@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/07/15 16:03:00 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/23 12:28:57 by rbagin        ########   odam.nl         */
+/*   Updated: 2025/07/23 15:27:43 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,10 +82,11 @@ t_tokentype	set_tokentype(char *token_str)
 		return (EMPTY);
 	}
 	quote_state = set_quotestate(token_str);
-	if (quote_state == SINGLE || quote_state == DOUBLE)
+	type = get_tokentype_unquoted(token_str);
+	if ((quote_state == SINGLE || quote_state == DOUBLE)
+		&& (type == PIPE || type == OUTPUT || type == APPEND
+			|| type == INPUT || type == HEREDOC))
 		type = CMD;
-	else
-		type = get_tokentype_unquoted(token_str);
 	return (process_token_type(type, &cmd_found,
 			&next_redir_target, &after_redir_file));
 }
