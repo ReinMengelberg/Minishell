@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/05/11 14:36:48 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/22 21:22:53 by rein          ########   odam.nl         */
+/*   Updated: 2025/07/23 15:57:14 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,8 @@ int	validate_exit_args(t_command *cmd, t_shell *shell, bool *should_exit)
 	{
 		ft_dprintf(2, "minishell: exit: %s: numeric argument required\n",
 			cmd->args->str);
-		shell->exit_status = 255;
-		return (255);
+		shell->exit_status = 2;
+		return (2);
 	}
 	if (cmd->args->next)
 	{

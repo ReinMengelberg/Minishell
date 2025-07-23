@@ -6,7 +6,7 @@
 /*   By: rmengelb <rmengelb@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/07/20 15:14:41 by rmengelb      #+#    #+#                 */
-/*   Updated: 2025/07/22 10:42:36 by rein          ########   odam.nl         */
+/*   Updated: 2025/07/23 15:58:43 by rmengelb      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,12 +90,14 @@ int	handle_heredoc_signals(pid_t pid, int *status, char *filename,
 	{
 		unlink(filename);
 		shell->exit_status = 130;
+		g_signal_received = SIGINT;
 		return (-1);
 	}
 	if (WIFEXITED(*status) && WEXITSTATUS(*status) == 130)
 	{
 		unlink(filename);
 		shell->exit_status = 130;
+		g_signal_received = SIGINT;
 		return (-1);
 	}
 	if (WIFEXITED(*status) && WEXITSTATUS(*status) != 0)
