@@ -6,7 +6,7 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/07/15 16:03:00 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/15 16:56:20 by rein          ########   odam.nl         */
+/*   Updated: 2025/07/23 12:28:57 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,13 +38,6 @@ t_tokentype	handle_cmd_arg_token(t_tokentype type, bool *cmd_found,
 	return (type);
 }
 
-void	reset_token_state(bool *cmd_found, bool *next_arg, bool *after_file)
-{
-	*cmd_found = false;
-	*next_arg = false;
-	*after_file = false;
-}
-
 t_tokentype	process_token_type(t_tokentype type, bool *cmd_found,
 		bool *next_redir_target, bool *after_redir_file)
 {
@@ -64,22 +57,35 @@ t_tokentype	process_token_type(t_tokentype type, bool *cmd_found,
 	return (handle_cmd_arg_token(type, cmd_found, after_redir_file));
 }
 
+static t_tokentype	get_tokentype_unquoted(char *token_str)
+{
+	char		*unquoted_str;
+	t_tokentype	type;
+
+	unquoted_str = remove_quotes(token_str);
+	type = get_tokentype(unquoted_str);
+	free(unquoted_str);
+	return (type);
+}
+
 t_tokentype	set_tokentype(char *token_str)
 {
 	t_tokentype		type;
+	t_quotestate	quote_state;
 	static bool		cmd_found = false;
 	static bool		next_redir_target = false;
 	static bool		after_redir_file = false;
-	char			*unquoted_str;
 
 	if (token_str == NULL)
 	{
 		reset_token_state(&cmd_found, &next_redir_target, &after_redir_file);
 		return (EMPTY);
 	}
-	unquoted_str = remove_quotes(token_str);
-	type = get_tokentype(unquoted_str);
-	free(unquoted_str);
+	quote_state = set_quotestate(token_str);
+	if (quote_state == SINGLE || quote_state == DOUBLE)
+		type = CMD;
+	else
+		type = get_tokentype_unquoted(token_str);
 	return (process_token_type(type, &cmd_found,
 			&next_redir_target, &after_redir_file));
 }

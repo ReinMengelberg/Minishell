@@ -6,11 +6,18 @@
 /*   By: ravi-bagin <ravi-bagin@student.codam.nl      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2025/07/15 16:00:00 by ravi-bagin    #+#    #+#                 */
-/*   Updated: 2025/07/15 15:56:40 by ravi-bagin    ########   odam.nl         */
+/*   Updated: 2025/07/23 12:29:02 by rbagin        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+void	reset_token_state(bool *cmd_found, bool *next_arg, bool *after_file)
+{
+	*cmd_found = false;
+	*next_arg = false;
+	*after_file = false;
+}
 
 bool	is_unsupported_char(char c)
 {
